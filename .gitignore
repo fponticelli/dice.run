@@ -1,1 +1,3 @@
 .haxelib
+node_modules
+tmp

@@ -1,6 +1,9 @@
 -lib thx.core
 -lib thx.format
 -lib react
+-lib diceroller
 -cp src
 -main Main
--js debug/index.js
+-js tmp/index.js
+
+-cmd browserify tmp/index.js -o debug/index.js

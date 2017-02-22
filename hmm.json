@@ -14,6 +14,11 @@
       "name": "thx.format",
       "type": "haxelib",
       "version": null
+    },
+    {
+      "name": "diceroller",
+      "type": "dev",
+      "path": "/Users/francoponticelli/projects/diceroller/src"
     }
   ]
 }
