@@ -1,0 +1,19 @@
+{
+  "dependencies": [
+    {
+      "name": "react",
+      "type": "haxelib",
+      "version": null
+    },
+    {
+      "name": "thx.core",
+      "type": "haxelib",
+      "version": null
+    },
+    {
+      "name": "thx.format",
+      "type": "haxelib",
+      "version": null
+    }
+  ]
+}

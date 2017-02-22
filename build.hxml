@@ -1,0 +1,6 @@
+-lib thx.core
+-lib thx.format
+-lib react
+-cp src
+-main Main
+-js debug/index.js
