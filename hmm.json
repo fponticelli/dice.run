@@ -6,6 +6,18 @@
       "path": "/Users/francoponticelli/projects/diceroller/src"
     },
     {
+      "name": "doom",
+      "type": "git",
+      "ref": "bd4956a",
+      "url": "git@github.com:fponticelli/doom"
+    },
+    {
+      "name": "dots",
+      "type": "git",
+      "ref": "35872d0",
+      "url": "git@github.com:fponticelli/dots"
+    },
+    {
       "name": "hscript",
       "type": "git",
       "ref": "51506e0",
@@ -19,18 +31,6 @@
       "name": "parsihax",
       "type": "haxelib",
       "version": "2.0.0"
-    },
-    {
-      "name": "react",
-      "type": "haxelib"
-    },
-    {
-      "name": "react-router",
-      "type": "haxelib"
-    },
-    {
-      "name": "redux",
-      "type": "haxelib"
     },
     {
       "name": "thx.color",

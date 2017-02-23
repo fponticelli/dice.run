@@ -1,0 +1,1 @@
+typedef Api = Action -> Void;
