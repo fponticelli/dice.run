@@ -1,24 +1,114 @@
 {
   "dependencies": [
     {
-      "name": "react",
-      "type": "haxelib",
-      "version": null
-    },
-    {
-      "name": "thx.core",
-      "type": "haxelib",
-      "version": null
-    },
-    {
-      "name": "thx.format",
-      "type": "haxelib",
-      "version": null
-    },
-    {
       "name": "diceroller",
       "type": "dev",
       "path": "/Users/francoponticelli/projects/diceroller/src"
+    },
+    {
+      "name": "hscript",
+      "type": "git",
+      "ref": "51506e0",
+      "url": "git@github.com:HaxeFoundation/hscript"
+    },
+    {
+      "name": "modular",
+      "type": "haxelib"
+    },
+    {
+      "name": "parsihax",
+      "type": "haxelib",
+      "version": "2.0.0"
+    },
+    {
+      "name": "react",
+      "type": "haxelib"
+    },
+    {
+      "name": "react-router",
+      "type": "haxelib"
+    },
+    {
+      "name": "redux",
+      "type": "haxelib"
+    },
+    {
+      "name": "thx.color",
+      "type": "git",
+      "ref": "c55bed1",
+      "url": "git@github.com:fponticelli/thx.color"
+    },
+    {
+      "name": "thx.core",
+      "type": "git",
+      "ref": "59f36ae",
+      "url": "git@github.com:fponticelli/thx.core"
+    },
+    {
+      "name": "thx.csv",
+      "type": "git",
+      "ref": "69a9de2",
+      "url": "git@github.com:fponticelli/thx.csv"
+    },
+    {
+      "name": "thx.culture",
+      "type": "git",
+      "ref": "cc42038",
+      "url": "git@github.com:fponticelli/thx.culture"
+    },
+    {
+      "name": "thx.format",
+      "type": "git",
+      "ref": "a3d4fc9",
+      "url": "git@github.com:fponticelli/thx.format"
+    },
+    {
+      "name": "thx.promise",
+      "type": "git",
+      "ref": "65379a9",
+      "url": "git@github.com:fponticelli/thx.promise"
+    },
+    {
+      "name": "thx.schema",
+      "type": "git",
+      "dir": "",
+      "ref": "8f5c04c",
+      "url": "git@github.com:nuttycom/thx.schema"
+    },
+    {
+      "name": "thx.semver",
+      "type": "git",
+      "ref": "6295654",
+      "url": "git@github.com:fponticelli/thx.semver"
+    },
+    {
+      "name": "thx.stream",
+      "type": "git",
+      "ref": "bf4520c",
+      "url": "git@github.com:fponticelli/thx.stream"
+    },
+    {
+      "name": "thx.text",
+      "type": "git",
+      "ref": "27a8ddd",
+      "url": "git@github.com:fponticelli/thx.text"
+    },
+    {
+      "name": "thx.tpl",
+      "type": "git",
+      "ref": "fbd6f28",
+      "url": "git@github.com:fponticelli/thx.tpl"
+    },
+    {
+      "name": "utest",
+      "type": "git",
+      "ref": "4d8a35c",
+      "url": "git@github.com:fponticelli/utest"
+    },
+    {
+      "name": "yaml",
+      "type": "haxelib",
+      "version": "1.3.0"
     }
   ]
 }

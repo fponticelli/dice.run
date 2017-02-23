@@ -1,9 +1,13 @@
 -lib thx.core
 -lib thx.format
+-lib thx.promise
+-lib thx.stream
 -lib react
 -lib diceroller
+-D react_monomorphic
 -cp src
 -main Main
 -js tmp/index.js
 
 -cmd browserify tmp/index.js -o debug/index.js
+-cmd echo "build successfull"
