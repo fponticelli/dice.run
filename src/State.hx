@@ -1,5 +1,4 @@
 import dr.DiceExpression;
-import thx.Unit;
 
 typedef State = {
   page: PageView
@@ -11,6 +10,6 @@ enum PageView {
 
 enum Expression {
   Unparsed(src: String);
-  Parsed(src: String, expr: DiceExpression<Unit>);
+  Parsed(src: String, expr: DiceExpression);
   Error(src: String, message: String);
 }

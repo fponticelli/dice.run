@@ -3,6 +3,148 @@
 <head>
   <meta charset="UTF-8">
   <title>Dice.Run</title>
+  <style>
+
+.roll-result {
+  font-size: 4rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.roll-box {
+  text-align: center;
+  justify-content: center;
+}
+
+.roll-details * {
+  margin: 0.05rem 0rem;
+}
+
+.pair {
+  display: flex;
+  flex-direction: column;
+}
+
+.result {
+  flex: 1;
+  border-bottom: 1px solid #ccc;
+}
+
+.details {
+  flex: 1;
+}
+
+.binop {
+  display: flex;
+  flex-direction: row;
+}
+
+.left, .right {
+  flex: 1;
+}
+
+.op {
+  flex: 0.1;
+}
+
+.dice-set {
+  display: flex;
+}
+
+.dice-set > * {
+  flex: 1;
+}
+
+.die > * {
+  display: inline-block;
+}
+
+.discard .result {
+  text-decoration: line-through;
+  background-color: red;
+}
+
+.keep .result {
+  background-color: limegreen;
+}
+
+/*.binop > *,
+.unop > *,
+.die > *,
+.bag > *,
+.exprs > * {
+  display: inline-block;
+}
+
+.roll-result, .top, .bottom, .left, .op, .right, .roll-details {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.roll-result {
+  border: 1px solid #ccc;
+}
+
+.top {
+  font-size: 2rem;
+}
+
+.bottom {
+  border-top: 1px solid #ccc;
+}
+
+.roll-details {
+  font-size: 1.8rem;
+}
+
+.bottom .top {
+  font-size: 1.8rem;
+}
+
+.bottom .bottom .top {
+  font-size: 1.6rem;
+}
+
+.bottom .bottom .bottom .top {
+  font-size: 1.4rem;
+}
+
+.bottom .bottom .bottom .bottom .top {
+  font-size: 1.2rem;
+}
+
+.bottom .bottom .bottom .bottom .bottom .top {
+  font-size: 1.0rem;
+}
+
+.bottom {
+  font-size: 1.6rem;
+}
+
+.bottom .bottom {
+  font-size: 1.4rem;
+}
+
+.bottom .bottom .bottom {
+  font-size: 1.2rem;
+}
+
+.bottom .bottom .bottom .bottom {
+  font-size: 1.0rem;
+}
+
+.bottom .bottom .bottom .bottom .bottom {
+  font-size: 0.8rem;
+}
+
+.bottom .bottom .bottom .bottom .bottom .bottom {
+  font-size: 0.6rem;
+}
+
+.roll-result {
+  font-size: 2.4rem;
+  font-weight: bold;
+}*/
+  </style>
 </head>
 <body>
   <div id="main"></div>

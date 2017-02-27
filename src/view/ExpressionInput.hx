@@ -3,8 +3,11 @@ package view;
 import doom.html.Component;
 import doom.html.Html.*;
 import State;
+import dots.Query;
 
 class ExpressionInput extends Component<SimulatorProps> {
+  var start = 0;
+  var end = 0;
   override function render() {
     var value = switch props.expr {
       case Unparsed(src): src;
@@ -13,7 +16,8 @@ class ExpressionInput extends Component<SimulatorProps> {
     }
     var top = [div(input([
           "value" => value,
-          "input" => onInput
+          "input" => onInput,
+          "keyup" => selectionChange
         ]))];
     var bottom = switch props.expr {
           case Error(_, msg):
@@ -26,8 +30,19 @@ class ExpressionInput extends Component<SimulatorProps> {
     );
   }
 
-  function onInput(value) {
-    props.dispatch(EvaluateExpression(value));
+  override function didUpdate() {
+    var input: js.html.InputElement = cast Query.find("input", this.element);
+    input.setSelectionRange(start, end);
+  }
+
+  function selectionChange(input: js.html.InputElement) {
+    start = input.selectionStart;
+    end = input.selectionEnd;
+  }
+
+  function onInput(input: js.html.InputElement) {
+    selectionChange(input);
+    props.dispatch(EvaluateExpression(input.value));
   }
 }
 

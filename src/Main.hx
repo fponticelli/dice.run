@@ -18,7 +18,7 @@ class Main extends Component<Store<State, Action>> {
     store.stream()
       .next(function(_) app.update(store))
       .run();
-    store.dispatch(EvaluateExpression("3d6"));
+    store.dispatch(EvaluateExpression("5d6 drop 2 + 2"));
   }
 
   override function render() {

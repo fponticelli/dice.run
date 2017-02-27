@@ -858,7 +858,7 @@ Main.main = function() {
 	store.stream().next(function(_) {
 		app.update(store,{ fileName : "Main.hx", lineNumber : 19, className : "Main", methodName : "main"});
 	}).run();
-	store.dispatch(Action.EvaluateExpression("3d6"),{ fileName : "Main.hx", lineNumber : 21, className : "Main", methodName : "main"});
+	store.dispatch(Action.EvaluateExpression("5d6 drop 2 + 2"),{ fileName : "Main.hx", lineNumber : 21, className : "Main", methodName : "main"});
 };
 Main.__super__ = doom_html_Component;
 Main.prototype = $extend(doom_html_Component.prototype,{
@@ -2959,7 +2959,7 @@ dr_IntAlgebra.prototype = {
 		return a * b;
 	}
 	,divide: function(a,b) {
-		return a / b | 0;
+		return Math.ceil(a / b);
 	}
 	,compare: function(a,b) {
 		return thx_Ints.compare(a,b);
@@ -2968,22 +2968,123 @@ dr_IntAlgebra.prototype = {
 		return thx_Ints.compare(a,b);
 	}
 	,average: function(arr) {
-		return thx_ArrayInts.average(arr) | 0;
+		return Math.ceil(thx_ArrayInts.average(arr));
 	}
 	,ofLiteral: function(v) {
 		return v;
 	}
 	,__class__: dr_IntAlgebra
 };
-var dr_DiceExpression = { __ename__ : ["dr","DiceExpression"], __constructs__ : ["Roll","RollBag","RollExpressions","BinaryOp","UnaryOp"] };
-dr_DiceExpression.Roll = function(basic) { var $x = ["Roll",0,basic]; $x.__enum__ = dr_DiceExpression; return $x; };
-dr_DiceExpression.RollBag = function(dice,extractor,meta) { var $x = ["RollBag",1,dice,extractor,meta]; $x.__enum__ = dr_DiceExpression; return $x; };
-dr_DiceExpression.RollExpressions = function(exprs,extractor,meta) { var $x = ["RollExpressions",2,exprs,extractor,meta]; $x.__enum__ = dr_DiceExpression; return $x; };
-dr_DiceExpression.BinaryOp = function(op,a,b,meta) { var $x = ["BinaryOp",3,op,a,b,meta]; $x.__enum__ = dr_DiceExpression; return $x; };
-dr_DiceExpression.UnaryOp = function(op,a,meta) { var $x = ["UnaryOp",4,op,a,meta]; $x.__enum__ = dr_DiceExpression; return $x; };
-var dr_BagExtractor = { __ename__ : ["dr","BagExtractor"], __constructs__ : ["Explode","Reroll"] };
-dr_BagExtractor.Explode = function(times,range) { var $x = ["Explode",0,times,range]; $x.__enum__ = dr_BagExtractor; return $x; };
-dr_BagExtractor.Reroll = function(times,range) { var $x = ["Reroll",1,times,range]; $x.__enum__ = dr_BagExtractor; return $x; };
+var dr_BoxLattice = function(headers,cells) {
+	this.headers = headers;
+	this.size = 1;
+	var _g1 = 0;
+	var _g = this.headers.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		this.size *= headers[i].length;
+	}
+	var tmp;
+	switch(cells[1]) {
+	case 0:
+		var c = cells[2];
+		var _g2 = [];
+		var _g21 = 0;
+		var _g11 = this.size;
+		while(_g21 < _g11) {
+			var j = _g21++;
+			_g2.push(c);
+		}
+		tmp = _g2;
+		break;
+	case 1:
+		var c1 = cells[2];
+		tmp = c1;
+		break;
+	}
+	this.cells = tmp;
+};
+dr_BoxLattice.__name__ = ["dr","BoxLattice"];
+dr_BoxLattice.prototype = {
+	headers: null
+	,cells: null
+	,size: null
+	,dims: function() {
+		return this.headers.length;
+	}
+	,flatten: function() {
+		return this.cells;
+	}
+	,mapcells: function(f) {
+		var newcells = [];
+		var _g = [];
+		var _g2 = 0;
+		var _g1 = this.headers.length;
+		while(_g2 < _g1) {
+			var i = _g2++;
+			_g.push(0);
+		}
+		var headerindices = _g;
+		var headervalues = [];
+		var _g21 = 0;
+		var _g11 = this.size;
+		while(_g21 < _g11) {
+			var i1 = _g21++;
+			var _g4 = 0;
+			var _g3 = this.headers.length;
+			while(_g4 < _g3) {
+				var j = _g4++;
+				headervalues[j] = this.headers[j][headerindices[j]];
+			}
+			newcells[i1] = f(this.cells[i1],headervalues);
+			headerindices[0]++;
+			var _g41 = 0;
+			var _g31 = this.headers.length - 1;
+			while(_g41 < _g31) {
+				var d = _g41++;
+				if(headerindices[d] >= this.headers[d].length) {
+					headerindices[d] = 0;
+					headerindices[d + 1]++;
+				}
+			}
+		}
+		return new dr_BoxLattice(this.headers,haxe_ds_Either.Right(newcells));
+	}
+	,mapheaderstocells: function(f) {
+		return this.mapcells(function(c,h) {
+			return f(h);
+		});
+	}
+	,__class__: dr_BoxLattice
+};
+var dr_DiceExpression = { __ename__ : ["dr","DiceExpression"], __constructs__ : ["Die","Literal","DiceReduce","BinaryOp","UnaryOp"] };
+dr_DiceExpression.Die = function(sides) { var $x = ["Die",0,sides]; $x.__enum__ = dr_DiceExpression; return $x; };
+dr_DiceExpression.Literal = function(value) { var $x = ["Literal",1,value]; $x.__enum__ = dr_DiceExpression; return $x; };
+dr_DiceExpression.DiceReduce = function(reduceable,reducer) { var $x = ["DiceReduce",2,reduceable,reducer]; $x.__enum__ = dr_DiceExpression; return $x; };
+dr_DiceExpression.BinaryOp = function(op,a,b) { var $x = ["BinaryOp",3,op,a,b]; $x.__enum__ = dr_DiceExpression; return $x; };
+dr_DiceExpression.UnaryOp = function(op,a) { var $x = ["UnaryOp",4,op,a]; $x.__enum__ = dr_DiceExpression; return $x; };
+var dr_DiceReducer = { __ename__ : ["dr","DiceReducer"], __constructs__ : ["Sum","Average","Min","Max"] };
+dr_DiceReducer.Sum = ["Sum",0];
+dr_DiceReducer.Sum.__enum__ = dr_DiceReducer;
+dr_DiceReducer.Average = ["Average",1];
+dr_DiceReducer.Average.__enum__ = dr_DiceReducer;
+dr_DiceReducer.Min = ["Min",2];
+dr_DiceReducer.Min.__enum__ = dr_DiceReducer;
+dr_DiceReducer.Max = ["Max",3];
+dr_DiceReducer.Max.__enum__ = dr_DiceReducer;
+var dr_DiceReduceable = { __ename__ : ["dr","DiceReduceable"], __constructs__ : ["DiceExpressions","DiceListWithFilter","DiceListWithMap"] };
+dr_DiceReduceable.DiceExpressions = function(exprs) { var $x = ["DiceExpressions",0,exprs]; $x.__enum__ = dr_DiceReduceable; return $x; };
+dr_DiceReduceable.DiceListWithFilter = function(list,filter) { var $x = ["DiceListWithFilter",1,list,filter]; $x.__enum__ = dr_DiceReduceable; return $x; };
+dr_DiceReduceable.DiceListWithMap = function(dice,functor) { var $x = ["DiceListWithMap",2,dice,functor]; $x.__enum__ = dr_DiceReduceable; return $x; };
+var dr_DiceFilterable = { __ename__ : ["dr","DiceFilterable"], __constructs__ : ["DiceArray","DiceExpressions"] };
+dr_DiceFilterable.DiceArray = function(dice) { var $x = ["DiceArray",0,dice]; $x.__enum__ = dr_DiceFilterable; return $x; };
+dr_DiceFilterable.DiceExpressions = function(exprs) { var $x = ["DiceExpressions",1,exprs]; $x.__enum__ = dr_DiceFilterable; return $x; };
+var dr_DiceFilter = { __ename__ : ["dr","DiceFilter"], __constructs__ : ["Drop","Keep"] };
+dr_DiceFilter.Drop = function(dir,value) { var $x = ["Drop",0,dir,value]; $x.__enum__ = dr_DiceFilter; return $x; };
+dr_DiceFilter.Keep = function(dir,value) { var $x = ["Keep",1,dir,value]; $x.__enum__ = dr_DiceFilter; return $x; };
+var dr_DiceFunctor = { __ename__ : ["dr","DiceFunctor"], __constructs__ : ["Explode","Reroll"] };
+dr_DiceFunctor.Explode = function(times,range) { var $x = ["Explode",0,times,range]; $x.__enum__ = dr_DiceFunctor; return $x; };
+dr_DiceFunctor.Reroll = function(times,range) { var $x = ["Reroll",1,times,range]; $x.__enum__ = dr_DiceFunctor; return $x; };
 var dr_Times = { __ename__ : ["dr","Times"], __constructs__ : ["Always","UpTo"] };
 dr_Times.Always = ["Always",0];
 dr_Times.Always.__enum__ = dr_Times;
@@ -2994,25 +3095,6 @@ dr_Range.Between = function(minInclusive,maxInclusive) { var $x = ["Between",1,m
 dr_Range.ValueOrMore = function(value) { var $x = ["ValueOrMore",2,value]; $x.__enum__ = dr_Range; return $x; };
 dr_Range.ValueOrLess = function(value) { var $x = ["ValueOrLess",3,value]; $x.__enum__ = dr_Range; return $x; };
 dr_Range.Composite = function(ranges) { var $x = ["Composite",4,ranges]; $x.__enum__ = dr_Range; return $x; };
-var dr_BasicRoll = { __ename__ : ["dr","BasicRoll"], __constructs__ : ["One","Bag","Repeat","Literal"] };
-dr_BasicRoll.One = function(die) { var $x = ["One",0,die]; $x.__enum__ = dr_BasicRoll; return $x; };
-dr_BasicRoll.Bag = function(list,meta) { var $x = ["Bag",1,list,meta]; $x.__enum__ = dr_BasicRoll; return $x; };
-dr_BasicRoll.Repeat = function(times,die,meta) { var $x = ["Repeat",2,times,die,meta]; $x.__enum__ = dr_BasicRoll; return $x; };
-dr_BasicRoll.Literal = function(value,meta) { var $x = ["Literal",3,value,meta]; $x.__enum__ = dr_BasicRoll; return $x; };
-var dr_DiceBag = { __ename__ : ["dr","DiceBag"], __constructs__ : ["DiceSet","RepeatDie"] };
-dr_DiceBag.DiceSet = function(dice) { var $x = ["DiceSet",0,dice]; $x.__enum__ = dr_DiceBag; return $x; };
-dr_DiceBag.RepeatDie = function(times,die) { var $x = ["RepeatDie",1,times,die]; $x.__enum__ = dr_DiceBag; return $x; };
-var dr_ExpressionExtractor = { __ename__ : ["dr","ExpressionExtractor"], __constructs__ : ["Sum","Average","Min","Max","Drop","Keep"] };
-dr_ExpressionExtractor.Sum = ["Sum",0];
-dr_ExpressionExtractor.Sum.__enum__ = dr_ExpressionExtractor;
-dr_ExpressionExtractor.Average = ["Average",1];
-dr_ExpressionExtractor.Average.__enum__ = dr_ExpressionExtractor;
-dr_ExpressionExtractor.Min = ["Min",2];
-dr_ExpressionExtractor.Min.__enum__ = dr_ExpressionExtractor;
-dr_ExpressionExtractor.Max = ["Max",3];
-dr_ExpressionExtractor.Max.__enum__ = dr_ExpressionExtractor;
-dr_ExpressionExtractor.Drop = function(dir,value) { var $x = ["Drop",4,dir,value]; $x.__enum__ = dr_ExpressionExtractor; return $x; };
-dr_ExpressionExtractor.Keep = function(dir,value) { var $x = ["Keep",5,dir,value]; $x.__enum__ = dr_ExpressionExtractor; return $x; };
 var dr_LowHigh = { __ename__ : ["dr","LowHigh"], __constructs__ : ["Low","High"] };
 dr_LowHigh.Low = ["Low",0];
 dr_LowHigh.Low.__enum__ = dr_LowHigh;
@@ -3030,213 +3112,6 @@ dr_DiceBinOp.Multiplication.__enum__ = dr_DiceBinOp;
 var dr_DiceUnOp = { __ename__ : ["dr","DiceUnOp"], __constructs__ : ["Negate"] };
 dr_DiceUnOp.Negate = ["Negate",0];
 dr_DiceUnOp.Negate.__enum__ = dr_DiceUnOp;
-var dr_DiceExpressionExtensions = function() { };
-dr_DiceExpressionExtensions.__name__ = ["dr","DiceExpressionExtensions"];
-dr_DiceExpressionExtensions.toString = function(expr) {
-	switch(expr[1]) {
-	case 0:
-		var roll = expr[2];
-		return dr_DiceExpressionExtensions.rollToString(roll);
-	case 1:
-		var extractor = expr[3];
-		var dice = expr[2];
-		return dr_DiceExpressionExtensions.diceBagToString(dice,extractor);
-	case 2:
-		var extractor1 = expr[3];
-		var exprs = expr[2];
-		return dr_DiceExpressionExtensions.expressionsToString(exprs,extractor1);
-	case 3:
-		var b = expr[4];
-		var a = expr[3];
-		var op = expr[2];
-		var tmp = dr_DiceExpressionExtensions.toString(a) + " ";
-		var tmp1;
-		switch(op[1]) {
-		case 0:
-			tmp1 = "+";
-			break;
-		case 1:
-			tmp1 = "-";
-			break;
-		case 2:
-			tmp1 = "/";
-			break;
-		case 3:
-			tmp1 = "*";
-			break;
-		}
-		return tmp + tmp1 + " " + dr_DiceExpressionExtensions.toString(b);
-	case 4:
-		var a1 = expr[3];
-		return "-" + dr_DiceExpressionExtensions.toString(a1);
-	}
-};
-dr_DiceExpressionExtensions.rollToString = function(roll) {
-	switch(roll[1]) {
-	case 0:
-		var die = roll[2];
-		return die.toString();
-	case 1:
-		var list = roll[2];
-		return "{" + list.map(dr_DiceExpressionExtensions.rollToString).join(",") + "}";
-	case 2:
-		var die1 = roll[3];
-		var time = roll[2];
-		return "" + time + die1.toString();
-	case 3:
-		var value = roll[2];
-		return "" + value;
-	}
-};
-dr_DiceExpressionExtensions.diceBagToString = function(group,extractor) {
-	var tmp;
-	switch(group[1]) {
-	case 0:
-		var dice = group[2];
-		var s = dice.map(function(_) {
-			return _.toString();
-		}).join(",");
-		tmp = "{" + s + "}";
-		break;
-	case 1:
-		var die = group[3];
-		var time = group[2];
-		tmp = "" + time + die.toString();
-		break;
-	}
-	var tmp1;
-	switch(extractor[1]) {
-	case 0:
-		var range = extractor[3];
-		var times = extractor[2];
-		tmp1 = [" explode"].concat([dr_DiceExpressionExtensions.timesToString(times)]).concat([dr_DiceExpressionExtensions.rangeToString(range)]).filter(thx_Strings.hasContent).join(" ");
-		break;
-	case 1:
-		var range1 = extractor[3];
-		var times1 = extractor[2];
-		tmp1 = [" reroll"].concat([dr_DiceExpressionExtensions.timesToString(times1)]).concat([dr_DiceExpressionExtensions.rangeToString(range1)]).filter(thx_Strings.hasContent).join(" ");
-		break;
-	}
-	return tmp + tmp1;
-};
-dr_DiceExpressionExtensions.timesToString = function(times) {
-	switch(times[1]) {
-	case 0:
-		return "";
-	case 1:
-		switch(times[2]) {
-		case 1:
-			return "once";
-		case 2:
-			return "twice";
-		default:
-			var n = times[2];
-			return "" + n + " times";
-		}
-		break;
-	}
-};
-dr_DiceExpressionExtensions.rangeToString = function(range) {
-	switch(range[1]) {
-	case 0:
-		var v = range[2];
-		return "on " + v;
-	case 1:
-		var b = range[3];
-		var a = range[2];
-		return "" + a + "..." + b;
-	case 2:
-		var v1 = range[2];
-		return "on " + v1 + " or more";
-	case 3:
-		var v2 = range[2];
-		return "on " + v2 + " or less";
-	case 4:
-		var arr = range[2];
-		return "(" + arr.map(dr_DiceExpressionExtensions.rangeToString).join(",") + ")";
-	}
-};
-dr_DiceExpressionExtensions.expressionsToString = function(exprs,extractor) {
-	return (exprs.length == 1 && !dr_DiceExpressionExtensions.needsBraces(exprs[0]) ? exprs.map(dr_DiceExpressionExtensions.toString).join(",") : "{" + exprs.map(dr_DiceExpressionExtensions.toString).join(",") + "}") + dr_DiceExpressionExtensions.expressionExtractorToString(extractor);
-};
-dr_DiceExpressionExtensions.expressionExtractorToString = function(extractor) {
-	switch(extractor[1]) {
-	case 0:
-		return "";
-	case 1:
-		return " average";
-	case 2:
-		return " min";
-	case 3:
-		return " max";
-	case 4:
-		switch(extractor[2][1]) {
-		case 0:
-			var drop = extractor[3];
-			return " drop " + drop;
-		case 1:
-			var drop1 = extractor[3];
-			return " drop highest " + drop1;
-		}
-		break;
-	case 5:
-		switch(extractor[2][1]) {
-		case 0:
-			var drop2 = extractor[3];
-			return " keep lowest " + drop2;
-		case 1:
-			var drop3 = extractor[3];
-			return " keep " + drop3;
-		}
-		break;
-	}
-};
-dr_DiceExpressionExtensions.needsBraces = function(expr) {
-	switch(expr[1]) {
-	case 0:
-		return false;
-	case 1:
-		return false;
-	case 2:
-		return false;
-	case 3:
-		return true;
-	case 4:
-		return false;
-	}
-};
-dr_DiceExpressionExtensions.getMeta = function(expr) {
-	switch(expr[1]) {
-	case 0:
-		switch(expr[2][1]) {
-		case 0:
-			var die = expr[2][2];
-			return die.meta;
-		case 1:
-			var meta = expr[2][3];
-			return meta;
-		case 2:
-			var meta1 = expr[2][4];
-			return meta1;
-		case 3:
-			var meta2 = expr[2][3];
-			return meta2;
-		}
-		break;
-	case 1:
-		var meta3 = expr[4];
-		return meta3;
-	case 2:
-		var meta4 = expr[4];
-		return meta4;
-	case 3:
-		var meta5 = expr[5];
-		return meta5;
-	case 4:
-		var meta6 = expr[4];
-		return meta6;
-	}
-};
 var parsihax_Parser = function() { };
 parsihax_Parser.__name__ = ["parsihax","Parser"];
 parsihax_Parser.index = function() {
@@ -3956,46 +3831,11 @@ js_Boot.__isNativeObj = function(o) {
 js_Boot.__resolveNativeClass = function(name) {
 	return $global[name];
 };
-var thx_Unit = { __ename__ : ["thx","Unit"], __constructs__ : ["unit"] };
-thx_Unit.unit = ["unit",0];
-thx_Unit.unit.__enum__ = thx_Unit;
-var dr_Die = function(sides,meta) {
-	this.sides = sides;
-	this.meta = meta;
-};
-dr_Die.__name__ = ["dr","Die"];
-dr_Die.withSides = function(sides) {
-	return new dr_Die(sides,thx_Unit.unit);
-};
-dr_Die.prototype = {
-	sides: null
-	,meta: null
-	,roll: function(random) {
-		return new dr_Die(this.sides,random(this.sides));
-	}
-	,toString: function() {
-		return "d" + (this.sides == 100 ? "%" : "" + this.sides);
-	}
-	,toStringWithMeta: function(f) {
-		return "d" + this.sides + " [" + f(this.meta) + "]";
-	}
-	,__class__: dr_Die
-};
-var dr_ExplodeReroll = { __ename__ : ["dr","ExplodeReroll"], __constructs__ : ["Explode","Reroll"] };
-dr_ExplodeReroll.Explode = ["Explode",0];
-dr_ExplodeReroll.Explode.__enum__ = dr_ExplodeReroll;
-dr_ExplodeReroll.Reroll = ["Reroll",1];
-dr_ExplodeReroll.Reroll.__enum__ = dr_ExplodeReroll;
 var dr_MoreLess = { __ename__ : ["dr","MoreLess"], __constructs__ : ["More","Less"] };
 dr_MoreLess.More = ["More",0];
 dr_MoreLess.More.__enum__ = dr_MoreLess;
 dr_MoreLess.Less = ["Less",1];
 dr_MoreLess.Less.__enum__ = dr_MoreLess;
-var dr_DropKeep = { __ename__ : ["dr","DropKeep"], __constructs__ : ["Drop","Keep"] };
-dr_DropKeep.Drop = ["Drop",0];
-dr_DropKeep.Drop.__enum__ = dr_DropKeep;
-dr_DropKeep.Keep = ["Keep",1];
-dr_DropKeep.Keep.__enum__ = dr_DropKeep;
 var thx_Arrays = function() { };
 thx_Arrays.__name__ = ["thx","Arrays"];
 thx_Arrays.append = function(array,element) {
@@ -5186,14 +5026,36 @@ dr_DiceParser.unsafeParse = function(s) {
 		return v;
 	}
 };
-dr_DiceParser.SKIP_WS = function(parser) {
-	return parsihax_Parser.skip(parser,dr_DiceParser.WS);
+dr_DiceParser.dirValue = function(prefix,alt) {
+	return parsihax_Parser.then(parsihax_Parser.then(prefix,dr_DiceParser.OWS),parsihax_Parser.alt([parsihax_Parser.flatMap(dr_DiceParser.lowOrHigh,function(lh) {
+		return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.map(dr_DiceParser.positive,function(value) {
+			return { dir : lh, value : value};
+		}));
+	}),parsihax_Parser.map(dr_DiceParser.positive,function(value1) {
+		return { dir : alt, value : value1};
+	})]));
 };
-dr_DiceParser.SKIP_OWS = function(parser) {
-	return parsihax_Parser.skip(parser,dr_DiceParser.OWS);
+dr_DiceParser.diceFunctorConst = function(p,f) {
+	return parsihax_Parser.alt([parsihax_Parser.then(parsihax_Parser.then(parsihax_Parser.string(p),dr_DiceParser.OWS),parsihax_Parser.flatMap(dr_DiceParser.functorTimes,function(times) {
+		return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.map(dr_DiceParser.range,function(range) {
+			return f(times,range);
+		}));
+	}))]);
 };
-dr_DiceParser.toDie = function(sides) {
-	return new dr_Die(sides,thx_Unit.unit);
+dr_DiceParser.diceReduce = function(reduceable) {
+	var _e = reduceable;
+	return parsihax_Parser.or(parsihax_Parser.flatMap(reduceable,function(red) {
+		return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.map(parsihax_Parser.alt([parsihax_Parser.result(dr_DiceParser.SUM,dr_DiceReducer.Sum),parsihax_Parser.result(dr_DiceParser.AVERAGE,dr_DiceReducer.Average),parsihax_Parser.result(dr_DiceParser.MIN,dr_DiceReducer.Min),parsihax_Parser.result(dr_DiceParser.MAX,dr_DiceReducer.Max)]),function(reducer) {
+			return dr_DiceExpression.DiceReduce(red,reducer);
+		}));
+	}),(function(fun) {
+		return parsihax_Parser.map(_e,fun);
+	})(function(_) {
+		return dr_DiceExpression.DiceReduce(_,dr_DiceReducer.Sum);
+	}));
+};
+dr_DiceParser.commaSeparated = function(element) {
+	return parsihax_Parser.then(parsihax_Parser.then(dr_DiceParser.OPEN_SET_BRACKET,dr_DiceParser.OWS),parsihax_Parser.skip(parsihax_Parser.or(parsihax_Parser.sepBy1(element,parsihax_Parser.then(parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.COMMA),dr_DiceParser.OWS)),parsihax_Parser.succeed([])),parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.CLOSE_SET_BRACKET)));
 };
 var dr_Discrete = function(weights,values) {
 	this.weightedValues = [];
@@ -5227,6 +5089,33 @@ dr_Discrete.die = function(n) {
 		_g11.push(i1 + 1);
 	}
 	return new dr_Discrete(tmp,_g11);
+};
+dr_Discrete.apply = function(operands,operator) {
+	var weightedValues = operands.map(function(discrete) {
+		return discrete.weightedValues;
+	});
+	var bl = new dr_BoxLattice(weightedValues,haxe_ds_Either.Left(0));
+	var f = function(headers) {
+		var headervalues = [];
+		var product = 1;
+		var _g1 = 0;
+		var _g = headers.length;
+		while(_g1 < _g) {
+			var d = _g1++;
+			product *= headers[d]._0;
+			headervalues[d] = headers[d]._1;
+		}
+		var this1 = { _0 : product, _1 : operator(headervalues)};
+		return this1;
+	};
+	var x = bl.mapheaderstocells(f);
+	var weights = x.cells.map(function(pair) {
+		return pair._0;
+	});
+	var values = x.cells.map(function(pair1) {
+		return pair1._1;
+	});
+	return new dr_Discrete(weights,values);
 };
 dr_Discrete.compare = function(x,y) {
 	if(x._1 == y._1) {
@@ -5318,38 +5207,9 @@ dr_Discrete.prototype = {
 		return new dr_Discrete(this.weights(),this.values().map(f));
 	}
 	,binary: function(other,f) {
-		var m = this.weightedValues.length * other.weightedValues.length;
-		var _g = [];
-		var _g2 = 0;
-		var _g1 = m;
-		while(_g2 < _g1) {
-			var i = _g2++;
-			_g.push(0);
-		}
-		var weights = _g;
-		var _g11 = [];
-		var _g3 = 0;
-		var _g21 = m;
-		while(_g3 < _g21) {
-			var i1 = _g3++;
-			_g11.push(0.0);
-		}
-		var values = _g11;
-		var k = 0;
-		var _g31 = 0;
-		var _g22 = this.weightedValues.length;
-		while(_g31 < _g22) {
-			var i2 = _g31++;
-			var _g5 = 0;
-			var _g4 = other.weightedValues.length;
-			while(_g5 < _g4) {
-				var j = _g5++;
-				weights[k] = this.weightedValues[i2]._0 * other.weightedValues[j]._0;
-				values[k] = f(this.weightedValues[i2]._1,other.weightedValues[j]._1);
-				++k;
-			}
-		}
-		return new dr_Discrete(weights,values);
+		return dr_Discrete.apply([this,other],function(a) {
+			return f(a[0],a[1]);
+		});
 	}
 	,alwaysResample: function(x) {
 		var weights = this.weights();
@@ -5418,7 +5278,7 @@ dr_DiscreteAlgebra.prototype = {
 	}
 	,divide: function(a,b) {
 		return a.binary(b,function(a1,b1) {
-			return a1 / b1 | 0;
+			return Math.ceil(a1 / b1);
 		});
 	}
 	,compare: function(a,b) {
@@ -5435,6 +5295,44 @@ dr_DiscreteAlgebra.prototype = {
 	}
 	,__class__: dr_DiscreteAlgebra
 };
+var dr_RollResult = { __ename__ : ["dr","RollResult"], __constructs__ : ["OneResult","LiteralResult","DiceReduceResult","BinaryOpResult","UnaryOpResult"] };
+dr_RollResult.OneResult = function(die) { var $x = ["OneResult",0,die]; $x.__enum__ = dr_RollResult; return $x; };
+dr_RollResult.LiteralResult = function(value,result) { var $x = ["LiteralResult",1,value,result]; $x.__enum__ = dr_RollResult; return $x; };
+dr_RollResult.DiceReduceResult = function(reduceables,reducer,result) { var $x = ["DiceReduceResult",2,reduceables,reducer,result]; $x.__enum__ = dr_RollResult; return $x; };
+dr_RollResult.BinaryOpResult = function(op,a,b,result) { var $x = ["BinaryOpResult",3,op,a,b,result]; $x.__enum__ = dr_RollResult; return $x; };
+dr_RollResult.UnaryOpResult = function(op,a,result) { var $x = ["UnaryOpResult",4,op,a,result]; $x.__enum__ = dr_RollResult; return $x; };
+var dr_DiceReduceableResult = { __ename__ : ["dr","DiceReduceableResult"], __constructs__ : ["DiceExpressionsResult","DiceFilterableResult","DiceMapeableResult"] };
+dr_DiceReduceableResult.DiceExpressionsResult = function(rolls) { var $x = ["DiceExpressionsResult",0,rolls]; $x.__enum__ = dr_DiceReduceableResult; return $x; };
+dr_DiceReduceableResult.DiceFilterableResult = function(rolls,filter) { var $x = ["DiceFilterableResult",1,rolls,filter]; $x.__enum__ = dr_DiceReduceableResult; return $x; };
+dr_DiceReduceableResult.DiceMapeableResult = function(rolls,functor) { var $x = ["DiceMapeableResult",2,rolls,functor]; $x.__enum__ = dr_DiceReduceableResult; return $x; };
+var dr_DiceResultMapped = { __ename__ : ["dr","DiceResultMapped"], __constructs__ : ["Rerolled","Exploded","Normal"] };
+dr_DiceResultMapped.Rerolled = function(rerolls) { var $x = ["Rerolled",0,rerolls]; $x.__enum__ = dr_DiceResultMapped; return $x; };
+dr_DiceResultMapped.Exploded = function(explosions) { var $x = ["Exploded",1,explosions]; $x.__enum__ = dr_DiceResultMapped; return $x; };
+dr_DiceResultMapped.Normal = function(roll) { var $x = ["Normal",2,roll]; $x.__enum__ = dr_DiceResultMapped; return $x; };
+var dr_DieResultFilter = { __ename__ : ["dr","DieResultFilter"], __constructs__ : ["Keep","Discard"] };
+dr_DieResultFilter.Keep = function(roll) { var $x = ["Keep",0,roll]; $x.__enum__ = dr_DieResultFilter; return $x; };
+dr_DieResultFilter.Discard = function(roll) { var $x = ["Discard",1,roll]; $x.__enum__ = dr_DieResultFilter; return $x; };
+var dr_RollResultExtensions = function() { };
+dr_RollResultExtensions.__name__ = ["dr","RollResultExtensions"];
+dr_RollResultExtensions.getResult = function(expr) {
+	switch(expr[1]) {
+	case 0:
+		var die = expr[2];
+		return die.result;
+	case 1:
+		var result = expr[3];
+		return result;
+	case 2:
+		var result1 = expr[4];
+		return result1;
+	case 3:
+		var result2 = expr[5];
+		return result2;
+	case 4:
+		var result3 = expr[4];
+		return result3;
+	}
+};
 var dr_Roller = function(algebra) {
 	this.algebra = algebra;
 };
@@ -5448,26 +5346,60 @@ dr_Roller.discrete = function() {
 dr_Roller.prototype = {
 	algebra: null
 	,roll: function(expr) {
+		var _gthis = this;
 		switch(expr[1]) {
 		case 0:
-			var roll = expr[2];
-			return dr_DiceExpression.Roll(this.basicRoll(roll));
+			var sides = expr[2];
+			return dr_RollResult.OneResult({ result : this.algebra.die(sides), sides : sides});
 		case 1:
-			var meta = expr[4];
-			var extractor = expr[3];
-			var dice = expr[2];
-			var rolls = this.extractRolls(dice,extractor);
-			var result = this.extractResult(rolls,extractor);
-			return dr_DiceExpression.RollBag(dr_DiceBag.DiceSet(rolls),extractor,result);
+			var value = expr[2];
+			return dr_RollResult.LiteralResult(value,this.algebra.ofLiteral(value));
 		case 2:
-			var meta1 = expr[4];
-			var extractor1 = expr[3];
-			var exprs = expr[2];
-			var exaluatedExpressions = exprs.map($bind(this,this.roll));
-			var result1 = this.extractExpressionResults(exaluatedExpressions,extractor1);
-			return dr_DiceExpression.RollExpressions(exaluatedExpressions,extractor1,result1);
+			switch(expr[2][1]) {
+			case 0:
+				var reducer = expr[3];
+				var exprs = expr[2][2];
+				var rolls = exprs.map($bind(this,this.roll));
+				var result = this.reduceRolls(rolls,reducer);
+				return dr_RollResult.DiceReduceResult(dr_DiceReduceableResult.DiceExpressionsResult(rolls),reducer,result);
+			case 1:
+				switch(expr[2][2][1]) {
+				case 0:
+					var reducer1 = expr[3];
+					var filter = expr[2][3];
+					var dice = expr[2][2][2];
+					var rolls1 = dice.map(function(_) {
+						return _gthis.roll(dr_DiceExpression.Die(_));
+					});
+					var filteredRolls = this.filterRolls(rolls1,filter);
+					var keepFilteredRolls = this.keepFilteredRolls(filteredRolls);
+					var result1 = this.reduceRolls(keepFilteredRolls,reducer1);
+					return dr_RollResult.DiceReduceResult(dr_DiceReduceableResult.DiceFilterableResult(filteredRolls,filter),reducer1,result1);
+				case 1:
+					var reducer2 = expr[3];
+					var filter1 = expr[2][3];
+					var exprs1 = expr[2][2][2];
+					var rolls2 = exprs1.map($bind(this,this.roll));
+					var filteredRolls1 = this.filterRolls(rolls2,filter1);
+					var keepFilteredRolls1 = this.keepFilteredRolls(filteredRolls1);
+					var result2 = this.reduceRolls(keepFilteredRolls1,reducer2);
+					return dr_RollResult.DiceReduceResult(dr_DiceReduceableResult.DiceFilterableResult(filteredRolls1,filter1),reducer2,result2);
+				}
+				break;
+			case 2:
+				var reducer3 = expr[3];
+				var functor = expr[2][3];
+				var dice1 = expr[2][2];
+				var rolls3 = dice1.map(function(_1) {
+					return { result : _gthis.algebra.die(_1), sides : _1};
+				});
+				var mapped = this.mapRolls(rolls3,functor);
+				var keepMappedRolls = this.keepMappedRolls(mapped);
+				var result3 = this.reduceRolls(keepMappedRolls.map(dr_RollResult.OneResult),reducer3);
+				return dr_RollResult.DiceReduceResult(dr_DiceReduceableResult.DiceMapeableResult(mapped,functor),reducer3,result3);
+			}
+			break;
 		case 3:
-			var meta2 = expr[5];
 			var b = expr[4];
 			var a = expr[3];
 			var op = expr[2];
@@ -5475,253 +5407,218 @@ dr_Roller.prototype = {
 			var rb = this.roll(b);
 			switch(op[1]) {
 			case 0:
-				return dr_DiceExpression.BinaryOp(dr_DiceBinOp.Sum,ra,rb,this.algebra.sum(dr_DiceExpressionExtensions.getMeta(ra),dr_DiceExpressionExtensions.getMeta(rb)));
+				return dr_RollResult.BinaryOpResult(dr_DiceBinOp.Sum,ra,rb,this.algebra.sum(dr_RollResultExtensions.getResult(ra),dr_RollResultExtensions.getResult(rb)));
 			case 1:
-				return dr_DiceExpression.BinaryOp(dr_DiceBinOp.Difference,ra,rb,this.algebra.subtract(dr_DiceExpressionExtensions.getMeta(ra),dr_DiceExpressionExtensions.getMeta(rb)));
+				return dr_RollResult.BinaryOpResult(dr_DiceBinOp.Difference,ra,rb,this.algebra.subtract(dr_RollResultExtensions.getResult(ra),dr_RollResultExtensions.getResult(rb)));
 			case 2:
-				return dr_DiceExpression.BinaryOp(dr_DiceBinOp.Difference,ra,rb,this.algebra.divide(dr_DiceExpressionExtensions.getMeta(ra),dr_DiceExpressionExtensions.getMeta(rb)));
+				return dr_RollResult.BinaryOpResult(dr_DiceBinOp.Division,ra,rb,this.algebra.divide(dr_RollResultExtensions.getResult(ra),dr_RollResultExtensions.getResult(rb)));
 			case 3:
-				return dr_DiceExpression.BinaryOp(dr_DiceBinOp.Difference,ra,rb,this.algebra.multiply(dr_DiceExpressionExtensions.getMeta(ra),dr_DiceExpressionExtensions.getMeta(rb)));
+				return dr_RollResult.BinaryOpResult(dr_DiceBinOp.Multiplication,ra,rb,this.algebra.multiply(dr_RollResultExtensions.getResult(ra),dr_RollResultExtensions.getResult(rb)));
 			}
 			break;
 		case 4:
 			var a1 = expr[3];
 			var ra1 = this.roll(a1);
-			return dr_DiceExpression.UnaryOp(dr_DiceUnOp.Negate,ra1,this.algebra.negate(dr_DiceExpressionExtensions.getMeta(ra1)));
+			return dr_RollResult.UnaryOpResult(dr_DiceUnOp.Negate,ra1,this.algebra.negate(dr_RollResultExtensions.getResult(ra1)));
 		}
 	}
-	,basicRoll: function(roll) {
-		switch(roll[1]) {
+	,mapRolls: function(rolls,functor) {
+		switch(functor[1]) {
 		case 0:
-			var die = roll[2];
-			return dr_BasicRoll.One(die.roll(($_=this.algebra,$bind($_,$_.die))));
-		case 1:
-			var list = roll[2];
-			var rolls = list.map($bind(this,this.basicRoll));
-			var result = this.sumBasicRoll(rolls);
-			return dr_BasicRoll.Bag(rolls,result);
-		case 2:
-			var die1 = roll[3];
-			var times = roll[2];
-			var _g = [];
-			var _g2 = 0;
-			var _g1 = times;
-			while(_g2 < _g1) {
-				var i = _g2++;
-				_g.push(die1.roll(($_=this.algebra,$bind($_,$_.die))));
-			}
-			var rolls1 = _g;
-			var result1 = this.sumDice(rolls1);
-			return dr_BasicRoll.Bag(rolls1.map(dr_BasicRoll.One),result1);
-		case 3:
-			var value = roll[2];
-			return dr_BasicRoll.Literal(value,this.algebra.ofLiteral(value));
-		}
-	}
-	,extractRolls: function(dice,extractor) {
-		switch(extractor[1]) {
-		case 0:
-			var range = extractor[3];
-			var times = extractor[2];
-			return this.explodeRolls(this.diceBagToArrayOfDice(dice),times,range);
-		case 1:
-			var range1 = extractor[3];
-			var times1 = extractor[2];
-			return this.rerollRolls(this.diceBagToArrayOfDice(dice),times1,range1);
-		}
-	}
-	,sumDice: function(rolls) {
-		var _gthis = this;
-		return thx_Arrays.reduce(rolls,function(acc,roll) {
-			return _gthis.algebra.sum(acc,roll.meta);
-		},this.algebra.zero);
-	}
-	,sumBasicRoll: function(rolls) {
-		var _gthis = this;
-		return thx_Arrays.reduce(rolls,function(acc,roll) {
-			var tmp;
-			switch(roll[1]) {
+			switch(functor[2][1]) {
 			case 0:
-				var die = roll[2];
-				tmp = die.meta;
-				break;
+				var range = functor[3];
+				var f = $bind(this,this.explodeRoll);
+				var a3 = range;
+				return rolls.map(function(a1) {
+					return f(a1,-1,a3);
+				});
 			case 1:
-				var meta = roll[3];
-				tmp = meta;
-				break;
-			case 2:
-				var meta1 = roll[4];
-				tmp = meta1;
-				break;
-			case 3:
-				var meta2 = roll[3];
-				tmp = meta2;
-				break;
-			}
-			return _gthis.algebra.sum(acc,tmp);
-		},this.algebra.zero);
-	}
-	,sumResults: function(rolls) {
-		return thx_Arrays.reduce(rolls.map(function(_) {
-			return dr_DiceExpressionExtensions.getMeta(_);
-		}),($_=this.algebra,$bind($_,$_.sum)),this.algebra.zero);
-	}
-	,extractResult: function(rolls,extractor) {
-		switch(extractor[1]) {
-		case 0:
-			var range = extractor[3];
-			var times = extractor[2];
-			return thx_Arrays.reduce(rolls.map(function(_) {
-				return _.meta;
-			}),($_=this.algebra,$bind($_,$_.sum)),this.algebra.zero);
-		case 1:
-			var range1 = extractor[3];
-			var times1 = extractor[2];
-			return thx_Arrays.reduce(rolls.map(function(_1) {
-				return _1.meta;
-			}),($_=this.algebra,$bind($_,$_.sum)),this.algebra.zero);
-		}
-	}
-	,extractExpressionResults: function(exprs,extractor) {
-		exprs = this.flattenExprs(exprs);
-		switch(extractor[1]) {
-		case 0:
-			return thx_Arrays.reduce(exprs.map(function(_) {
-				return dr_DiceExpressionExtensions.getMeta(_);
-			}),($_=this.algebra,$bind($_,$_.sum)),this.algebra.zero);
-		case 1:
-			return this.algebra.average(exprs.map(dr_DiceExpressionExtensions.getMeta));
-		case 2:
-			return thx_Arrays.order(exprs.map(dr_DiceExpressionExtensions.getMeta),($_=this.algebra,$bind($_,$_.compare))).shift();
-		case 3:
-			return thx_Arrays.order(exprs.map(dr_DiceExpressionExtensions.getMeta),($_=this.algebra,$bind($_,$_.compare))).pop();
-		case 4:
-			var value = extractor[3];
-			var dir = extractor[2];
-			switch(dir[1]) {
-			case 0:
-				return thx_Arrays.reduce(thx_Arrays.order(exprs.map(dr_DiceExpressionExtensions.getMeta),($_=this.algebra,$bind($_,$_.compare))).slice(value),($_=this.algebra,$bind($_,$_.sum)),this.algebra.zero);
-			case 1:
-				return thx_Arrays.reduce(thx_Arrays.order(exprs.map(dr_DiceExpressionExtensions.getMeta),($_=this.algebra,$bind($_,$_.compare))).slice(0,-value),($_=this.algebra,$bind($_,$_.sum)),this.algebra.zero);
+				var range1 = functor[3];
+				var times = functor[2][2];
+				var f1 = $bind(this,this.explodeRoll);
+				var a2 = times;
+				var a31 = range1;
+				return rolls.map(function(a11) {
+					return f1(a11,a2,a31);
+				});
 			}
 			break;
-		case 5:
-			var value1 = extractor[3];
-			var dir1 = extractor[2];
-			switch(dir1[1]) {
+		case 1:
+			switch(functor[2][1]) {
 			case 0:
-				return thx_Arrays.reduce(thx_Arrays.order(exprs.map(dr_DiceExpressionExtensions.getMeta),($_=this.algebra,$bind($_,$_.compare))).slice(0,value1),($_=this.algebra,$bind($_,$_.sum)),this.algebra.zero);
+				var range2 = functor[3];
+				var f2 = $bind(this,this.rerollRoll);
+				var a32 = range2;
+				return rolls.map(function(a12) {
+					return f2(a12,-1,a32);
+				});
 			case 1:
-				return thx_Arrays.reduce(thx_Arrays.order(exprs.map(dr_DiceExpressionExtensions.getMeta),($_=this.algebra,$bind($_,$_.compare))).slice(-value1),($_=this.algebra,$bind($_,$_.sum)),this.algebra.zero);
+				var range3 = functor[3];
+				var times1 = functor[2][2];
+				var f3 = $bind(this,this.rerollRoll);
+				var a21 = times1;
+				var a33 = range3;
+				return rolls.map(function(a13) {
+					return f3(a13,a21,a33);
+				});
 			}
 			break;
 		}
 	}
-	,flattenExprs: function(exprs) {
-		if(exprs.length == 1) {
-			var _g = exprs[0];
-			switch(_g[1]) {
-			case 0:
-				if(_g[2][1] == 1) {
-					var rolls = _g[2][2];
-					return rolls.map(function(_) {
-						return dr_DiceExpression.Roll(_);
-					});
-				} else {
-					return exprs;
-				}
-				break;
-			case 2:
-				var exprs1 = _g[2];
-				return exprs1;
-			default:
-				return exprs;
-			}
+	,explodeRoll: function(roll,times,range) {
+		var acc = this.rollRange(roll,times,range);
+		if(acc.length == 1) {
+			return dr_DiceResultMapped.Normal(acc[0]);
 		} else {
-			return exprs;
+			return dr_DiceResultMapped.Exploded(acc);
 		}
 	}
-	,diceBagToArrayOfDice: function(group) {
-		switch(group[1]) {
-		case 0:
-			var dice = group[2];
-			return dice;
-		case 1:
-			var die = group[3];
-			var times = group[2];
-			var _g = [];
-			var _g2 = 0;
-			var _g1 = times;
-			while(_g2 < _g1) {
-				var i = _g2++;
-				_g.push(die);
-			}
-			return _g;
+	,rerollRoll: function(roll,times,range) {
+		var acc = this.rollRange(roll,times,range);
+		if(acc.length == 1) {
+			return dr_DiceResultMapped.Normal(acc[0]);
+		} else {
+			return dr_DiceResultMapped.Rerolled(acc);
 		}
 	}
-	,explodeRolls: function(dice,times,range) {
-		switch(times[1]) {
-		case 0:
-			return this.explodeRollsTimes(dice,1000,range);
-		case 1:
-			var value = times[2];
-			return this.explodeRollsTimes(dice,value,range);
+	,rollRange: function(roll,times,range) {
+		var acc = [roll];
+		var curr = roll;
+		while(times != 0 && this.matchRange(curr.result,range)) {
+			curr = { result : this.algebra.die(curr.sides), sides : curr.sides};
+			acc.push(curr);
+			--times;
 		}
+		return acc;
 	}
-	,explodeRollsTimes: function(dice,times,range) {
-		var _gthis = this;
-		var rolls = dice.map(function(_) {
-			return _.roll(($_=_gthis.algebra,$bind($_,$_.die)));
-		});
-		if(times == 0 || rolls.length == 0) {
-			return rolls;
-		}
-		var explosives = rolls.filter(function(_1) {
-			return _gthis.compareToRange(_1.meta,range);
-		}).map(function(_2) {
-			return new dr_Die(_2.sides,thx_Unit.unit);
-		});
-		return rolls.concat(this.explodeRollsTimes(explosives,times - 1,range));
-	}
-	,compareToRange: function(v,range) {
+	,matchRange: function(r,range) {
 		var _gthis = this;
 		switch(range[1]) {
 		case 0:
 			var value = range[2];
-			return this.algebra.compareToSides(v,value) == 0;
+			return this.algebra.compareToSides(r,value) == 0;
 		case 1:
 			var maxInclusive = range[3];
 			var minInclusive = range[2];
-			if(this.algebra.compareToSides(v,minInclusive) >= 0) {
-				return this.algebra.compareToSides(v,maxInclusive) <= 0;
+			if(this.algebra.compareToSides(r,minInclusive) >= 0) {
+				return this.algebra.compareToSides(r,maxInclusive) <= 0;
 			} else {
 				return false;
 			}
 			break;
 		case 2:
 			var value1 = range[2];
-			return this.algebra.compareToSides(v,value1) >= 0;
+			return this.algebra.compareToSides(r,value1) >= 0;
 		case 3:
 			var value2 = range[2];
-			return this.algebra.compareToSides(v,value2) <= 0;
+			return this.algebra.compareToSides(r,value2) <= 0;
 		case 4:
 			var ranges = range[2];
-			return thx_Arrays.reduce(ranges,function(acc,range1) {
+			return thx_Arrays.reduce(ranges,function(acc,currRange) {
 				if(!acc) {
-					return _gthis.compareToRange(v,range1);
+					return _gthis.matchRange(r,currRange);
 				} else {
 					return true;
 				}
 			},false);
 		}
 	}
-	,rerollRolls: function(dice,times,range) {
+	,keepMappedRolls: function(rolls) {
 		var _gthis = this;
-		var rolls = dice.map(function(_) {
-			return _.roll(($_=_gthis.algebra,$bind($_,$_.die)));
+		var array = rolls.map(function(r) {
+			switch(r[1]) {
+			case 0:
+				var rerolls = r[2];
+				return [rerolls[rerolls.length - 1]];
+			case 1:
+				var explosions = r[2];
+				return explosions;
+			case 2:
+				var roll = r[2];
+				return [roll];
+			}
 		});
-		var rerolls = [];
-		return rolls.concat(rerolls.length == 0 ? [] : this.rerollRolls(rerolls,times,range));
+		return Array.prototype.concat.apply([],array);
+	}
+	,filterRolls: function(rolls,filter) {
+		var _gthis = this;
+		var ranked = thx_Arrays.rank(rolls,function(a,b) {
+			return _gthis.algebra.compare(dr_RollResultExtensions.getResult(a),dr_RollResultExtensions.getResult(b));
+		},true);
+		var f;
+		switch(filter[1]) {
+		case 0:
+			switch(filter[2][1]) {
+			case 0:
+				var value = filter[3];
+				f = function(i,l) {
+					return i >= value;
+				};
+				break;
+			case 1:
+				var value1 = filter[3];
+				f = function(i1,l1) {
+					return i1 < l1 - value1;
+				};
+				break;
+			}
+			break;
+		case 1:
+			switch(filter[2][1]) {
+			case 0:
+				var value2 = filter[3];
+				f = function(i2,l2) {
+					return i2 < value2;
+				};
+				break;
+			case 1:
+				var value3 = filter[3];
+				f = function(i3,l3) {
+					return i3 >= l3 - value3;
+				};
+				break;
+			}
+			break;
+		}
+		var r = [];
+		var _g1 = 0;
+		var _g = rolls.length;
+		while(_g1 < _g) {
+			var i4 = _g1++;
+			var roll = rolls[i4];
+			r.push(f(ranked[i4],ranked.length) ? dr_DieResultFilter.Keep(roll) : dr_DieResultFilter.Discard(roll));
+		}
+		return r;
+	}
+	,keepFilteredRolls: function(rolls) {
+		return thx_Arrays.filterMap(rolls,function(roll) {
+			switch(roll[1]) {
+			case 0:
+				var r = roll[2];
+				return haxe_ds_Option.Some(r);
+			case 1:
+				return haxe_ds_Option.None;
+			}
+		});
+	}
+	,reduceRolls: function(rolls,reducer) {
+		return this.reduceResults(this.getRollResults(rolls),reducer);
+	}
+	,reduceResults: function(results,reducer) {
+		switch(reducer[1]) {
+		case 0:
+			return thx_Arrays.reduce(results,($_=this.algebra,$bind($_,$_.sum)),this.algebra.zero);
+		case 1:
+			return this.algebra.average(results);
+		case 2:
+			return thx_Arrays.order(results,($_=this.algebra,$bind($_,$_.compare))).shift();
+		case 3:
+			return thx_Arrays.order(results,($_=this.algebra,$bind($_,$_.compare))).pop();
+		}
+	}
+	,getRollResults: function(rolls) {
+		return rolls.map(dr_RollResultExtensions.getResult);
 	}
 	,__class__: dr_Roller
 };
@@ -11535,6 +11432,9 @@ thx_Types.anyValueToString = function(value) {
 	}
 	return thx_Types.toString(Type["typeof"](value));
 };
+var thx_Unit = { __ename__ : ["thx","Unit"], __constructs__ : ["unit"] };
+thx_Unit.unit = ["unit",0];
+thx_Unit.unit.__enum__ = thx_Unit;
 var thx__$Validation_Validation_$Impl_$ = {};
 thx__$Validation_Validation_$Impl_$.__name__ = ["thx","_Validation","Validation_Impl_"];
 thx__$Validation_Validation_$Impl_$.get_either = function(this1) {
@@ -16530,12 +16430,16 @@ thx_stream_Subjects.wrapHandler = function(handler) {
 	};
 };
 var view_ExpressionInput = function(props,children) {
+	this.end = 0;
+	this.start = 0;
 	doom_html_Component.call(this,props,children);
 };
 view_ExpressionInput.__name__ = ["view","ExpressionInput"];
 view_ExpressionInput.__super__ = doom_html_Component;
 view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
-	render: function() {
+	start: null
+	,end: null
+	,render: function() {
 		var value;
 		var _g = this.props.expr;
 		switch(_g[1]) {
@@ -16559,11 +16463,17 @@ view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g2.h["value"] = value1;
 		}
-		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromStringValueHandler($bind(this,this.onInput));
+		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromElementHandler($bind(this,this.onInput));
 		if(__map_reserved["input"] != null) {
 			_g2.setReserved("input",value2);
 		} else {
 			_g2.h["input"] = value2;
+		}
+		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromElementHandler($bind(this,this.selectionChange));
+		if(__map_reserved["keyup"] != null) {
+			_g2.setReserved("keyup",value3);
+		} else {
+			_g2.h["keyup"] = value3;
 		}
 		var top = [doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("input",_g2,null)]))];
 		var bottom;
@@ -16576,13 +16486,325 @@ view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
 		}
 		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children(top.concat(bottom)));
 	}
-	,onInput: function(value) {
-		this.props.dispatch(Action.EvaluateExpression(value));
+	,didUpdate: function() {
+		var input = dots_Query.find("input",this.node);
+		input.setSelectionRange(this.start,this.end);
+	}
+	,selectionChange: function(input) {
+		this.start = input.selectionStart;
+		this.end = input.selectionEnd;
+	}
+	,onInput: function(input) {
+		this.selectionChange(input);
+		this.props.dispatch(Action.EvaluateExpression(input.value));
 	}
 	,classes: function() {
 		return "view_expression-input";
 	}
 	,__class__: view_ExpressionInput
+});
+var view_RollDetailsView = function(props,children) {
+	doom_html_Component.call(this,props,children);
+};
+view_RollDetailsView.__name__ = ["view","RollDetailsView"];
+view_RollDetailsView.__super__ = doom_html_Component;
+view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
+	render: function() {
+		return this.renderRollResult(this.props);
+	}
+	,renderRollResult: function(result) {
+		switch(result[1]) {
+		case 0:
+			var die = result[2];
+			return this.renderDie(die);
+		case 1:
+			var result1 = result[3];
+			var value = result[2];
+			var _g = new haxe_ds_StringMap();
+			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("literal");
+			if(__map_reserved["class"] != null) {
+				_g.setReserved("class",value1);
+			} else {
+				_g.h["class"] = value1;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + result1)]));
+		case 2:
+			switch(result[2][1]) {
+			case 0:
+				var result2 = result[4];
+				var reducer = result[3];
+				var rolls = result[2][2];
+				return this.renderRolls(this.renderExpressionSet(rolls,reducer),result2,reducer);
+			case 1:
+				var result3 = result[4];
+				var reducer1 = result[3];
+				var filter = result[2][3];
+				var rolls1 = result[2][2];
+				return this.renderRolls(this.renderDieResultFilterSet(rolls1,filter,reducer1),result3,reducer1);
+			case 2:
+				var result4 = result[4];
+				var reducer2 = result[3];
+				var functor = result[2][3];
+				var rolls2 = result[2][2];
+				return this.renderRolls(this.renderDieResultMapSet(rolls2,functor,reducer2),result4,reducer2);
+			}
+			break;
+		case 3:
+			var result5 = result[5];
+			var b = result[4];
+			var a = result[3];
+			var op = result[2];
+			var _g1 = new haxe_ds_StringMap();
+			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("binop");
+			if(__map_reserved["class"] != null) {
+				_g1.setReserved("class",value2);
+			} else {
+				_g1.h["class"] = value2;
+			}
+			var _g11 = new haxe_ds_StringMap();
+			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("left");
+			if(__map_reserved["class"] != null) {
+				_g11.setReserved("class",value3);
+			} else {
+				_g11.h["class"] = value3;
+			}
+			var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g11,doom_core__$VNodes_VNodes_$Impl_$.children([new view_RollDetailsView(a).asNode()]));
+			var _g2 = new haxe_ds_StringMap();
+			var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("op");
+			if(__map_reserved["class"] != null) {
+				_g2.setReserved("class",value4);
+			} else {
+				_g2.h["class"] = value4;
+			}
+			var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(this.renderOp(op))]));
+			var _g3 = new haxe_ds_StringMap();
+			var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("right");
+			if(__map_reserved["class"] != null) {
+				_g3.setReserved("class",value5);
+			} else {
+				_g3.h["class"] = value5;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([new view_RollDetailsView(b).asNode()]))]));
+		case 4:
+			var result6 = result[4];
+			var expr = result[3];
+			var _g4 = new haxe_ds_StringMap();
+			var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("unop");
+			if(__map_reserved["class"] != null) {
+				_g4.setReserved("class",value6);
+			} else {
+				_g4.h["class"] = value6;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([new view_RollDetailsView(expr).asNode()]));
+		}
+	}
+	,renderRollFilterResult: function(d) {
+		switch(d[1]) {
+		case 0:
+			var roll = d[2];
+			var _g = new haxe_ds_StringMap();
+			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("keep");
+			if(__map_reserved["class"] != null) {
+				_g.setReserved("class",value);
+			} else {
+				_g.h["class"] = value;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([this.renderRollResult(roll)]));
+		case 1:
+			var roll1 = d[2];
+			var _g1 = new haxe_ds_StringMap();
+			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("discard");
+			if(__map_reserved["class"] != null) {
+				_g1.setReserved("class",value1);
+			} else {
+				_g1.h["class"] = value1;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([this.renderRollResult(roll1)]));
+		}
+	}
+	,renderRollMapResult: function(d) {
+		switch(d[1]) {
+		case 0:
+			var rerolls = d[2];
+			var seq = rerolls.slice(0,-1).map($bind(this,this.renderDie)).map(function(n) {
+				var _g = new haxe_ds_StringMap();
+				var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("discard");
+				if(__map_reserved["class"] != null) {
+					_g.setReserved("class",value);
+				} else {
+					_g.h["class"] = value;
+				}
+				return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([n]));
+			});
+			var _g1 = new haxe_ds_StringMap();
+			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("keep");
+			if(__map_reserved["class"] != null) {
+				_g1.setReserved("class",value1);
+			} else {
+				_g1.h["class"] = value1;
+			}
+			seq.push(doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([this.renderDie(rerolls[rerolls.length - 1])])));
+			var _g11 = new haxe_ds_StringMap();
+			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("rerolled");
+			if(__map_reserved["class"] != null) {
+				_g11.setReserved("class",value2);
+			} else {
+				_g11.h["class"] = value2;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g11,doom_core__$VNodes_VNodes_$Impl_$.children(seq));
+		case 1:
+			var explosions = d[2];
+			var _g2 = new haxe_ds_StringMap();
+			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("exploded");
+			if(__map_reserved["class"] != null) {
+				_g2.setReserved("class",value3);
+			} else {
+				_g2.h["class"] = value3;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children(explosions.map($bind(this,this.renderDie)).map(function(n1) {
+				var _g12 = new haxe_ds_StringMap();
+				var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("keep");
+				if(__map_reserved["class"] != null) {
+					_g12.setReserved("class",value4);
+				} else {
+					_g12.h["class"] = value4;
+				}
+				return doom_core__$VNode_VNode_$Impl_$.el("div",_g12,doom_core__$VNodes_VNodes_$Impl_$.children([n1]));
+			})));
+		case 2:
+			var roll = d[2];
+			var _g3 = new haxe_ds_StringMap();
+			var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("normal");
+			if(__map_reserved["class"] != null) {
+				_g3.setReserved("class",value5);
+			} else {
+				_g3.h["class"] = value5;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([this.renderDie(roll)]));
+		}
+	}
+	,instersperseOp: function(reducer) {
+		var op = reducer[1] == 0 ? "+" : ",";
+		return function() {
+			var _g = new haxe_ds_StringMap();
+			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("comma");
+			if(__map_reserved["class"] != null) {
+				_g.setReserved("class",value);
+			} else {
+				_g.h["class"] = value;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(op)]));
+		};
+	}
+	,renderExpressionSet: function(rolls,reducer) {
+		return thx_Arrays.interspersef(rolls.map($bind(this,this.renderRollResult)),this.instersperseOp(reducer));
+	}
+	,renderDieResultMapSet: function(rolls,functor,reducer) {
+		return thx_Arrays.interspersef(rolls.map($bind(this,this.renderRollMapResult)),this.instersperseOp(reducer));
+	}
+	,renderDieResultFilterSet: function(rolls,filter,reducer) {
+		return thx_Arrays.interspersef(rolls.map($bind(this,this.renderRollFilterResult)),this.instersperseOp(reducer));
+	}
+	,renderRolls: function(rolls,result,reducer) {
+		return this.details(result,function() {
+			var _g = new haxe_ds_StringMap();
+			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("dice-set");
+			if(__map_reserved["class"] != null) {
+				_g.setReserved("class",value);
+			} else {
+				_g.h["class"] = value;
+			}
+			var content = [doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children(rolls))];
+			switch(reducer[1]) {
+			case 1:
+				content.push(doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("average")])));
+				break;
+			case 2:
+				content.push(doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("min")])));
+				break;
+			case 3:
+				content.push(doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("max")])));
+				break;
+			default:
+			}
+			var _g1 = new haxe_ds_StringMap();
+			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("reduce");
+			if(__map_reserved["class"] != null) {
+				_g1.setReserved("class",value1);
+			} else {
+				_g1.h["class"] = value1;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children(content));
+		});
+	}
+	,renderDie: function(die) {
+		return this.details(die.result,function() {
+			var _g = new haxe_ds_StringMap();
+			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("die");
+			if(__map_reserved["class"] != null) {
+				_g.setReserved("class",value);
+			} else {
+				_g.h["class"] = value;
+			}
+			var _g1 = new haxe_ds_StringMap();
+			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("d");
+			if(__map_reserved["class"] != null) {
+				_g1.setReserved("class",value1);
+			} else {
+				_g1.h["class"] = value1;
+			}
+			var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("d")]));
+			var _g2 = new haxe_ds_StringMap();
+			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("X");
+			if(__map_reserved["class"] != null) {
+				_g2.setReserved("class",value2);
+			} else {
+				_g2.h["class"] = value2;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,doom_core__$VNode_VNode_$Impl_$.el("div",_g2,die.sides == 100 ? doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("%")]) : doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + die.sides)]))]));
+		});
+	}
+	,renderOp: function(op) {
+		switch(op[1]) {
+		case 0:
+			return "+";
+		case 1:
+			return "-";
+		case 2:
+			return "÷";
+		case 3:
+			return "×";
+		}
+	}
+	,details: function(result,gen) {
+		var _g = new haxe_ds_StringMap();
+		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("pair");
+		if(__map_reserved["class"] != null) {
+			_g.setReserved("class",value);
+		} else {
+			_g.h["class"] = value;
+		}
+		var _g1 = new haxe_ds_StringMap();
+		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("result");
+		if(__map_reserved["class"] != null) {
+			_g1.setReserved("class",value1);
+		} else {
+			_g1.h["class"] = value1;
+		}
+		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + result)]));
+		var _g2 = new haxe_ds_StringMap();
+		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("details");
+		if(__map_reserved["class"] != null) {
+			_g2.setReserved("class",value2);
+		} else {
+			_g2.h["class"] = value2;
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([gen()]))]));
+	}
+	,classes: function() {
+		return "view_roll-details-view";
+	}
+	,__class__: view_RollDetailsView
 });
 var view_RollView = function(props,children) {
 	doom_html_Component.call(this,props,children);
@@ -16613,15 +16835,23 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g11.h["class"] = value1;
 			}
-			var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g11,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + dr_DiceExpressionExtensions.getMeta(r))]));
+			var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g11,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + dr_RollResultExtensions.getResult(r))]));
 			var _g2 = new haxe_ds_StringMap();
-			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromHandler($bind(this,this.roll));
-			if(__map_reserved["click"] != null) {
-				_g2.setReserved("click",value2);
+			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("roll-details");
+			if(__map_reserved["class"] != null) {
+				_g2.setReserved("class",value2);
 			} else {
-				_g2.h["click"] = value2;
+				_g2.h["class"] = value2;
 			}
-			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,doom_core__$VNode_VNode_$Impl_$.el("button",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("roll again")]))]));
+			var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Comp(new view_RollDetailsView(r))]));
+			var _g3 = new haxe_ds_StringMap();
+			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromHandler($bind(this,this.roll));
+			if(__map_reserved["click"] != null) {
+				_g3.setReserved("click",value3);
+			} else {
+				_g3.h["click"] = value3;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("button",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("roll again")]))]));
 		case 1:
 			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("nothing to roll")]));
 		}
@@ -17256,29 +17486,24 @@ dots_Attributes.properties = (function($this) {
 dots_Html.pattern = new EReg("[<]([^> ]+)","");
 dots_Query.doc = document;
 js_Boot.__toStr = ({ }).toString;
-dr_DiceParser.PLUS = parsihax_Parser["as"](parsihax_Parser.string("+"),"plus");
-dr_DiceParser.MINUS = parsihax_Parser["as"](parsihax_Parser.string("-"),"minus");
-dr_DiceParser.positive = parsihax_Parser["as"](parsihax_Parser.map(parsihax_Parser.regexp(new EReg("[+]?([1-9][0-9]*)",""),1),Std.parseInt),"positive number");
-dr_DiceParser.negative = parsihax_Parser["as"](parsihax_Parser.map(parsihax_Parser.regexp(new EReg("[-]([0-9]*[1-9])","")),Std.parseInt),"negative number");
-dr_DiceParser.whole = parsihax_Parser.or(dr_DiceParser.positive,parsihax_Parser["as"](dr_DiceParser.negative,"whole number"));
-dr_DiceParser.D = parsihax_Parser.or(parsihax_Parser.string("d"),parsihax_Parser["as"](parsihax_Parser.string("D"),"die symbol"));
-dr_DiceParser.OPEN_SET_BRACKET = parsihax_Parser["as"](parsihax_Parser.string("{"),"open set");
-dr_DiceParser.OPEN_PAREN = parsihax_Parser["as"](parsihax_Parser.string("("),"open parenthesis");
-dr_DiceParser.CLOSE_SET_BRACKET = parsihax_Parser["as"](parsihax_Parser.string("}"),"close set");
-dr_DiceParser.CLOSE_PAREN = parsihax_Parser["as"](parsihax_Parser.string(")"),"close parenthesis");
-dr_DiceParser.COMMA = parsihax_Parser["as"](parsihax_Parser.string(","),"comma");
-dr_DiceParser.PERCENT = parsihax_Parser["as"](parsihax_Parser.string("%"),"percent");
-dr_DiceParser.WS = parsihax_Parser["as"](parsihax_Parser.regexp(new EReg("\\s+","m")),"white space");
-dr_DiceParser.OWS = parsihax_Parser.or(dr_DiceParser.WS,parsihax_Parser["as"](parsihax_Parser.string(""),"optional white space"));
-dr_DiceParser.MULTIPLICATION = parsihax_Parser["as"](parsihax_Parser.regexp(new EReg("[*⋅×x]","")),"multiplication symbol");
-dr_DiceParser.DIVISION = parsihax_Parser.or(parsihax_Parser.or(parsihax_Parser.string("/"),parsihax_Parser.string("÷")),parsihax_Parser["as"](parsihax_Parser.string(":"),"division symbol"));
-dr_DiceParser.keepOrDrop = parsihax_Parser.or(parsihax_Parser.result(parsihax_Parser.string("keep"),dr_DropKeep.Keep),parsihax_Parser.result(parsihax_Parser.string("drop"),dr_DropKeep.Drop));
+dr_DiceParser.PLUS = parsihax_Parser.string("+");
+dr_DiceParser.MINUS = parsihax_Parser.string("-");
+dr_DiceParser.positive = parsihax_Parser.map(parsihax_Parser.regexp(new EReg("[+]?([1-9][0-9]*)",""),1),Std.parseInt);
+dr_DiceParser.negative = parsihax_Parser.map(parsihax_Parser.regexp(new EReg("[-]([0-9]*[1-9])","")),Std.parseInt);
+dr_DiceParser.whole = parsihax_Parser.or(dr_DiceParser.positive,dr_DiceParser.negative);
+dr_DiceParser.D = parsihax_Parser.or(parsihax_Parser.string("d"),parsihax_Parser.string("D"));
+dr_DiceParser.OPEN_SET_BRACKET = parsihax_Parser.string("{");
+dr_DiceParser.CLOSE_SET_BRACKET = parsihax_Parser.string("}");
+dr_DiceParser.COMMA = parsihax_Parser.string(",");
+dr_DiceParser.PERCENT = parsihax_Parser.string("%");
+dr_DiceParser.WS = parsihax_Parser.regexp(new EReg("\\s+","m"));
+dr_DiceParser.OWS = parsihax_Parser.or(dr_DiceParser.WS,parsihax_Parser.string(""));
+dr_DiceParser.MULTIPLICATION = parsihax_Parser["as"](parsihax_Parser.regexp(new EReg("[*⋅×x]","")),"×");
+dr_DiceParser.DIVISION = parsihax_Parser.or(parsihax_Parser.or(parsihax_Parser.string("/"),parsihax_Parser.string("÷")),parsihax_Parser.string(":"));
 dr_DiceParser.lowOrHigh = parsihax_Parser.or(parsihax_Parser.result(parsihax_Parser.or(parsihax_Parser.string("lowest"),parsihax_Parser.string("low")),dr_LowHigh.Low),parsihax_Parser.result(parsihax_Parser.or(parsihax_Parser.string("highest"),parsihax_Parser.string("high")),dr_LowHigh.High));
-dr_DiceParser.explodeOrReroll = parsihax_Parser.or(parsihax_Parser.result(parsihax_Parser.string("explode"),dr_ExplodeReroll.Explode),parsihax_Parser.result(parsihax_Parser.string("reroll"),dr_ExplodeReroll.Reroll));
 dr_DiceParser.moreLess = parsihax_Parser.or(parsihax_Parser.result(parsihax_Parser.string("more"),dr_MoreLess.More),parsihax_Parser.result(parsihax_Parser.string("less"),dr_MoreLess.Less));
-dr_DiceParser.orMoreLess = parsihax_Parser.then(dr_DiceParser.SKIP_WS(parsihax_Parser.string("or")),parsihax_Parser["as"](dr_DiceParser.moreLess,"or (more|less)"));
+dr_DiceParser.orMoreLess = parsihax_Parser.then(parsihax_Parser.then(parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.string("or")),dr_DiceParser.OWS),parsihax_Parser["as"](dr_DiceParser.moreLess,"or (more|less)"));
 dr_DiceParser.on = parsihax_Parser.then(parsihax_Parser.then(parsihax_Parser.string("on"),dr_DiceParser.WS),dr_DiceParser.positive);
-dr_DiceParser.to = parsihax_Parser.then(parsihax_Parser.then(parsihax_Parser.string("to"),dr_DiceParser.WS),dr_DiceParser.positive);
 dr_DiceParser.range = parsihax_Parser.alt([parsihax_Parser.flatMap(dr_DiceParser.on,function(min) {
 	return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.map(dr_DiceParser.positive,function(max) {
 		return dr_Range.Between(min,max);
@@ -17293,207 +17518,46 @@ dr_DiceParser.range = parsihax_Parser.alt([parsihax_Parser.flatMap(dr_DiceParser
 		}
 	}));
 }),parsihax_Parser.map(dr_DiceParser.on,dr_Range.Exact)]);
-dr_DiceParser.SUM = parsihax_Parser["as"](parsihax_Parser.string("sum"),"sum");
-dr_DiceParser.AVERAGE = parsihax_Parser["as"](parsihax_Parser.or(parsihax_Parser.string("average"),parsihax_Parser.string("avg")),"average");
-dr_DiceParser.MIN = parsihax_Parser["as"](parsihax_Parser.or(parsihax_Parser.string("minimum"),parsihax_Parser.string("min")),"minimum");
-dr_DiceParser.MAX = parsihax_Parser["as"](parsihax_Parser.or(parsihax_Parser.string("maximum"),parsihax_Parser.string("max")),"maximum");
-dr_DiceParser.times = parsihax_Parser["as"](parsihax_Parser.alt([parsihax_Parser.result(parsihax_Parser.string("once"),1),parsihax_Parser.result(parsihax_Parser.string("twice"),2),parsihax_Parser.result(parsihax_Parser.string("thrice"),3),parsihax_Parser.skip(dr_DiceParser.SKIP_OWS(dr_DiceParser.positive),parsihax_Parser.string("times"))]),"times");
-dr_DiceParser.basicLiteral = (function($this) {
-	var $r;
-	var _e = dr_DiceParser.positive;
-	$r = parsihax_Parser["as"]((function(fun) {
-		return parsihax_Parser.map(_e,fun);
-	})(function(_) {
-		return dr_BasicRoll.Literal(_,thx_Unit.unit);
-	}),"basic literal");
-	return $r;
-}(this));
-dr_DiceParser.literal = parsihax_Parser["as"](parsihax_Parser.map(dr_DiceParser.basicLiteral,dr_DiceExpression.Roll),"literal");
+dr_DiceParser.diceFunctor = parsihax_Parser.lazy(function() {
+	return parsihax_Parser.alt([dr_DiceParser.diceFunctorConst("explode",dr_DiceFunctor.Explode),dr_DiceParser.diceFunctorConst("reroll",dr_DiceFunctor.Reroll)]);
+});
+dr_DiceParser.SUM = parsihax_Parser.string("sum");
+dr_DiceParser.AVERAGE = parsihax_Parser.or(parsihax_Parser.string("average"),parsihax_Parser.string("avg"));
+dr_DiceParser.MIN = parsihax_Parser.or(parsihax_Parser.string("minimum"),parsihax_Parser.string("min"));
+dr_DiceParser.MAX = parsihax_Parser.or(parsihax_Parser.string("maximum"),parsihax_Parser.string("max"));
+dr_DiceParser.times = parsihax_Parser.alt([parsihax_Parser.result(parsihax_Parser.string("once"),1),parsihax_Parser.result(parsihax_Parser.string("twice"),2),parsihax_Parser.result(parsihax_Parser.string("thrice"),3),parsihax_Parser.skip(dr_DiceParser.positive,parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.string("times")))]);
+dr_DiceParser.functorTimes = parsihax_Parser["as"](parsihax_Parser.alt([parsihax_Parser.map(dr_DiceParser.times,dr_Times.UpTo),parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.result(parsihax_Parser.string("always"),dr_Times.Always))]),"times");
 dr_DiceParser.DEFAULT_DIE_SIDES = 6;
-dr_DiceParser.die = parsihax_Parser["as"](parsihax_Parser.alt([parsihax_Parser.result(parsihax_Parser.then(dr_DiceParser.D,dr_DiceParser.PERCENT),dr_DiceParser.toDie(100)),parsihax_Parser.map(parsihax_Parser.then(dr_DiceParser.D,dr_DiceParser.positive),dr_DiceParser.toDie),parsihax_Parser.result(dr_DiceParser.D,dr_DiceParser.toDie(dr_DiceParser.DEFAULT_DIE_SIDES))]),"one die");
-dr_DiceParser.basicDice = (function($this) {
-	var $r;
-	var l = parsihax_Parser.flatMap(dr_DiceParser.positive,function(rolls) {
-		return parsihax_Parser.map(dr_DiceParser.die,function(die) {
-			if(rolls == 1) {
-				return dr_BasicRoll.One(die);
-			} else {
-				return dr_BasicRoll.Repeat(rolls,die,thx_Unit.unit);
-			}
-		});
-	});
-	var _e = dr_DiceParser.die;
-	$r = parsihax_Parser["as"](parsihax_Parser.alt([l,(function(fun) {
-		return parsihax_Parser.map(_e,fun);
-	})(function(_) {
-		return dr_BasicRoll.One(_);
-	})]),"basic dice");
-	return $r;
-}(this));
-dr_DiceParser.basicDiceSetElement = parsihax_Parser["as"](parsihax_Parser.alt([dr_DiceParser.basicDice,dr_DiceParser.basicLiteral]),"dice set element");
-dr_DiceParser.basicDiceArray = parsihax_Parser["as"](parsihax_Parser.lazy(function() {
-	return parsihax_Parser.alt([parsihax_Parser.then(parsihax_Parser.then(dr_DiceParser.OPEN_SET_BRACKET,dr_DiceParser.OWS),parsihax_Parser.skip(parsihax_Parser.or(parsihax_Parser.sepBy1(parsihax_Parser.alt([dr_DiceParser.basicDiceSetElement,dr_DiceParser.basicDiceSet]),parsihax_Parser.then(parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.COMMA),dr_DiceParser.OWS)),parsihax_Parser.succeed([])),parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.CLOSE_SET_BRACKET))),parsihax_Parser.map(dr_DiceParser.basicDice,function(v) {
-		return [v];
-	})]);
-}),"dice set");
-dr_DiceParser.basicDiceSet = parsihax_Parser["as"](parsihax_Parser.lazy(function() {
-	return parsihax_Parser.map(dr_DiceParser.basicDiceArray,function(a1) {
-		return dr_BasicRoll.Bag(a1,thx_Unit.unit);
-	});
-}),"dice set");
-dr_DiceParser.diceSet = parsihax_Parser["as"](parsihax_Parser.map(dr_DiceParser.basicDiceSet,dr_DiceExpression.Roll),"dice set");
-dr_DiceParser.diceBag = parsihax_Parser.alt([parsihax_Parser.then(parsihax_Parser.then(dr_DiceParser.OPEN_SET_BRACKET,dr_DiceParser.OWS),parsihax_Parser.map(parsihax_Parser.skip(parsihax_Parser.or(parsihax_Parser.sepBy1(dr_DiceParser.die,parsihax_Parser.then(parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.COMMA),dr_DiceParser.OWS)),parsihax_Parser.succeed([])),parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.CLOSE_SET_BRACKET)),dr_DiceBag.DiceSet)),parsihax_Parser.flatMap(dr_DiceParser.positive,function(rolls) {
-	var a1 = rolls;
-	return parsihax_Parser.map(dr_DiceParser.die,function(a2) {
-		return dr_DiceBag.RepeatDie(a1,a2);
-	});
-})]);
-dr_DiceParser.explodeOrRerollBag = parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.flatMap(dr_DiceParser.diceBag,function(db) {
-	return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.flatMap(dr_DiceParser.explodeOrReroll,function(er) {
-		return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.alt([parsihax_Parser.flatMap(dr_DiceParser.times,function(t) {
-			var upTo = dr_Times.UpTo(t);
-			return parsihax_Parser.then(dr_DiceParser.WS,parsihax_Parser.map(dr_DiceParser.range,function(on) {
-				var r;
-				switch(er[1]) {
-				case 0:
-					r = dr_BagExtractor.Explode(upTo,on);
-					break;
-				case 1:
-					r = dr_BagExtractor.Reroll(upTo,on);
-					break;
-				}
-				return dr_DiceExpression.RollBag(db,r,thx_Unit.unit);
-			}));
-		}),parsihax_Parser.map(dr_DiceParser.range,function(ml) {
-			var r1;
-			switch(er[1]) {
-			case 0:
-				r1 = dr_BagExtractor.Explode(dr_Times.Always,dr_Range.Exact(1));
-				break;
-			case 1:
-				r1 = dr_BagExtractor.Reroll(dr_Times.Always,dr_Range.Exact(1));
-				break;
-			}
-			return dr_DiceExpression.RollBag(db,r1,thx_Unit.unit);
-		})]));
-	}));
-}));
-dr_DiceParser.diceBagOp = parsihax_Parser.alt([dr_DiceParser.explodeOrRerollBag]);
-dr_DiceParser.basicExpressionSet = parsihax_Parser["as"](parsihax_Parser.lazy(function() {
-	return parsihax_Parser.then(parsihax_Parser.then(dr_DiceParser.OPEN_SET_BRACKET,dr_DiceParser.OWS),parsihax_Parser.skip(parsihax_Parser.or(parsihax_Parser.sepBy1(dr_DiceParser.expression,parsihax_Parser.then(parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.string(",")),dr_DiceParser.OWS)),parsihax_Parser.succeed([])),parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.CLOSE_SET_BRACKET)));
-}),"expression set");
-dr_DiceParser.diceOrSet = parsihax_Parser.alt([parsihax_Parser.map(dr_DiceParser.diceSet,function(v) {
-	if(v[1] == 0) {
-		if(v[2][1] == 1) {
-			var list = v[2][2];
-			return list.map(dr_DiceExpression.Roll);
-		} else {
-			return [v];
-		}
-	} else {
-		return [v];
-	}
-}),dr_DiceParser.basicExpressionSet]);
-dr_DiceParser.expressionSetImplicit = (function($this) {
-	var $r;
-	var _e = dr_DiceParser.diceOrSet;
-	$r = parsihax_Parser["as"]((function(fun) {
-		return parsihax_Parser.map(_e,fun);
-	})(function(_) {
-		return dr_DiceExpression.RollExpressions(_,dr_ExpressionExtractor.Sum,thx_Unit.unit);
-	}),"implicit sum");
-	return $r;
-}(this));
-dr_DiceParser.expressionSetSum = (function($this) {
-	var $r;
-	var _e = parsihax_Parser.skip(dr_DiceParser.diceOrSet,parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.SUM));
-	$r = parsihax_Parser["as"]((function(fun) {
-		return parsihax_Parser.map(_e,fun);
-	})(function(_) {
-		return dr_DiceExpression.RollExpressions(_,dr_ExpressionExtractor.Sum,thx_Unit.unit);
-	}),"sum");
-	return $r;
-}(this));
-dr_DiceParser.expressionSetAverage = (function($this) {
-	var $r;
-	var _e = parsihax_Parser.skip(dr_DiceParser.diceOrSet,parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.AVERAGE));
-	$r = parsihax_Parser["as"]((function(fun) {
-		return parsihax_Parser.map(_e,fun);
-	})(function(_) {
-		return dr_DiceExpression.RollExpressions(_,dr_ExpressionExtractor.Average,thx_Unit.unit);
-	}),"average");
-	return $r;
-}(this));
-dr_DiceParser.expressionSetMin = (function($this) {
-	var $r;
-	var _e = parsihax_Parser.skip(dr_DiceParser.diceOrSet,parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.MIN));
-	$r = parsihax_Parser["as"]((function(fun) {
-		return parsihax_Parser.map(_e,fun);
-	})(function(_) {
-		return dr_DiceExpression.RollExpressions(_,dr_ExpressionExtractor.Min,thx_Unit.unit);
-	}),"minimum");
-	return $r;
-}(this));
-dr_DiceParser.expressionSetMax = (function($this) {
-	var $r;
-	var _e = parsihax_Parser.skip(dr_DiceParser.diceOrSet,parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.MAX));
-	$r = parsihax_Parser["as"]((function(fun) {
-		return parsihax_Parser.map(_e,fun);
-	})(function(_) {
-		return dr_DiceExpression.RollExpressions(_,dr_ExpressionExtractor.Max,thx_Unit.unit);
-	}),"maximum");
-	return $r;
-}(this));
-dr_DiceParser.expressionSetDropOrKeep = parsihax_Parser["as"](parsihax_Parser.flatMap(parsihax_Parser.skip(dr_DiceParser.diceOrSet,dr_DiceParser.WS),function(expr) {
-	return parsihax_Parser.flatMap(dr_DiceParser.keepOrDrop,function(kd) {
-		return parsihax_Parser.then(dr_DiceParser.WS,parsihax_Parser.or(parsihax_Parser.flatMap(dr_DiceParser.lowOrHigh,function(lh) {
-			return parsihax_Parser.then(dr_DiceParser.WS,parsihax_Parser.map(dr_DiceParser.positive,function(value) {
-				switch(kd[1]) {
-				case 0:
-					return dr_DiceExpression.RollExpressions(expr,dr_ExpressionExtractor.Drop(lh,value),thx_Unit.unit);
-				case 1:
-					return dr_DiceExpression.RollExpressions(expr,dr_ExpressionExtractor.Keep(lh,value),thx_Unit.unit);
-				}
-			}));
-		}),parsihax_Parser.map(dr_DiceParser.positive,function(value1) {
-			switch(kd[1]) {
-			case 0:
-				return dr_DiceExpression.RollExpressions(expr,dr_ExpressionExtractor.Drop(dr_LowHigh.Low,value1),thx_Unit.unit);
-			case 1:
-				return dr_DiceExpression.RollExpressions(expr,dr_ExpressionExtractor.Keep(dr_LowHigh.High,value1),thx_Unit.unit);
-			}
-		})));
-	});
-}),"keep or drop");
-dr_DiceParser.expressionSetOp = parsihax_Parser.alt([dr_DiceParser.expressionSetDropOrKeep,dr_DiceParser.expressionSetAverage,dr_DiceParser.expressionSetMin,dr_DiceParser.expressionSetMax,dr_DiceParser.expressionSetSum,dr_DiceParser.expressionSetImplicit]);
+dr_DiceParser.die = parsihax_Parser["as"](parsihax_Parser.alt([parsihax_Parser.result(parsihax_Parser.then(dr_DiceParser.D,dr_DiceParser.PERCENT),100),parsihax_Parser.then(dr_DiceParser.D,dr_DiceParser.positive),parsihax_Parser.result(dr_DiceParser.D,dr_DiceParser.DEFAULT_DIE_SIDES)]),"one die");
 dr_DiceParser.negate = parsihax_Parser["as"](parsihax_Parser.lazy(function() {
-	return parsihax_Parser.then(dr_DiceParser.MINUS,parsihax_Parser.map(dr_DiceParser.inlineExpression,function(expr) {
-		return dr_DiceExpression.UnaryOp(dr_DiceUnOp.Negate,expr,thx_Unit.unit);
+	return parsihax_Parser.then(dr_DiceParser.MINUS,parsihax_Parser.map(dr_DiceParser.termExpression,function(expr) {
+		return dr_DiceExpression.UnaryOp(dr_DiceUnOp.Negate,expr);
 	}));
 }),"negate");
+dr_DiceParser.unary = parsihax_Parser.alt([dr_DiceParser.negate]);
 dr_DiceParser.binOpSymbol = parsihax_Parser.alt([parsihax_Parser.result(dr_DiceParser.PLUS,dr_DiceBinOp.Sum),parsihax_Parser.result(dr_DiceParser.MINUS,dr_DiceBinOp.Difference),parsihax_Parser.result(dr_DiceParser.MULTIPLICATION,dr_DiceBinOp.Multiplication),parsihax_Parser.result(dr_DiceParser.DIVISION,dr_DiceBinOp.Division)]);
 dr_DiceParser.opRight = parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.flatMap(dr_DiceParser.binOpSymbol,function(o) {
-	return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.map(dr_DiceParser.inlineExpression,function(b) {
+	return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.map(dr_DiceParser.termExpression,function(b) {
 		return { op : o, right : b};
 	}));
 }));
 dr_DiceParser.binop = parsihax_Parser.lazy(function() {
-	return parsihax_Parser.flatMap(dr_DiceParser.inlineExpression,function(left) {
+	return parsihax_Parser.flatMap(dr_DiceParser.termExpression,function(left) {
 		return parsihax_Parser.map(parsihax_Parser.times(dr_DiceParser.opRight,1,1000),function(a) {
 			return thx_Arrays.reduce(a,function(left1,item) {
 				var _g = item.op;
 				switch(_g[1]) {
 				case 0:case 1:
-					return dr_DiceExpression.BinaryOp(item.op,left1,item.right,thx_Unit.unit);
+					return dr_DiceExpression.BinaryOp(item.op,left1,item.right);
 				case 2:case 3:
 					if(left1[1] == 3) {
 						var r = left1[4];
 						var l = left1[3];
 						var o = left1[2];
-						return dr_DiceExpression.BinaryOp(o,l,dr_DiceExpression.BinaryOp(item.op,r,item.right,thx_Unit.unit),thx_Unit.unit);
+						return dr_DiceExpression.BinaryOp(o,l,dr_DiceExpression.BinaryOp(item.op,r,item.right));
 					} else {
 						var other = left1;
-						return dr_DiceExpression.BinaryOp(item.op,left1,item.right,thx_Unit.unit);
+						return dr_DiceExpression.BinaryOp(item.op,left1,item.right);
 					}
 					break;
 				}
@@ -17501,12 +17565,77 @@ dr_DiceParser.binop = parsihax_Parser.lazy(function() {
 		});
 	});
 });
-dr_DiceParser.expressionOperations = parsihax_Parser.alt([dr_DiceParser.binop]);
-dr_DiceParser.inlineExpression = parsihax_Parser["as"](parsihax_Parser.lazy(function() {
-	return parsihax_Parser.alt([dr_DiceParser.diceBagOp,dr_DiceParser.expressionSetOp,dr_DiceParser.diceSet,dr_DiceParser.literal,dr_DiceParser.negate]);
-}),"inline expression");
+dr_DiceParser.dieExpression = parsihax_Parser.or(parsihax_Parser.then(parsihax_Parser.string("1"),parsihax_Parser.map(dr_DiceParser.die,dr_DiceExpression.Die)),parsihax_Parser["as"](parsihax_Parser.map(dr_DiceParser.die,dr_DiceExpression.Die),"die"));
+dr_DiceParser.literalExpression = parsihax_Parser["as"](parsihax_Parser.map(dr_DiceParser.whole,dr_DiceExpression.Literal),"literal");
+dr_DiceParser.diceExpressions = parsihax_Parser.lazy(function() {
+	return parsihax_Parser.alt([parsihax_Parser.flatMap(dr_DiceParser.positive,function(rolls) {
+		return parsihax_Parser.map(dr_DiceParser.die,function(sides) {
+			var _g = [];
+			var _g2 = 0;
+			var _g1 = rolls;
+			while(_g2 < _g1) {
+				var i = _g2++;
+				_g.push(dr_DiceExpression.Die(sides));
+			}
+			return dr_DiceReduceable.DiceExpressions(_g);
+		});
+	}),parsihax_Parser.map(dr_DiceParser.commaSeparated(dr_DiceParser.expression),dr_DiceReduceable.DiceExpressions)]);
+});
+dr_DiceParser.diceFilterable = parsihax_Parser.lazy(function() {
+	return parsihax_Parser.flatMap(parsihax_Parser.alt([parsihax_Parser.flatMap(dr_DiceParser.positive,function(rolls) {
+		return parsihax_Parser.map(dr_DiceParser.die,function(sides) {
+			var _g = [];
+			var _g2 = 0;
+			var _g1 = rolls;
+			while(_g2 < _g1) {
+				var i = _g2++;
+				_g.push(sides);
+			}
+			return dr_DiceFilterable.DiceArray(_g);
+		});
+	}),parsihax_Parser.map(dr_DiceParser.commaSeparated(dr_DiceParser.die),function(dice) {
+		return dr_DiceFilterable.DiceArray(dice);
+	}),parsihax_Parser.map(dr_DiceParser.commaSeparated(dr_DiceParser.expression),dr_DiceFilterable.DiceExpressions)]),function(filterable) {
+		var l = dr_DiceParser.OWS;
+		var _e = dr_DiceParser.dirValue(parsihax_Parser.string("drop"),dr_LowHigh.Low);
+		var r = (function(fun) {
+			return parsihax_Parser.map(_e,fun);
+		})(function(_) {
+			return dr_DiceFilter.Drop(_.dir,_.value);
+		});
+		var _e1 = dr_DiceParser.dirValue(parsihax_Parser.string("keep"),dr_LowHigh.High);
+		return parsihax_Parser.then(l,parsihax_Parser.map(parsihax_Parser.alt([r,(function(fun1) {
+			return parsihax_Parser.map(_e1,fun1);
+		})(function(_1) {
+			return dr_DiceFilter.Keep(_1.dir,_1.value);
+		})]),function(dk) {
+			return dr_DiceReduceable.DiceListWithFilter(filterable,dk);
+		}));
+	});
+});
+dr_DiceParser.diceMapeable = parsihax_Parser.lazy(function() {
+	return parsihax_Parser.flatMap(parsihax_Parser.alt([parsihax_Parser.flatMap(dr_DiceParser.positive,function(rolls) {
+		return parsihax_Parser.map(dr_DiceParser.die,function(sides) {
+			var _g = [];
+			var _g2 = 0;
+			var _g1 = rolls;
+			while(_g2 < _g1) {
+				var i = _g2++;
+				_g.push(sides);
+			}
+			return _g;
+		});
+	}),dr_DiceParser.commaSeparated(dr_DiceParser.die)]),function(arr) {
+		return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.map(dr_DiceParser.diceFunctor,function(functor) {
+			return dr_DiceReduceable.DiceListWithMap(arr,functor);
+		}));
+	});
+});
+dr_DiceParser.termExpression = parsihax_Parser.lazy(function() {
+	return parsihax_Parser.alt([dr_DiceParser.diceReduce(dr_DiceParser.diceMapeable),dr_DiceParser.diceReduce(dr_DiceParser.diceFilterable),dr_DiceParser.diceReduce(dr_DiceParser.diceExpressions),dr_DiceParser.dieExpression,dr_DiceParser.literalExpression,dr_DiceParser.unary]);
+});
 dr_DiceParser.expression = parsihax_Parser["as"](parsihax_Parser.lazy(function() {
-	return parsihax_Parser.alt([dr_DiceParser.expressionOperations,dr_DiceParser.inlineExpression]);
+	return parsihax_Parser.alt([dr_DiceParser.binop,dr_DiceParser.termExpression]);
 }),"expression");
 dr_DiceParser.grammar = parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.skip(parsihax_Parser.skip(dr_DiceParser.expression,dr_DiceParser.OWS),parsihax_Parser.eof()));
 dr_Discrete.zero = dr_Discrete.literal(0);

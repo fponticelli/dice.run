@@ -4,11 +4,10 @@ import doom.html.Component;
 import doom.html.Html.*;
 import haxe.ds.Option;
 import dr.DiceExpression;
-using dr.DiceExpressionExtensions;
+using dr.RollResultExtensions;
 import dr.Roller;
-import thx.Unit;
 
-class RollView extends Component<Option<DiceExpression<Unit>>> {
+class RollView extends Component<Option<DiceExpression>> {
   override function render()
     return switch props {
       case None:
@@ -19,7 +18,8 @@ class RollView extends Component<Option<DiceExpression<Unit>>> {
         });
         var r = roller.roll(expr);
         div(["class" => "roll-box"], [
-          div(["class" => "roll-result"], '${r.getMeta()}'),
+          div(["class" => "roll-result"], '${r.getResult()}'),
+          div(["class" => "roll-details"], new RollDetailsView(r)),
           button(["click" => roll], "roll again")
         ]);
     };
