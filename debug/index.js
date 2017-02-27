@@ -867,16 +867,17 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 		var state = this.props.get();
 		var _g = state.page;
 		var expr = _g[2];
-		var children;
+		var children = new view_ExpressionInput({ dispatch : function(a) {
+			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 30, className : "Main", methodName : "render"});
+		}, expr : expr}).asNode();
+		var children1;
 		if(expr[1] == 1) {
 			var e = expr[3];
-			children = haxe_ds_Option.Some(e);
+			children1 = haxe_ds_Option.Some(e);
 		} else {
-			children = haxe_ds_Option.None;
+			children1 = haxe_ds_Option.None;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([new view_RollView(children).asNode(),new view_ExpressionInput({ dispatch : function(a) {
-			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 34, className : "Main", methodName : "render"});
-		}, expr : expr}).asNode()]));
+		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([children,new view_RollView(children1).asNode()]));
 	}
 	,classes: function() {
 		return "main";
@@ -16457,23 +16458,29 @@ view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
 			break;
 		}
 		var _g2 = new haxe_ds_StringMap();
-		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString(value);
+		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("expression-input");
+		if(__map_reserved["class"] != null) {
+			_g2.setReserved("class",value1);
+		} else {
+			_g2.h["class"] = value1;
+		}
+		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString(value);
 		if(__map_reserved["value"] != null) {
-			_g2.setReserved("value",value1);
+			_g2.setReserved("value",value2);
 		} else {
-			_g2.h["value"] = value1;
+			_g2.h["value"] = value2;
 		}
-		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromElementHandler($bind(this,this.onInput));
+		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromElementHandler($bind(this,this.onInput));
 		if(__map_reserved["input"] != null) {
-			_g2.setReserved("input",value2);
+			_g2.setReserved("input",value3);
 		} else {
-			_g2.h["input"] = value2;
+			_g2.h["input"] = value3;
 		}
-		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromElementHandler($bind(this,this.selectionChange));
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromElementHandler($bind(this,this.selectionChange));
 		if(__map_reserved["keyup"] != null) {
-			_g2.setReserved("keyup",value3);
+			_g2.setReserved("keyup",value4);
 		} else {
-			_g2.h["keyup"] = value3;
+			_g2.h["keyup"] = value4;
 		}
 		var top = [doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("input",_g2,null)]))];
 		var bottom;
@@ -16829,29 +16836,29 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 				_g1.h["class"] = value;
 			}
 			var _g11 = new haxe_ds_StringMap();
-			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("roll-result");
-			if(__map_reserved["class"] != null) {
-				_g11.setReserved("class",value1);
+			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromHandler($bind(this,this.roll));
+			if(__map_reserved["click"] != null) {
+				_g11.setReserved("click",value1);
 			} else {
-				_g11.h["class"] = value1;
+				_g11.h["click"] = value1;
 			}
-			var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g11,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + dr_RollResultExtensions.getResult(r))]));
+			var children = doom_core__$VNode_VNode_$Impl_$.el("button",_g11,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("roll again")]));
 			var _g2 = new haxe_ds_StringMap();
-			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("roll-details");
+			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("roll-result");
 			if(__map_reserved["class"] != null) {
 				_g2.setReserved("class",value2);
 			} else {
 				_g2.h["class"] = value2;
 			}
-			var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Comp(new view_RollDetailsView(r))]));
+			var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + dr_RollResultExtensions.getResult(r))]));
 			var _g3 = new haxe_ds_StringMap();
-			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromHandler($bind(this,this.roll));
-			if(__map_reserved["click"] != null) {
-				_g3.setReserved("click",value3);
+			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("roll-details");
+			if(__map_reserved["class"] != null) {
+				_g3.setReserved("class",value3);
 			} else {
-				_g3.h["click"] = value3;
+				_g3.h["class"] = value3;
 			}
-			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("button",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("roll again")]))]));
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Comp(new view_RollDetailsView(r))]))]));
 		case 1:
 			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("nothing to roll")]));
 		}

@@ -5,6 +5,14 @@
   <title>Dice.Run</title>
   <style>
 
+.expression-input {
+  font-size: 1.6rem;
+  width: 100%;
+  line-height: 1.4rem;
+  text-align: center;
+  border: none;
+}
+
 .roll-result {
   font-size: 4rem;
   border-bottom: 1px solid #ccc;
@@ -25,12 +33,10 @@
 }
 
 .result {
-  flex: 1;
   border-bottom: 1px solid #ccc;
 }
 
 .details {
-  flex: 1;
 }
 
 .binop {
@@ -52,6 +58,10 @@
 
 .dice-set > * {
   flex: 1;
+}
+
+.dice-set > .comma {
+  flex: 0.2;
 }
 
 .die > * {

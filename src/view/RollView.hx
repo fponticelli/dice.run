@@ -18,9 +18,9 @@ class RollView extends Component<Option<DiceExpression>> {
         });
         var r = roller.roll(expr);
         div(["class" => "roll-box"], [
+          button(["click" => roll], "roll again"),
           div(["class" => "roll-result"], '${r.getResult()}'),
-          div(["class" => "roll-details"], new RollDetailsView(r)),
-          button(["click" => roll], "roll again")
+          div(["class" => "roll-details"], new RollDetailsView(r))
         ]);
     };
 

@@ -26,13 +26,13 @@ class Main extends Component<Store<State, Action>> {
     return switch state.page {
       case DiceSimulator(expr):
         div([
-          new RollView(switch expr {
-            case Parsed(_, e): Some(e);
-            case _: None;
-          }).asNode(),
           new ExpressionInput({
             dispatch: function(a) props.dispatch(a),
             expr: expr
+          }).asNode(),
+          new RollView(switch expr {
+            case Parsed(_, e): Some(e);
+            case _: None;
           }).asNode()
         ]);
     };

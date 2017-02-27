@@ -15,6 +15,7 @@ class ExpressionInput extends Component<SimulatorProps> {
       case Error(src, _): src;
     }
     var top = [div(input([
+          "class" => "expression-input",
           "value" => value,
           "input" => onInput,
           "keyup" => selectionChange
