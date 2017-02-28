@@ -30,10 +30,16 @@ class Main extends Component<Store<State, Action>> {
             dispatch: function(a) props.dispatch(a),
             expr: expr
           }).asNode(),
-          new RollView(switch expr {
-            case Parsed(_, e): Some(e);
-            case _: None;
-          }).asNode()
+          div(["class" => "split"], [
+            new RollView(switch expr {
+              case Parsed(_, e): Some(e);
+              case _: None;
+            }).asNode(),
+            switch expr {
+              case Parsed(_, e): new BarChart(e).asNode();
+              case _: dummy();
+            },
+          ])
         ]);
     };
   }

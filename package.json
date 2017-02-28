@@ -1,25 +1,35 @@
 {
   "name": "dice.run",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "directories": {
-    "doc": "doc"
+    "debug": "debug",
+    "deploy": "deploy"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "stylus-watch": "stylus -w styl/index.styl -o debug",
+    "stylus": "stylus styl/index.styl -o debug",
+    "closure": "closure-compiler --js_output_file deploy/index.js debug/index.js",
+    "minifycss": "minify --output deploy/index.css debug/index.css",
+    "minifyhtml": "html-minifier --output deploy/index.html debug/index.html",
+    "haxe": "haxe build.hxml",
+    "assets": "cp -r assets debug & cp -r assets deploy",
+    "syncs3": "aws s3 sync deploy s3://dice.run --profile personal",
+    "build": "npm run haxe && npm run stylus && npm run closure && npm run minifycss && npm run minifyhtml && npm run assets",
+    "deploy": "npm run build && npm run syncs3"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fponticelli/dice.run.git"
   },
-  "author": "",
+  "author": "Franco Ponticelli <franco.ponticelli@gmail.com>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/fponticelli/dice.run/issues"
   },
-  "homepage": "https://github.com/fponticelli/dice.run#readme"
+  "homepage": "https://github.com/fponticelli/dice.run#readme",
+  "description": ""
 }

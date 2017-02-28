@@ -1,0 +1,160 @@
+* {
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.barchart {
+  display: flex;
+  height: 200px;
+  min-width: 300px;
+}
+
+.bar-container:first-child .text,
+.bar-container:last-child .text,
+.bar-container.middle .text {
+  color: #999;
+  text-shadow: 0 0 1px #FFF;
+}
+
+.bar-container:hover .text {
+  color: #000;
+  text-shadow: 0 0 1px #FFF;
+}
+
+.bar {
+  background-color: #e33;
+  transition: all 2s, background-color 0.2s;
+  min-width: 1px;
+  background-image: linear-gradient(to top, #fee 0%, #e33 100%);
+}
+
+.bar:hover {
+  background-color: #a22;
+  background-image: none;
+}
+
+.split {
+  display: flex;
+}
+
+.roll-details {
+  display: flex;
+}
+
+.bar-container {
+  display: flex;
+  flex-direction: column-reverse;
+  text-align: center;
+  flex-grow: 10;
+}
+
+.label, .percent {
+  position: relative;
+}
+
+.label .text, .percent .text {
+  position: absolute;
+  white-space: nowrap;
+  font-size: 1rem;
+  text-align: center;
+  margin: 0 auto;
+  color: transparent;
+  transform: translateX(-50%);
+  left: 50%;
+}
+
+.percent .text {
+  font-size: 0.8rem;
+  bottom: 0;
+}
+
+.expression-input {
+  font-size: 1.6rem;
+  width: 100%;
+  line-height: 1.4rem;
+  text-align: center;
+  border: none;
+}
+
+.details > .die {
+  font-size: 0.6rem;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.roll-result {
+  font-size: 4rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.roll-box {
+  text-align: center;
+  justify-content: center;
+}
+
+.pair {
+  display: flex;
+  flex-direction: column;
+}
+
+.result {
+  border-bottom: 1px solid #ccc;
+}
+
+.details {
+}
+
+.binop {
+  display: flex;
+  flex-direction: row;
+}
+
+.left, .right {
+  flex: 1;
+}
+
+.op {
+  flex: 0.1;
+}
+
+.dice-set {
+  display: flex;
+}
+
+.dice-set > * {
+  flex: 1;
+}
+
+.dice-set > .comma {
+  flex: 0.2;
+}
+
+.die > * {
+  display: inline-block;
+}
+
+.discard .result {
+  color: #000;
+  position: relative;
+}
+
+.roll-details .discard .result:before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  margin: 0 auto;
+  text-align: center;
+  z-index: -1;
+  background: linear-gradient(135deg, rgba(255,255,255,0) 48.75%, rgba(255,0,0,0.8) 48.8%, rgba(255,0,0,0.8) 51.2%,  rgba(255,255,255,0) 51.25%), linear-gradient(45deg, rgba(255,255,255,0) 48.75%, rgba(255,0,0,0.8) 48.8%, rgba(255,0,0,0.8) 51.2%,  rgba(255,255,255,0) 51.25%);
+}
+
+.keep .result {
+  color: #333;
+}
+
+.normal .result {
+  color: #666;
+}

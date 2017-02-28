@@ -870,6 +870,13 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 		var children = new view_ExpressionInput({ dispatch : function(a) {
 			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 30, className : "Main", methodName : "render"});
 		}, expr : expr}).asNode();
+		var _g1 = new haxe_ds_StringMap();
+		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("split");
+		if(__map_reserved["class"] != null) {
+			_g1.setReserved("class",value);
+		} else {
+			_g1.h["class"] = value;
+		}
 		var children1;
 		if(expr[1] == 1) {
 			var e = expr[3];
@@ -877,7 +884,28 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			children1 = haxe_ds_Option.None;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([children,new view_RollView(children1).asNode()]));
+		var children2 = new view_RollView(children1).asNode();
+		var children3;
+		if(expr[1] == 1) {
+			var e1 = expr[3];
+			children3 = new view_BarChart(e1).asNode();
+		} else {
+			var _g2 = new haxe_ds_StringMap();
+			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
+			if(__map_reserved["style"] != null) {
+				_g2.setReserved("style",value1);
+			} else {
+				_g2.h["style"] = value1;
+			}
+			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
+			if(__map_reserved["data-comment"] != null) {
+				_g2.setReserved("data-comment",value2);
+			} else {
+				_g2.h["data-comment"] = value2;
+			}
+			children3 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2);
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([children,doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children2,children3]))]));
 	}
 	,classes: function() {
 		return "main";
@@ -5289,7 +5317,9 @@ dr_DiscreteAlgebra.prototype = {
 		return 0;
 	}
 	,average: function(arr) {
-		return dr_Discrete.literal(0);
+		return dr_Discrete.apply(arr,function(d) {
+			return thx_ArrayFloats.average(d);
+		});
 	}
 	,ofLiteral: function(v) {
 		return dr_Discrete.literal(v);
@@ -16430,6 +16460,103 @@ thx_stream_Subjects.wrapHandler = function(handler) {
 		}
 	};
 };
+var view_BarChart = function(props,children) {
+	doom_html_Component.call(this,props,children);
+};
+view_BarChart.__name__ = ["view","BarChart"];
+view_BarChart.__super__ = doom_html_Component;
+view_BarChart.prototype = $extend(doom_html_Component.prototype,{
+	render: function() {
+		var _gthis = this;
+		var pairs = this.probabilities();
+		var total = thx_ArrayInts.sum(pairs.map(function(_) {
+			return _._0;
+		}));
+		var minValue = thx_ArrayFloats.min(pairs.map(function(_1) {
+			return _1._1;
+		}));
+		var maxValue = thx_ArrayFloats.max(pairs.map(function(_2) {
+			return _2._1;
+		}));
+		var max = thx_ArrayInts.max(pairs.map(function(_3) {
+			return _3._0;
+		}));
+		var mid = Math.floor((minValue + maxValue) / 2);
+		haxe_Log.trace(minValue,{ fileName : "BarChart.hx", lineNumber : 18, className : "view.BarChart", methodName : "render", customParams : [maxValue,mid]});
+		var _g = new haxe_ds_StringMap();
+		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
+		if(__map_reserved["class"] != null) {
+			_g.setReserved("class",value);
+		} else {
+			_g.h["class"] = value;
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children(pairs.map(function(_4) {
+			return _gthis.renderBarContainer(Math.round(_4._1),_4._0,mid,total,max);
+		})));
+	}
+	,renderBarContainer: function(value,weight,mid,total,max) {
+		var _g = new haxe_ds_StringMap();
+		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar-container" + (mid == value ? " middle" : ""));
+		if(__map_reserved["class"] != null) {
+			_g.setReserved("class",value1);
+		} else {
+			_g.h["class"] = value1;
+		}
+		var _g1 = new haxe_ds_StringMap();
+		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
+		if(__map_reserved["class"] != null) {
+			_g1.setReserved("class",value2);
+		} else {
+			_g1.h["class"] = value2;
+		}
+		var _g2 = new haxe_ds_StringMap();
+		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
+		if(__map_reserved["class"] != null) {
+			_g2.setReserved("class",value3);
+		} else {
+			_g2.h["class"] = value3;
+		}
+		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + value)]))]));
+		var _g3 = new haxe_ds_StringMap();
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar");
+		if(__map_reserved["class"] != null) {
+			_g3.setReserved("class",value4);
+		} else {
+			_g3.h["class"] = value4;
+		}
+		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("height: " + weight / max * 150 + "px");
+		if(__map_reserved["style"] != null) {
+			_g3.setReserved("style",value5);
+		} else {
+			_g3.h["style"] = value5;
+		}
+		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("")]));
+		var _g4 = new haxe_ds_StringMap();
+		var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("percent");
+		if(__map_reserved["class"] != null) {
+			_g4.setReserved("class",value6);
+		} else {
+			_g4.h["class"] = value6;
+		}
+		var _g5 = new haxe_ds_StringMap();
+		var value7 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
+		if(__map_reserved["class"] != null) {
+			_g5.setReserved("class",value7);
+		} else {
+			_g5.h["class"] = value7;
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(thx_format_NumberFormat.fixed(weight / total * 100,1))]))]))]));
+	}
+	,probabilities: function() {
+		var roller = dr_Roller.discrete();
+		var discrete = dr_RollResultExtensions.getResult(roller.roll(this.props));
+		return discrete.weightedValues;
+	}
+	,classes: function() {
+		return "view_bar-chart";
+	}
+	,__class__: view_BarChart
+});
 var view_ExpressionInput = function(props,children) {
 	this.end = 0;
 	this.start = 0;
@@ -16658,7 +16785,9 @@ view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g11.h["class"] = value2;
 			}
-			return doom_core__$VNode_VNode_$Impl_$.el("div",_g11,doom_core__$VNodes_VNodes_$Impl_$.children(seq));
+			var result = seq.slice();
+			result.reverse();
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g11,doom_core__$VNodes_VNodes_$Impl_$.children(result));
 		case 1:
 			var explosions = d[2];
 			var _g2 = new haxe_ds_StringMap();
@@ -16668,7 +16797,9 @@ view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g2.h["class"] = value3;
 			}
-			return doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children(explosions.map($bind(this,this.renderDie)).map(function(n1) {
+			var result1 = explosions.slice();
+			result1.reverse();
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children(result1.map($bind(this,this.renderDie)).map(function(n1) {
 				var _g12 = new haxe_ds_StringMap();
 				var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("keep");
 				if(__map_reserved["class"] != null) {

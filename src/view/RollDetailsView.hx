@@ -5,7 +5,6 @@ import doom.html.Html.*;
 import doom.core.VNode;
 import dr.DiceExpression;
 import dr.RollResult;
-using thx.Functions;
 using thx.Arrays;
 
 /*
@@ -62,9 +61,9 @@ class RollDetailsView extends Component<RollResult<Int>> {
           return div(["class" => "discard"], n);
         });
         seq.push(div(["class" => "keep"], renderDie(rerolls.last())));
-        div(["class" => "rerolled"], seq);
+        div(["class" => "rerolled"], seq.reversed());
       case Exploded(explosions):
-        div(["class" => "exploded"], explosions.map(renderDie).map(function(n) {
+        div(["class" => "exploded"], explosions.reversed().map(renderDie).map(function(n) {
           return div(["class" => "keep"], n);
         }));
       case Normal(roll):
