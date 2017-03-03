@@ -103,6 +103,7 @@
 }
 .dice-set > .comma {
   flex: 0.2;
+  padding-top: 10px;
 }
 .die > * {
   display: inline-block;
@@ -129,4 +130,10 @@
 }
 .normal .result {
   color: #666;
+}
+.die-icon {
+  font-size: 36px;
+}
+.discard .die-icon {
+  color: #ccc;
 }

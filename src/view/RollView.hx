@@ -6,6 +6,8 @@ import haxe.ds.Option;
 import dr.DiceExpression;
 using dr.RollResultExtensions;
 import dr.Roller;
+using thx.Arrays;
+using thx.Functions;
 
 class RollView extends Component<Option<DiceExpression>> {
   override function render()
@@ -26,4 +28,29 @@ class RollView extends Component<Option<DiceExpression>> {
 
   function roll()
     update(props);
+
+  override function didMount() {
+    trace("RollDetailsView WILL MOUNT");
+    rollEffect();
+  }
+
+  override function willUpdate() {
+    // dots.Query.select(".die-icon").each.fn(dots.Dom.removeClass(_, "roll"));
+  }
+
+  override function didUpdate() {
+    rollEffect();
+  }
+
+  function rollEffect() {
+    var x;
+    dots.Query.select(".roll").each(function(el) {
+      for(i in 1...6)
+        dots.Dom.removeClass(el, 'roll${i}');
+      x = el.offsetWidth;
+      var r = Math.ceil(Math.random() * 5);
+      dots.Dom.addClass(el, 'roll$r');
+    });
+    return x; // just try to keep the side effect so that the animation refreshes
+  }
 }

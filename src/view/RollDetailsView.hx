@@ -6,6 +6,7 @@ import doom.core.VNode;
 import dr.DiceExpression;
 import dr.RollResult;
 using thx.Arrays;
+using thx.Functions;
 
 /*
 OneResult
@@ -18,6 +19,15 @@ UnaryOpResult
 class RollDetailsView extends Component<RollResult<Int>> {
   override function render() {
     return renderRollResult(props);
+  }
+
+  override function willMount() {
+    trace("RollDetailsView WILL MOUNT");
+    // dots.Query.select(".roll").each.fn(dots.Dom.removeClass(_, "roll"));
+  }
+
+  override function willUpdate() {
+    trace("RollDetailsView WILL UPDATE");
   }
 
   function renderRollResult(result: RollResult<Int>) {
@@ -86,30 +96,45 @@ class RollDetailsView extends Component<RollResult<Int>> {
     return rolls.map(renderRollFilterResult).interspersef(instersperseOp(reducer));
 
   function renderRolls(rolls: Array<VNode>, result: Int, reducer) {
-    return details(result, function() {
-      var content = [
-        div(
-          ["class" => "dice-set"],
-          rolls
-        )
-      ];
-      switch reducer {
-        case Average: content.push(div("average"));
-        case Min: content.push(div("min"));
-        case Max: content.push(div("max"));
-        case _:
-      }
-      return div(["class" => "reduce"], content);
-    });
+    return if(rolls.length == 1) {
+      div(["class" => "reduce"], rolls.concat(displayReducer(reducer)));
+    } else {
+      details(result, function() {
+        var content = [
+          div(
+            ["class" => "dice-set"],
+            rolls
+          )
+        ];
+        return div(["class" => "reduce"], content.concat(displayReducer(reducer)));
+      });
+    }
+  }
+
+  function displayReducer(reducer) {
+    return switch reducer {
+      case Average: div("average");
+      case Min: div("min");
+      case Max: div("max");
+      case _: dummy();
+    };
   }
 
   function renderDie(die: DieResult<Int>) {
-    return details(die.result, function() {
-      return div(["class" => "die"], [
-        div(["class" => "d"], "d"),
-        div(["class" => "X"], die.sides == 100 ? "%" : "" + die.sides)
-      ]);
-    });
+    var r = 'roll${Math.ceil(Math.random() * 5)}';
+    return switch die.sides {
+      case 6:
+        div(["class" => 'die-icon roll $r'], [i(["class" => 'df-dot-d6-${die.result}'])]);
+      case 2, 4, 8, 10, 12, 20:
+        div(["class" => 'die-icon roll $r'], [i(["class" => 'df-d${die.sides}-${die.result}'])]);
+      case _:
+        details(die.result, function() {
+          return div(["class" => "die"], [
+            div(["class" => "d"], "d"),
+            div(["class" => "X"], die.sides == 100 ? "%" : "" + die.sides)
+          ]);
+        });
+    }
   }
 
   function renderOp(op: DiceBinOp) return switch op {

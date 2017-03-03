@@ -16646,6 +16646,12 @@ view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
 	render: function() {
 		return this.renderRollResult(this.props);
 	}
+	,willMount: function() {
+		haxe_Log.trace("RollDetailsView WILL MOUNT",{ fileName : "RollDetailsView.hx", lineNumber : 25, className : "view.RollDetailsView", methodName : "willMount"});
+	}
+	,willUpdate: function() {
+		haxe_Log.trace("RollDetailsView WILL UPDATE",{ fileName : "RollDetailsView.hx", lineNumber : 30, className : "view.RollDetailsView", methodName : "willUpdate"});
+	}
 	,renderRollResult: function(result) {
 		switch(result[1]) {
 		case 0:
@@ -16844,63 +16850,126 @@ view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
 		return thx_Arrays.interspersef(rolls.map($bind(this,this.renderRollFilterResult)),this.instersperseOp(reducer));
 	}
 	,renderRolls: function(rolls,result,reducer) {
-		return this.details(result,function() {
+		var _gthis = this;
+		if(rolls.length == 1) {
 			var _g = new haxe_ds_StringMap();
-			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("dice-set");
+			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("reduce");
 			if(__map_reserved["class"] != null) {
 				_g.setReserved("class",value);
 			} else {
 				_g.h["class"] = value;
 			}
-			var content = [doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children(rolls))];
-			switch(reducer[1]) {
-			case 1:
-				content.push(doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("average")])));
-				break;
-			case 2:
-				content.push(doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("min")])));
-				break;
-			case 3:
-				content.push(doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("max")])));
-				break;
-			default:
-			}
-			var _g1 = new haxe_ds_StringMap();
-			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("reduce");
-			if(__map_reserved["class"] != null) {
-				_g1.setReserved("class",value1);
+			var children = doom_core__$VNodes_VNodes_$Impl_$.children([this.displayReducer(reducer)]);
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children(rolls.concat(children)));
+		} else {
+			return this.details(result,function() {
+				var _g1 = new haxe_ds_StringMap();
+				var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("dice-set");
+				if(__map_reserved["class"] != null) {
+					_g1.setReserved("class",value1);
+				} else {
+					_g1.h["class"] = value1;
+				}
+				var content = [doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children(rolls))];
+				var _g11 = new haxe_ds_StringMap();
+				var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("reduce");
+				if(__map_reserved["class"] != null) {
+					_g11.setReserved("class",value2);
+				} else {
+					_g11.h["class"] = value2;
+				}
+				return doom_core__$VNode_VNode_$Impl_$.el("div",_g11,doom_core__$VNodes_VNodes_$Impl_$.children(content.concat(doom_core__$VNodes_VNodes_$Impl_$.children([_gthis.displayReducer(reducer)]))));
+			});
+		}
+	}
+	,displayReducer: function(reducer) {
+		switch(reducer[1]) {
+		case 1:
+			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("average")]));
+		case 2:
+			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("min")]));
+		case 3:
+			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("max")]));
+		default:
+			var _g = new haxe_ds_StringMap();
+			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
+			if(__map_reserved["style"] != null) {
+				_g.setReserved("style",value);
 			} else {
-				_g1.h["class"] = value1;
+				_g.h["style"] = value;
 			}
-			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children(content));
-		});
+			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
+			if(__map_reserved["data-comment"] != null) {
+				_g.setReserved("data-comment",value1);
+			} else {
+				_g.h["data-comment"] = value1;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g);
+		}
 	}
 	,renderDie: function(die) {
-		return this.details(die.result,function() {
-			var _g = new haxe_ds_StringMap();
-			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("die");
-			if(__map_reserved["class"] != null) {
-				_g.setReserved("class",value);
-			} else {
-				_g.h["class"] = value;
-			}
+		var r = "roll" + Math.ceil(Math.random() * 5);
+		var _g = die.sides;
+		switch(_g) {
+		case 6:
 			var _g1 = new haxe_ds_StringMap();
-			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("d");
+			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("die-icon roll " + r);
 			if(__map_reserved["class"] != null) {
-				_g1.setReserved("class",value1);
+				_g1.setReserved("class",value);
 			} else {
-				_g1.h["class"] = value1;
+				_g1.h["class"] = value;
 			}
-			var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("d")]));
+			var _g11 = new haxe_ds_StringMap();
+			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("df-dot-d6-" + die.result);
+			if(__map_reserved["class"] != null) {
+				_g11.setReserved("class",value1);
+			} else {
+				_g11.h["class"] = value1;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("i",_g11,null)]));
+		case 2:case 4:case 8:case 10:case 12:case 20:
 			var _g2 = new haxe_ds_StringMap();
-			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("X");
+			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("die-icon roll " + r);
 			if(__map_reserved["class"] != null) {
 				_g2.setReserved("class",value2);
 			} else {
 				_g2.h["class"] = value2;
 			}
-			return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,doom_core__$VNode_VNode_$Impl_$.el("div",_g2,die.sides == 100 ? doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("%")]) : doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + die.sides)]))]));
-		});
+			var _g12 = new haxe_ds_StringMap();
+			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("df-d" + die.sides + "-" + die.result);
+			if(__map_reserved["class"] != null) {
+				_g12.setReserved("class",value3);
+			} else {
+				_g12.h["class"] = value3;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("i",_g12,null)]));
+		default:
+			return this.details(die.result,function() {
+				var _g3 = new haxe_ds_StringMap();
+				var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("die");
+				if(__map_reserved["class"] != null) {
+					_g3.setReserved("class",value4);
+				} else {
+					_g3.h["class"] = value4;
+				}
+				var _g13 = new haxe_ds_StringMap();
+				var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("d");
+				if(__map_reserved["class"] != null) {
+					_g13.setReserved("class",value5);
+				} else {
+					_g13.h["class"] = value5;
+				}
+				var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g13,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("d")]));
+				var _g21 = new haxe_ds_StringMap();
+				var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("X");
+				if(__map_reserved["class"] != null) {
+					_g21.setReserved("class",value6);
+				} else {
+					_g21.h["class"] = value6;
+				}
+				return doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([children,doom_core__$VNode_VNode_$Impl_$.el("div",_g21,die.sides == 100 ? doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("%")]) : doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + die.sides)]))]));
+			});
+		}
 	}
 	,renderOp: function(op) {
 		switch(op[1]) {
@@ -16995,7 +17064,31 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 		}
 	}
 	,roll: function() {
-		this.update(this.props,{ fileName : "RollView.hx", lineNumber : 28, className : "view.RollView", methodName : "roll"});
+		this.update(this.props,{ fileName : "RollView.hx", lineNumber : 30, className : "view.RollView", methodName : "roll"});
+	}
+	,didMount: function() {
+		haxe_Log.trace("RollDetailsView WILL MOUNT",{ fileName : "RollView.hx", lineNumber : 33, className : "view.RollView", methodName : "didMount"});
+		this.rollEffect();
+	}
+	,willUpdate: function() {
+	}
+	,didUpdate: function() {
+		this.rollEffect();
+	}
+	,rollEffect: function() {
+		var x;
+		var list = dots_Query.selectNodes(".roll",null);
+		thx_Arrays.each(Array.prototype.slice.call(list,0),function(el) {
+			var _g = 1;
+			while(_g < 6) {
+				var i = _g++;
+				el.classList.remove("roll" + i);
+			}
+			x = el.offsetWidth;
+			var r = Math.ceil(Math.random() * 5);
+			el.classList.add("roll" + r);
+		});
+		return x;
 	}
 	,classes: function() {
 		return "view_roll-view";
