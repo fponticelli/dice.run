@@ -16646,12 +16646,6 @@ view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
 	render: function() {
 		return this.renderRollResult(this.props);
 	}
-	,willMount: function() {
-		haxe_Log.trace("RollDetailsView WILL MOUNT",{ fileName : "RollDetailsView.hx", lineNumber : 25, className : "view.RollDetailsView", methodName : "willMount"});
-	}
-	,willUpdate: function() {
-		haxe_Log.trace("RollDetailsView WILL UPDATE",{ fileName : "RollDetailsView.hx", lineNumber : 30, className : "view.RollDetailsView", methodName : "willUpdate"});
-	}
 	,renderRollResult: function(result) {
 		switch(result[1]) {
 		case 0:
@@ -17064,13 +17058,10 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 		}
 	}
 	,roll: function() {
-		this.update(this.props,{ fileName : "RollView.hx", lineNumber : 30, className : "view.RollView", methodName : "roll"});
+		this.update(this.props,{ fileName : "RollView.hx", lineNumber : 29, className : "view.RollView", methodName : "roll"});
 	}
 	,didMount: function() {
-		haxe_Log.trace("RollDetailsView WILL MOUNT",{ fileName : "RollView.hx", lineNumber : 33, className : "view.RollView", methodName : "didMount"});
 		this.rollEffect();
-	}
-	,willUpdate: function() {
 	}
 	,didUpdate: function() {
 		this.rollEffect();

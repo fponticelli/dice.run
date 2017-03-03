@@ -6,28 +6,10 @@ import doom.core.VNode;
 import dr.DiceExpression;
 import dr.RollResult;
 using thx.Arrays;
-using thx.Functions;
 
-/*
-OneResult
-LiteralResult
-DiceMapResult
-DiceReducerResult
-BinaryOpResult
-UnaryOpResult
-*/
 class RollDetailsView extends Component<RollResult<Int>> {
   override function render() {
     return renderRollResult(props);
-  }
-
-  override function willMount() {
-    trace("RollDetailsView WILL MOUNT");
-    // dots.Query.select(".roll").each.fn(dots.Dom.removeClass(_, "roll"));
-  }
-
-  override function willUpdate() {
-    trace("RollDetailsView WILL UPDATE");
   }
 
   function renderRollResult(result: RollResult<Int>) {

@@ -7,7 +7,6 @@ import dr.DiceExpression;
 using dr.RollResultExtensions;
 import dr.Roller;
 using thx.Arrays;
-using thx.Functions;
 
 class RollView extends Component<Option<DiceExpression>> {
   override function render()
@@ -29,18 +28,11 @@ class RollView extends Component<Option<DiceExpression>> {
   function roll()
     update(props);
 
-  override function didMount() {
-    trace("RollDetailsView WILL MOUNT");
+  override function didMount()
     rollEffect();
-  }
 
-  override function willUpdate() {
-    // dots.Query.select(".die-icon").each.fn(dots.Dom.removeClass(_, "roll"));
-  }
-
-  override function didUpdate() {
+  override function didUpdate()
     rollEffect();
-  }
 
   function rollEffect() {
     var x;
