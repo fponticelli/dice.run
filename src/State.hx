@@ -9,7 +9,7 @@ enum PageView {
 }
 
 enum Expression {
-  Unparsed(src: String);
-  Parsed(src: String, expr: DiceExpression);
-  Error(src: String, message: String);
+  Unparsed(source: String);
+  Parsed(source: String, normalized: String, expr: DiceExpression);
+  Error(source: String, message: String);
 }

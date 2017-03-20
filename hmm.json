@@ -24,6 +24,11 @@
       "url": "git@github.com:HaxeFoundation/hscript"
     },
     {
+      "name": "markdown",
+      "type": "haxelib",
+      "version": "1.0.0"
+    },
+    {
       "name": "modular",
       "type": "haxelib"
     },

@@ -14,7 +14,7 @@ class RollView extends Component<Option<DiceExpression>> {
       case None:
         div("nothing to roll");
       case Some(expr):
-        var roller = Roller.int(function(sides) {
+        var roller = new Roller(function(sides) {
           return 1 + Math.floor(Math.random() * sides);
         });
         var r = roller.roll(expr);

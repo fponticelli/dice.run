@@ -7,12 +7,12 @@ import dr.DiceExpression;
 import dr.RollResult;
 using thx.Arrays;
 
-class RollDetailsView extends Component<RollResult<Int>> {
+class RollDetailsView extends Component<RollResult> {
   override function render() {
     return renderRollResult(props);
   }
 
-  function renderRollResult(result: RollResult<Int>) {
+  function renderRollResult(result: RollResult) {
     return switch result {
       case OneResult(die):
         renderDie(die);
@@ -37,7 +37,7 @@ class RollDetailsView extends Component<RollResult<Int>> {
     };
   }
 
-  function renderRollFilterResult(d: DieResultFilter<Int>) {
+  function renderRollFilterResult(d: DieResultFilter) {
     return switch d {
       case Keep(roll):
         div(["class" => "keep"], renderRollResult(roll));
@@ -46,7 +46,7 @@ class RollDetailsView extends Component<RollResult<Int>> {
     };
   }
 
-  function renderRollMapResult(d: DiceResultMapped<Int>) {
+  function renderRollMapResult(d: DiceResultMapped) {
     return switch d {
       case Rerolled(rerolls):
         var seq = rerolls.slice(0, -1).map(renderDie).map(function(n) {
@@ -68,13 +68,13 @@ class RollDetailsView extends Component<RollResult<Int>> {
     return function() return div(["class" => "comma"], op);
   }
 
-  function renderExpressionSet(rolls: Array<RollResult<Int>>, reducer)
+  function renderExpressionSet(rolls: Array<RollResult>, reducer)
     return rolls.map(renderRollResult).interspersef(instersperseOp(reducer));
 
-  function renderDieResultMapSet(rolls: Array<DiceResultMapped<Int>>, functor, reducer)
+  function renderDieResultMapSet(rolls: Array<DiceResultMapped>, functor, reducer)
     return rolls.map(renderRollMapResult).interspersef(instersperseOp(reducer));
 
-  function renderDieResultFilterSet(rolls: Array<DieResultFilter<Int>>, filter, reducer)
+  function renderDieResultFilterSet(rolls: Array<DieResultFilter>, filter, reducer)
     return rolls.map(renderRollFilterResult).interspersef(instersperseOp(reducer));
 
   function renderRolls(rolls: Array<VNode>, result: Int, reducer) {
@@ -102,7 +102,7 @@ class RollDetailsView extends Component<RollResult<Int>> {
     };
   }
 
-  function renderDie(die: DieResult<Int>) {
+  function renderDie(die: DieResult) {
     var r = 'roll${Math.ceil(Math.random() * 5)}';
     return switch die.sides {
       case 6:

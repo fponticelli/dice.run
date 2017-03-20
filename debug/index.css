@@ -3,8 +3,8 @@
 }
 .barchart {
   display: flex;
-  height: 200px;
-  min-width: 300px;
+  height: 140px;
+  width: 300px;
 }
 .bar-container:first-child .text,
 .bar-container:last-child .text,
@@ -31,6 +31,9 @@
 }
 .roll-details {
   display: flex;
+  max-width: 200px;
+  overflow-y: hidden;
+  overflow-x: auto;
 }
 .bar-container {
   display: flex;
@@ -84,6 +87,7 @@
 .result {
   border-bottom: 1px solid #ccc;
 }
+.details,
 .binop {
   display: flex;
   flex-direction: row;

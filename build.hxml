@@ -4,6 +4,7 @@
 -lib thx.stream
 -lib doom
 -lib dots
+-lib markdown
 -lib parsihax
 -lib diceroller
 -cp src
@@ -11,3 +12,17 @@
 -js debug/index.js
 
 -cmd echo "build successfull"
+
+--next
+-lib thx.core
+-lib thx.format
+-lib thx.promise
+-lib thx.stream
+-lib doom
+-lib dots
+-lib markdown
+-lib parsihax
+-lib diceroller
+-cp src
+view.DiceWorker
+-js debug/worker.js

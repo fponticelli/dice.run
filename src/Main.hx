@@ -6,6 +6,7 @@ import dots.Query;
 import thx.stream.Property;
 import thx.stream.Store;
 import State;
+import Markdown.*;
 
 class Main extends Component<Store<State, Action>> {
   static public function main() {
@@ -18,7 +19,7 @@ class Main extends Component<Store<State, Action>> {
     store.stream()
       .next(function(_) app.update(store))
       .run();
-    store.dispatch(EvaluateExpression("5d6 drop 2 + 2"));
+    store.dispatch(EvaluateExpression("2d6 explode once on 4 or more")); // "2d6 drop 1")); // "5d6 drop 2 + 2"));
   }
 
   override function render() {
@@ -32,13 +33,16 @@ class Main extends Component<Store<State, Action>> {
           }).asNode(),
           div(["class" => "split"], [
             new RollView(switch expr {
-              case Parsed(_, e): Some(e);
+              case Parsed(_, _, e): Some(e);
               case _: None;
             }).asNode(),
             switch expr {
-              case Parsed(_, e): new BarChart(e).asNode();
-              case _: dummy();
+              case Parsed(s, n, e):
+                new BarChart({ expression: n, parsed: e, probabilities: new ProbabilitiesResult() }).asNode();
+              case _:
+                dummy();
             },
+            div(["class" => "description"], raw(markdownToHtml(Loc.description)))
           ])
         ]);
     };
