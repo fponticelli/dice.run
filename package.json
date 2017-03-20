@@ -12,7 +12,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "stylus-watch": "stylus -w styl/index.styl -o debug",
     "stylus": "stylus styl/index.styl -o debug",
-    "closure": "closure-compiler --js_output_file deploy/index.js debug/index.js",
+    "closure": "closure-compiler --js_output_file deploy/index.js debug/index.js && closure-compiler --js_output_file deploy/worker.js debug/worker.js",
     "minifycss": "minify --output deploy/index.css debug/index.css",
     "minifyhtml": "html-minifier --output deploy/index.html debug/index.html",
     "haxe": "haxe build.hxml",
