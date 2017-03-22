@@ -11,23 +11,23 @@ using thx.Strings;
 
 class Main extends Component<Store<State, Action>> {
   static public function main() {
-    var state: State = { expression: Unparsed("") };
+    var state: State = { expression: Unparsed(""), seed: 1234567890 };
     var mw = new Middleware();
     var store = new Store(new Property(state), Reducer.reduce, mw.api);
     var app = new Main(store);
 
     Doom.browser.mount(app, Query.find("#main"));
     store.stream()
+      // .log()
       .next(function(_) app.update(store))
       .run();
 
     function dispatchHash() {
       var h = js.Browser.location.hash.trimCharsLeft("#/");
-      // trace(h);
       if(h.startsWith("d/")) {
         store.dispatch(EvaluateExpression(prettify(h.substring(2))));
       } else if(h == "") {
-        store.dispatch(EvaluateExpression("4d6 drop 1")); // sample
+        store.dispatch(EvaluateExpression("3d6"));
       }
     }
 
@@ -53,7 +53,11 @@ class Main extends Component<Store<State, Action>> {
           dummy();
       },
       new RollView(switch state.expression {
-        case Parsed(_, _, e): Some(e);
+        case Parsed(_, _, e): Some({
+          expression: e,
+          seed: state.seed,
+          updateSeed: function(seed: Int) props.dispatch(UpdateSeed(seed))
+        });
         case _: None;
       }).asNode(),
       div(["class" => "description"], raw(markdownToHtml(Loc.description)))

@@ -106,9 +106,9 @@ class RollDetailsView extends Component<RollResult> {
     var r = 'roll${Math.ceil(Math.random() * 5)}';
     return switch die.sides {
       case 6:
-        div(["class" => 'die-icon roll $r'], [i(["class" => 'df-dot-d6-${die.result}'])]);
+        div(["class" => "die-container"], div(["class" => 'die-icon roll $r'], [i(["class" => 'df-dot-d6-${die.result}'])]));
       case 2, 4, 8, 10, 12, 20:
-        div(["class" => 'die-icon roll $r'], [i(["class" => 'df-d${die.sides}-${die.result}'])]);
+        div(["class" => "die-container"], div(["class" => 'die-icon roll $r'], [i(["class" => 'df-d${die.sides}-${die.result}'])]));
       case _:
         details(die.result, function() {
           return div(["class" => "die"], [

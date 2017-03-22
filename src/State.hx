@@ -2,12 +2,8 @@ import dr.DiceExpression;
 
 typedef State = {
   expression: Expression,
-
+  seed: Int
 }
-
-// enum PageView {
-//   DiceSimulator(expr: Expression);
-// }
 
 enum Expression {
   Unparsed(source: String);

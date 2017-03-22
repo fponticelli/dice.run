@@ -1,5 +1,6 @@
 -lib thx.core
 -lib thx.format
+-lib thx.math
 -lib thx.promise
 -lib thx.stream
 -lib doom

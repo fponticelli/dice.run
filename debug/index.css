@@ -3,7 +3,7 @@
 }
 .barchart {
   display: flex;
-  height: 110px;
+  height: 120px;
   width: 100%;
   margin: 0 0.25rem;
 }
@@ -32,10 +32,12 @@
 }
 .roll-details {
   display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin-left: 24px;
 }
 .roll-details > * {
   margin: 0 auto;
-  border-top: 1px solid #ddd;
 }
 .bar-container {
   display: flex;
@@ -46,6 +48,7 @@
 .label,
 .percent {
   position: relative;
+  height: 1rem;
 }
 .label .text,
 .percent .text {
@@ -63,25 +66,55 @@
   bottom: 0;
 }
 .expression-input {
-  font-size: 2rem;
+  font-size: 2.4rem;
   font-weight: bold;
-  font-family: monospace;
   width: 100%;
-  line-height: 3.2rem;
   text-align: center;
   border: none;
+  margin-bottom: 0.5rem;
 }
 .details > .die {
   font-size: 0.6rem;
   margin: 0;
   white-space: nowrap;
 }
-.roll-result {
-  font-size: 6rem;
+.roll-result a {
+  font-size: 5rem;
+  width: 9rem;
+  height: 9rem;
+  display: inline-block;
+  position: relative;
+  line-height: 9rem;
+  background-color: #eaeaea;
+  background-image: linear-gradient(top, #f6f6f6, #eaeaea);
+  border-radius: 4.5rem;
+  box-shadow: 0 3px 3px rgba(0,0,0,0.25), 0 6px 9px rgba(0,0,0,0.1);
+  text-decoration: none;
+  color: #000;
+}
+.roll-result a::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: -16px;
+  right: -16px;
+  bottom: -16px;
+  left: -16px;
+  background-color: #eaeaea;
+  border-radius: 8rem;
+  opacity: 0.5;
+}
+.roll-result a:focus {
+  outline: none;
+}
+.roll-result a:focus::before {
+  background-color: #eaeaff;
 }
 .roll-box {
   text-align: center;
   justify-content: center;
+  display: flex;
+  padding-top: 1.5rem;
 }
 .pair {
   display: flex;
@@ -141,6 +174,9 @@
 .die-icon {
   font-size: 36px;
 }
+.die-container {
+  width: 80px;
+}
 .discard .die-icon {
   color: #ccc;
 }
@@ -170,4 +206,25 @@
 .probabilities {
   display: flex;
   justify-content: space-between;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.roll-seed {
+  margin-top: 18px;
+  color: #999;
+  font-size: 0.8rem;
+}
+.text-editor {
+  min-width: 30px;
+  border-bottom: 1px dashed #999;
+  padding: 0 4px;
+}
+.text-editor:focus {
+  outline: none;
+}
+.stats {
+  position: absolute;
+  right: 0;
+  font-size: 0.8rem;
+  color: #999;
 }

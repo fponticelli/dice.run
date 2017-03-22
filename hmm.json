@@ -8,13 +8,13 @@
     {
       "name": "doom",
       "type": "git",
-      "ref": "bd4956a",
+      "ref": "7c608c2",
       "url": "git@github.com:fponticelli/doom"
     },
     {
       "name": "dots",
       "type": "git",
-      "ref": "35872d0",
+      "ref": "9b7c752",
       "url": "git@github.com:fponticelli/dots"
     },
     {
@@ -70,7 +70,7 @@
     {
       "name": "thx.math",
       "type": "git",
-      "ref": "f012d9f",
+      "ref": "ec603e1",
       "url": "git@github.com:fponticelli/thx.math"
     },
     {

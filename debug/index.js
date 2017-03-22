@@ -6,8 +6,9 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
-var Action = { __ename__ : ["Action"], __constructs__ : ["EvaluateExpression"] };
+var Action = { __ename__ : ["Action"], __constructs__ : ["EvaluateExpression","UpdateSeed"] };
 Action.EvaluateExpression = function(expr) { var $x = ["EvaluateExpression",0,expr]; $x.__enum__ = Action; return $x; };
+Action.UpdateSeed = function(value) { var $x = ["UpdateSeed",1,value]; $x.__enum__ = Action; return $x; };
 var DateTools = function() { };
 DateTools.__name__ = ["DateTools"];
 DateTools.getMonthDays = function(d) {
@@ -58,7 +59,11 @@ var doom_html_Render = function(doc,namespaces) {
 doom_html_Render.__name__ = ["doom","html","Render"];
 doom_html_Render.__interfaces__ = [doom_core_IRender];
 doom_html_Render.setEvent = function(el,name,handler) {
-	el["on" + name] = handler;
+	var f = handler;
+	var a1 = el;
+	el["on" + name] = function(a2) {
+		f(a1,a2);
+	};
 };
 doom_html_Render.removeEvent = function(el,name) {
 	Reflect.deleteField(el,"on" + name);
@@ -81,6 +86,21 @@ doom_html_Render.prototype = {
 			++_g;
 			f();
 		}
+		return n;
+	}
+	,stream: function(stream,parent) {
+		var _gthis = this;
+		var el = null;
+		stream.next(function(node) {
+			if(null == el) {
+				el = _gthis.mount(node,parent);
+			} else {
+				_gthis.apply(node,el);
+			}
+		}).failure(function(err) {
+			throw err;
+		}).run();
+		return;
 	}
 	,apply: function(node,dom) {
 		var post = [];
@@ -119,6 +139,8 @@ doom_html_Render.prototype = {
 		}
 		switch(node[1]) {
 		case 0:
+			var onUnmount = node[6];
+			var onMount = node[5];
 			var children = node[4];
 			var attributes = node[3];
 			var name = node[2];
@@ -127,12 +149,16 @@ doom_html_Render.prototype = {
 			}
 			return this.applyElementToNode(name,attributes,children,dom,parent,post);
 		case 1:
+			var onUnmount1 = node[4];
+			var onMount1 = node[3];
 			var comment = node[2];
 			if(tryUnmount) {
 				this.unmountDomComponent(dom);
 			}
 			return this.applyCommentToNode(comment,dom,parent,post);
 		case 2:
+			var onUnmount2 = node[4];
+			var onMount2 = node[3];
 			var code = node[2];
 			if(tryUnmount) {
 				this.unmountDomComponent(dom);
@@ -140,6 +166,8 @@ doom_html_Render.prototype = {
 			var node1 = dots_Html.parse(code);
 			return this.applyNodeToNode(node1,dom,parent,true);
 		case 3:
+			var onUnmount3 = node[4];
+			var onMount3 = node[3];
 			var text = node[2];
 			if(tryUnmount) {
 				this.unmountDomComponent(dom);
@@ -285,14 +313,7 @@ doom_html_Render.prototype = {
 		}
 	}
 	,renderComponent: function(comp) {
-		try {
-			return comp.render();
-		} catch( e ) {
-			haxe_CallStack.lastException = e;
-			if (e instanceof js__$Boot_HaxeError) e = e.val;
-			var typeName = thx_Types.toString(Type["typeof"](comp));
-			throw new thx_error_ErrorWrapper("unable to render " + typeName,e,null,{ fileName : "Render.hx", lineNumber : 231, className : "doom.html.Render", methodName : "renderComponent"});
-		}
+		return comp.render();
 	}
 	,unmountComponent: function(comp) {
 		this.domComponentMap.removeByComponent(comp);
@@ -467,7 +488,11 @@ doom_html_Render.prototype = {
 					break;
 				case 2:
 					var e = _g21[2];
-					doom_html_Render.setEvent(dom,key5,e);
+					doom_html_Render.setEvent(dom,key5,(function(f) {
+						return function(el,e1) {
+							f[0](el,e1);
+						};
+					})([e]));
 					break;
 				}
 			}
@@ -476,31 +501,75 @@ doom_html_Render.prototype = {
 	,generateDom: function(node,post) {
 		switch(node[1]) {
 		case 0:
+			var onUnmount = node[6];
+			var onMount = node[5];
 			var children = node[4];
 			var attributes = node[3];
 			var name = node[2];
-			return this.createElement(name,attributes,children,post);
+			var dom = this.createElement(name,attributes,children,post);
+			if(null != onMount) {
+				var f = onMount;
+				var a1 = this;
+				var a2 = dom;
+				post.push(function() {
+					f(a1,a2);
+				});
+			}
+			return dom;
 		case 1:
+			var onUnmount1 = node[4];
+			var onMount1 = node[3];
 			var comment = node[2];
-			return this.doc.createComment(comment);
+			var c = this.doc.createComment(comment);
+			if(null != onMount1) {
+				var f1 = onMount1;
+				var a11 = this;
+				var a21 = c;
+				post.push(function() {
+					f1(a11,a21);
+				});
+			}
+			return c;
 		case 2:
+			var onUnmount2 = node[4];
+			var onMount2 = node[3];
 			var code = node[2];
-			return dots_Html.parse(code);
+			var r = dots_Html.parse(code);
+			if(null != onMount2) {
+				var f2 = onMount2;
+				var a12 = this;
+				var a22 = r;
+				post.push(function() {
+					f2(a12,a22);
+				});
+			}
+			return r;
 		case 3:
+			var onUnmount3 = node[4];
+			var onMount3 = node[3];
 			var text = node[2];
-			return this.doc.createTextNode(text);
+			var t = this.doc.createTextNode(text);
+			if(null != onMount3) {
+				var f3 = onMount3;
+				var a13 = this;
+				var a23 = t;
+				post.push(function() {
+					f3(a13,a23);
+				});
+			}
+			return t;
 		case 4:
 			var comp = node[2];
 			comp.willMount();
 			var node1 = this.renderComponent(comp);
-			var dom = this.generateDom(node1,post);
-			comp.node = dom;
+			var dom1 = this.generateDom(node1,post);
+			comp.node = dom1;
 			comp.apply = $bind(this,this.apply);
 			post.splice(0,0,function() {
 				comp.didMount();
 			});
-			this.domComponentMap.set(comp,dom);
-			return dom;
+			this.domComponentMap.set(comp,dom1);
+			return dom1;
 		case 5:
 			var render = node[2];
 			return this.generateDom(render(),post);
@@ -515,7 +584,7 @@ doom_html_Render.prototype = {
 			var _this = this.namespaces;
 			var ns = __map_reserved[prefix] != null ? _this.getReserved(prefix) : _this.h[prefix];
 			if(null == ns) {
-				throw new thx_Error("element prefix \"" + prefix + "\" is not associated to any namespace. Add the right namespace to Doom.namespaces.",null,{ fileName : "Render.hx", lineNumber : 378, className : "doom.html.Render", methodName : "createElement"});
+				throw new thx_Error("element prefix \"" + prefix + "\" is not associated to any namespace. Add the right namespace to Doom.namespaces.",null,{ fileName : "Render.hx", lineNumber : 407, className : "doom.html.Render", methodName : "createElement"});
 			}
 			el = this.doc.createElementNS(ns,name1);
 		} else {
@@ -796,8 +865,9 @@ doom_core_Component.prototype = {
 	}
 	,rethrowUpdateError: function(e,pos) {
 		var s = Std.string(e);
+		haxe_Log.trace(s,{ fileName : "Component.hx", lineNumber : 40, className : "doom.core.Component", methodName : "rethrowUpdateError"});
 		if(s.indexOf("apply is not a function") >= 0) {
-			throw new thx_Error("method `apply` has not been correctly migrated to " + Type.getClassName(js_Boot.getClass(this)),null,{ fileName : "Component.hx", lineNumber : 41, className : "doom.core.Component", methodName : "rethrowUpdateError"});
+			throw new thx_Error("method `apply` has not been correctly migrated to " + Type.getClassName(js_Boot.getClass(this)),null,{ fileName : "Component.hx", lineNumber : 42, className : "doom.core.Component", methodName : "rethrowUpdateError"});
 		} else {
 			throw thx_Error.fromDynamic(e,pos);
 		}
@@ -855,13 +925,13 @@ var Main = function(props,children) {
 };
 Main.__name__ = ["Main"];
 Main.main = function() {
-	var state = { expression : Expression.Unparsed("")};
+	var state = { expression : Expression.Unparsed(""), seed : 1234567890};
 	var mw = new Middleware();
 	var store = new thx_stream_Store(new thx_stream_Property(state),Reducer.reduce,$bind(mw,mw.api));
 	var app = new Main(store);
 	Doom.browser.mount(doom_core_VNodeImpl.Comp(app),dots_Query.find("#main"));
 	store.stream().next(function(_) {
-		app.update(store,{ fileName : "Main.hx", lineNumber : 21, className : "Main", methodName : "main"});
+		app.update(store,{ fileName : "Main.hx", lineNumber : 22, className : "Main", methodName : "main"});
 	}).run();
 	var dispatchHash = function() {
 		var h = thx_Strings.trimCharsLeft(window.location.hash,"#/");
@@ -869,7 +939,7 @@ Main.main = function() {
 			var dispatchHash1 = Action.EvaluateExpression(Main.prettify(h.substring(2)));
 			store.dispatch(dispatchHash1,{ fileName : "Main.hx", lineNumber : 28, className : "Main", methodName : "main"});
 		} else if(h == "") {
-			store.dispatch(Action.EvaluateExpression("4d6 drop 1"),{ fileName : "Main.hx", lineNumber : 30, className : "Main", methodName : "main"});
+			store.dispatch(Action.EvaluateExpression("3d6"),{ fileName : "Main.hx", lineNumber : 30, className : "Main", methodName : "main"});
 		}
 	};
 	window.onhashchange = function(e) {
@@ -915,7 +985,9 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 		var children2;
 		if(_g4[1] == 1) {
 			var e1 = _g4[4];
-			children2 = haxe_ds_Option.Some(e1);
+			children2 = haxe_ds_Option.Some({ expression : e1, seed : state.seed, updateSeed : function(seed) {
+				_gthis.props.dispatch(Action.UpdateSeed(seed),{ fileName : "Main.hx", lineNumber : 59, className : "Main", methodName : "render"});
+			}});
 		} else {
 			children2 = haxe_ds_Option.None;
 		}
@@ -927,7 +999,7 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g5.h["class"] = value2;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Raw(Markdown.markdownToHtml(Loc.description))]))]));
+		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Raw(Markdown.markdownToHtml(Loc.description),null,null)]))]));
 	}
 	,classes: function() {
 		return "main";
@@ -1199,15 +1271,22 @@ Sample.prototype = {
 var Reducer = function() { };
 Reducer.__name__ = ["Reducer"];
 Reducer.reduce = function(state,action) {
-	var expr = action[2];
-	var _g = dr_DiceParser.parse(expr);
-	switch(_g[1]) {
+	switch(action[1]) {
 	case 0:
-		var e = _g[2];
-		return { expression : Expression.Error(expr,e.toString())};
+		var expr = action[2];
+		var _g = dr_DiceParser.parse(expr);
+		switch(_g[1]) {
+		case 0:
+			var e = _g[2];
+			return { expression : Expression.Error(expr,e.toString()), seed : state.seed};
+		case 1:
+			var parsed = _g[2];
+			return { expression : Expression.Parsed(expr,dr_DiceExpressionExtensions.toString(parsed),parsed), seed : state.seed};
+		}
+		break;
 	case 1:
-		var parsed = _g[2];
-		return { expression : Expression.Parsed(expr,dr_DiceExpressionExtensions.toString(parsed),parsed)};
+		var seed = action[2];
+		return { expression : state.expression, seed : seed};
 	}
 };
 var Reflect = function() { };
@@ -1526,7 +1605,7 @@ doom_core__$AttributeValue_AttributeValue_$Impl_$.__name__ = ["doom","core","_At
 doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString = function(s) {
 	return doom_core_AttributeValueImpl.StringAttribute(s);
 };
-doom_core__$AttributeValue_AttributeValue_$Impl_$.fromMap = function(map) {
+doom_core__$AttributeValue_AttributeValue_$Impl_$.fromBoolMap = function(map) {
 	var values = [];
 	var key = map.keys();
 	while(key.hasNext()) {
@@ -1537,18 +1616,21 @@ doom_core__$AttributeValue_AttributeValue_$Impl_$.fromMap = function(map) {
 	}
 	return doom_core_AttributeValueImpl.StringAttribute(values.join(" "));
 };
+doom_core__$AttributeValue_AttributeValue_$Impl_$.fromStringMap = function(map) {
+	var values = [];
+	var key = map.keys();
+	while(key.hasNext()) {
+		var key1 = key.next();
+		var value = __map_reserved[key1] != null ? map.getReserved(key1) : map.h[key1];
+		if(null == value) {
+			continue;
+		}
+		values.push("" + key1 + ":" + value);
+	}
+	return doom_core_AttributeValueImpl.StringAttribute(values.join(";"));
+};
 doom_core__$AttributeValue_AttributeValue_$Impl_$.fromBool = function(b) {
 	return doom_core_AttributeValueImpl.BoolAttribute(b);
-};
-doom_core__$AttributeValue_AttributeValue_$Impl_$.fromHandler = function(f) {
-	if(null == f) {
-		return doom_core_AttributeValueImpl.BoolAttribute(false);
-	} else {
-		return doom_core_AttributeValueImpl.EventAttribute(function(e) {
-			e.preventDefault();
-			f();
-		});
-	}
 };
 doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler = function(f) {
 	if(null == f) {
@@ -1557,62 +1639,116 @@ doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler = function(f)
 		return doom_core_AttributeValueImpl.EventAttribute(f);
 	}
 };
+doom_core__$AttributeValue_AttributeValue_$Impl_$.fromHandler = function(f) {
+	var f1 = f;
+	return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+		e.preventDefault();
+		f1();
+	});
+};
+doom_core__$AttributeValue_AttributeValue_$Impl_$.fromTypedEventHandler = function(f) {
+	var f1 = f;
+	return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(_,e) {
+		f1(e);
+	});
+};
 doom_core__$AttributeValue_AttributeValue_$Impl_$.fromElementHandler = function(f) {
-	if(null == f) {
-		return doom_core_AttributeValueImpl.BoolAttribute(false);
-	} else {
-		return doom_core_AttributeValueImpl.EventAttribute(function(e) {
-			e.preventDefault();
-			var input = e.target;
-			f(input);
-		});
-	}
+	var f1 = f;
+	return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+		e.preventDefault();
+		var typedEl = el;
+		f1(typedEl);
+	});
+};
+doom_core__$AttributeValue_AttributeValue_$Impl_$.fromElementAndEventHandler = function(f) {
+	var f1 = f;
+	return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+		f1(el,e);
+	});
 };
 doom_core__$AttributeValue_AttributeValue_$Impl_$.fromStringValueHandler = function(f) {
-	if(null == f) {
-		return doom_core_AttributeValueImpl.BoolAttribute(false);
-	} else {
-		return doom_core_AttributeValueImpl.EventAttribute(function(e) {
-			e.preventDefault();
-			var value = dots_Dom.getValue(e.target);
-			f(value);
-		});
-	}
+	var f1 = f;
+	return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+		e.preventDefault();
+		var value = dots_Dom.getValue(el);
+		f1(value);
+	});
+};
+doom_core__$AttributeValue_AttributeValue_$Impl_$.fromStringValueAndEventHandler = function(f) {
+	var f1 = f;
+	return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+		var value = dots_Dom.getValue(el);
+		f1(value,e);
+	});
 };
 doom_core__$AttributeValue_AttributeValue_$Impl_$.fromBoolValueHandler = function(f) {
-	if(null == f) {
-		return doom_core_AttributeValueImpl.BoolAttribute(false);
-	} else {
-		return doom_core_AttributeValueImpl.EventAttribute(function(e) {
-			e.preventDefault();
-			var value = e.target.checked;
-			f(value);
-		});
-	}
+	var f1 = f;
+	return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+		e.preventDefault();
+		var value = el.checked;
+		f1(value);
+	});
+};
+doom_core__$AttributeValue_AttributeValue_$Impl_$.fromBoolValueAndEventHandler = function(f) {
+	var f1 = f;
+	return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+		var value = el.checked;
+		f1(value,e);
+	});
 };
 doom_core__$AttributeValue_AttributeValue_$Impl_$.fromIntValueHandler = function(f) {
-	if(null == f) {
-		return doom_core_AttributeValueImpl.BoolAttribute(false);
-	} else {
-		return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromStringValueHandler(function(s) {
-			if(thx_Ints.canParse(s)) {
-				var tmp = thx_Ints.parse(s);
-				f(tmp);
-			}
-		});
-	}
+	var f1 = f;
+	var f2 = function(s) {
+		if(thx_Ints.canParse(s)) {
+			var f3 = thx_Ints.parse(s);
+			f1(f3);
+		}
+	};
+	return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+		e.preventDefault();
+		var value = dots_Dom.getValue(el);
+		f2(value);
+	});
+};
+doom_core__$AttributeValue_AttributeValue_$Impl_$.fromIntValueAndEventHandler = function(f) {
+	var f1 = f;
+	var f2 = function(s,e) {
+		if(thx_Ints.canParse(s)) {
+			var f3 = thx_Ints.parse(s);
+			f1(f3,e);
+		}
+	};
+	return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e1) {
+		var value = dots_Dom.getValue(el);
+		f2(value,e1);
+	});
 };
 doom_core__$AttributeValue_AttributeValue_$Impl_$.fromFloatValueHandler = function(f) {
-	if(null == f) {
-		return doom_core_AttributeValueImpl.BoolAttribute(false);
-	} else {
-		return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromStringValueHandler(function(s) {
-			if(thx_Floats.canParse(s)) {
-				var tmp = thx_Floats.parse(s);
-				f(tmp);
-			}
-		});
-	}
+	var f1 = f;
+	var f2 = function(s) {
+		if(thx_Ints.canParse(s)) {
+			var f3 = thx_Ints.parse(s);
+			f1(f3);
+		}
+	};
+	return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+		e.preventDefault();
+		var value = dots_Dom.getValue(el);
+		f2(value);
+	});
+};
+doom_core__$AttributeValue_AttributeValue_$Impl_$.fromFloatValueAndEventHandler = function(f) {
+	var f1 = f;
+	var f2 = function(s,e) {
+		if(thx_Ints.canParse(s)) {
+			var f3 = thx_Ints.parse(s);
+			f1(f3,e);
+		}
+	};
+	return doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e1) {
+		var value = dots_Dom.getValue(el);
+		f2(value,e1);
+	});
 };
 doom_core__$AttributeValue_AttributeValue_$Impl_$.toString = function(this1) {
 	if(this1[1] == 1) {
@@ -1620,7 +1756,7 @@ doom_core__$AttributeValue_AttributeValue_$Impl_$.toString = function(this1) {
 		return s;
 	} else {
 		var a = this1;
-		throw new thx_Error("cannot convert attribute " + Std.string(a) + " to string",null,{ fileName : "AttributeValue.hx", lineNumber : 67, className : "doom.core._AttributeValue.AttributeValue_Impl_", methodName : "toString"});
+		throw new thx_Error("cannot convert attribute " + Std.string(a) + " to string",null,{ fileName : "AttributeValue.hx", lineNumber : 76, className : "doom.core._AttributeValue.AttributeValue_Impl_", methodName : "toString"});
 	}
 };
 doom_core__$AttributeValue_AttributeValue_$Impl_$.equalsTo = function(this1,that) {
@@ -1853,16 +1989,16 @@ doom_core_SelectorParser.prototype = {
 var doom_core__$VNode_VNode_$Impl_$ = {};
 doom_core__$VNode_VNode_$Impl_$.__name__ = ["doom","core","_VNode","VNode_Impl_"];
 doom_core__$VNode_VNode_$Impl_$.text = function(text) {
-	return doom_core_VNodeImpl.Text(text);
+	return doom_core_VNodeImpl.Text(text,null,null);
 };
 doom_core__$VNode_VNode_$Impl_$.comp = function(comp) {
 	return doom_core_VNodeImpl.Comp(comp);
 };
 doom_core__$VNode_VNode_$Impl_$.raw = function(content) {
-	return doom_core_VNodeImpl.Raw(content);
+	return doom_core_VNodeImpl.Raw(content,null,null);
 };
 doom_core__$VNode_VNode_$Impl_$.comment = function(content) {
-	return doom_core_VNodeImpl.Comment(content);
+	return doom_core_VNodeImpl.Comment(content,null,null);
 };
 doom_core__$VNode_VNode_$Impl_$.el = function(name,attributes,children) {
 	if(null == attributes) {
@@ -1871,7 +2007,7 @@ doom_core__$VNode_VNode_$Impl_$.el = function(name,attributes,children) {
 	if(null == children) {
 		children = doom_core__$VNodes_VNodes_$Impl_$.children([]);
 	}
-	return doom_core_VNodeImpl.Element(name,attributes,children);
+	return doom_core_VNodeImpl.Element(name,attributes,children,null,null);
 };
 doom_core__$VNode_VNode_$Impl_$.lazy = function(fn) {
 	return doom_core_VNodeImpl.Lazy(fn);
@@ -1882,11 +2018,97 @@ doom_core__$VNode_VNode_$Impl_$.renderable = function(r) {
 doom_core__$VNode_VNode_$Impl_$.asNodes = function(this1) {
 	return doom_core__$VNodes_VNodes_$Impl_$.children([this1]);
 };
+doom_core__$VNode_VNode_$Impl_$.mount = function(this1,mount) {
+	switch(this1[1]) {
+	case 0:
+		if(this1[5] == null) {
+			var onUnmount = this1[6];
+			var name = this1[2];
+			var attributes = this1[3];
+			var children = this1[4];
+			return doom_core_VNodeImpl.Element(name,attributes,children,mount,onUnmount);
+		} else {
+			var onUnmount1 = this1[6];
+			var name1 = this1[2];
+			var attributes1 = this1[3];
+			var children1 = this1[4];
+			var onMount = this1[5];
+			var fa = onMount;
+			var fb = mount;
+			return doom_core_VNodeImpl.Element(name1,attributes1,children1,function(v1,v2) {
+				fa(v1,v2);
+				fb(v1,v2);
+			},onUnmount1);
+		}
+		break;
+	case 1:
+		if(this1[3] == null) {
+			var onUnmount2 = this1[4];
+			var comment = this1[2];
+			return doom_core_VNodeImpl.Comment(comment,mount,onUnmount2);
+		} else {
+			var onUnmount3 = this1[4];
+			var comment1 = this1[2];
+			var onMount1 = this1[3];
+			var fa1 = onMount1;
+			var fb1 = mount;
+			return doom_core_VNodeImpl.Comment(comment1,function(v11,v21) {
+				fa1(v11,v21);
+				fb1(v11,v21);
+			},onUnmount3);
+		}
+		break;
+	case 2:
+		if(this1[3] == null) {
+			var onUnmount4 = this1[4];
+			var code = this1[2];
+			return doom_core_VNodeImpl.Raw(code,mount,onUnmount4);
+		} else {
+			var onUnmount5 = this1[4];
+			var code1 = this1[2];
+			var onMount2 = this1[3];
+			var fa2 = onMount2;
+			var fb2 = mount;
+			return doom_core_VNodeImpl.Raw(code1,function(v12,v22) {
+				fa2(v12,v22);
+				fb2(v12,v22);
+			},onUnmount5);
+		}
+		break;
+	case 3:
+		if(this1[3] == null) {
+			var onUnmount6 = this1[4];
+			var text = this1[2];
+			return doom_core_VNodeImpl.Text(text,mount,onUnmount6);
+		} else {
+			var onUnmount7 = this1[4];
+			var text1 = this1[2];
+			var onMount3 = this1[3];
+			var fa3 = onMount3;
+			var fb3 = mount;
+			return doom_core_VNodeImpl.Text(text1,function(v13,v23) {
+				fa3(v13,v23);
+				fb3(v13,v23);
+			},onUnmount7);
+		}
+		break;
+	case 4:
+		var comp = this1[2];
+		throw new thx_Error("Component does not support `onMount`, use `Component.didMount` or `Component.willMount`",null,{ fileName : "VNode.hx", lineNumber : 53, className : "doom.core._VNode.VNode_Impl_", methodName : "mount"});
+		break;
+	case 5:
+		var render = this1[2];
+		return doom_core_VNodeImpl.Lazy(function() {
+			var node = render();
+			return doom_core__$VNode_VNode_$Impl_$.mount(node,mount);
+		});
+	}
+};
 var doom_core_VNodeImpl = { __ename__ : ["doom","core","VNodeImpl"], __constructs__ : ["Element","Comment","Raw","Text","Comp","Lazy"] };
-doom_core_VNodeImpl.Element = function(name,attributes,children) { var $x = ["Element",0,name,attributes,children]; $x.__enum__ = doom_core_VNodeImpl; return $x; };
-doom_core_VNodeImpl.Comment = function(comment) { var $x = ["Comment",1,comment]; $x.__enum__ = doom_core_VNodeImpl; return $x; };
-doom_core_VNodeImpl.Raw = function(code) { var $x = ["Raw",2,code]; $x.__enum__ = doom_core_VNodeImpl; return $x; };
-doom_core_VNodeImpl.Text = function(text) { var $x = ["Text",3,text]; $x.__enum__ = doom_core_VNodeImpl; return $x; };
+doom_core_VNodeImpl.Element = function(name,attributes,children,onMount,onUnmount) { var $x = ["Element",0,name,attributes,children,onMount,onUnmount]; $x.__enum__ = doom_core_VNodeImpl; return $x; };
+doom_core_VNodeImpl.Comment = function(comment,onMount,onUnmount) { var $x = ["Comment",1,comment,onMount,onUnmount]; $x.__enum__ = doom_core_VNodeImpl; return $x; };
+doom_core_VNodeImpl.Raw = function(code,onMount,onUnmount) { var $x = ["Raw",2,code,onMount,onUnmount]; $x.__enum__ = doom_core_VNodeImpl; return $x; };
+doom_core_VNodeImpl.Text = function(text,onMount,onUnmount) { var $x = ["Text",3,text,onMount,onUnmount]; $x.__enum__ = doom_core_VNodeImpl; return $x; };
 doom_core_VNodeImpl.Comp = function(comp) { var $x = ["Comp",4,comp]; $x.__enum__ = doom_core_VNodeImpl; return $x; };
 doom_core_VNodeImpl.Lazy = function(render) { var $x = ["Lazy",5,render]; $x.__enum__ = doom_core_VNodeImpl; return $x; };
 var doom_core__$VNodes_VNodes_$Impl_$ = {};
@@ -1895,7 +2117,7 @@ doom_core__$VNodes_VNodes_$Impl_$.child = function(child) {
 	return doom_core__$VNodes_VNodes_$Impl_$.children([child]);
 };
 doom_core__$VNodes_VNodes_$Impl_$.text = function(text) {
-	return doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(text)]);
+	return doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(text,null,null)]);
 };
 doom_core__$VNodes_VNodes_$Impl_$.comp = function(comp) {
 	return doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Comp(comp)]);
@@ -2026,6 +2248,107 @@ doom_html_Attributes.toggleBoolAttribute = function(el,name,value) {
 };
 doom_html_Attributes.removeAttribute = function(el,name) {
 	el.removeAttribute(name);
+};
+var doom_html__$EventHandler_EventHandler_$Impl_$ = {};
+doom_html__$EventHandler_EventHandler_$Impl_$.__name__ = ["doom","html","_EventHandler","EventHandler_Impl_"];
+doom_html__$EventHandler_EventHandler_$Impl_$.fromHandler = function(f) {
+	return function(el,e) {
+		e.preventDefault();
+		f();
+	};
+};
+doom_html__$EventHandler_EventHandler_$Impl_$.fromEventHandler = function(f) {
+	return function(_,e) {
+		f(e);
+	};
+};
+doom_html__$EventHandler_EventHandler_$Impl_$.fromElementHandler = function(f) {
+	return function(el,e) {
+		e.preventDefault();
+		var typedEl = el;
+		f(typedEl);
+	};
+};
+doom_html__$EventHandler_EventHandler_$Impl_$.fromElementAndEventHandler = function(f) {
+	return function(el,e) {
+		f(el,e);
+	};
+};
+doom_html__$EventHandler_EventHandler_$Impl_$.fromStringValueHandler = function(f) {
+	return function(el,e) {
+		e.preventDefault();
+		var value = dots_Dom.getValue(el);
+		f(value);
+	};
+};
+doom_html__$EventHandler_EventHandler_$Impl_$.fromStringValueAndEventHandler = function(f) {
+	return function(el,e) {
+		var value = dots_Dom.getValue(el);
+		f(value,e);
+	};
+};
+doom_html__$EventHandler_EventHandler_$Impl_$.fromBoolValueHandler = function(f) {
+	return function(el,e) {
+		e.preventDefault();
+		var value = el.checked;
+		f(value);
+	};
+};
+doom_html__$EventHandler_EventHandler_$Impl_$.fromBoolValueAndEventHandler = function(f) {
+	return function(el,e) {
+		var value = el.checked;
+		f(value,e);
+	};
+};
+doom_html__$EventHandler_EventHandler_$Impl_$.fromIntValueHandler = function(f) {
+	var f1 = function(s) {
+		if(thx_Ints.canParse(s)) {
+			var f2 = thx_Ints.parse(s);
+			f(f2);
+		}
+	};
+	return function(el,e) {
+		e.preventDefault();
+		var value = dots_Dom.getValue(el);
+		f1(value);
+	};
+};
+doom_html__$EventHandler_EventHandler_$Impl_$.fromIntValueAndEventHandler = function(f) {
+	var f1 = function(s,e) {
+		if(thx_Ints.canParse(s)) {
+			var f2 = thx_Ints.parse(s);
+			f(f2,e);
+		}
+	};
+	return function(el,e1) {
+		var value = dots_Dom.getValue(el);
+		f1(value,e1);
+	};
+};
+doom_html__$EventHandler_EventHandler_$Impl_$.fromFloatValueHandler = function(f) {
+	var f1 = function(s) {
+		if(thx_Floats.canParse(s)) {
+			var f2 = thx_Floats.parse(s);
+			f(f2);
+		}
+	};
+	return function(el,e) {
+		e.preventDefault();
+		var value = dots_Dom.getValue(el);
+		f1(value);
+	};
+};
+doom_html__$EventHandler_EventHandler_$Impl_$.fromFloatValueAndEventHandler = function(f) {
+	var f1 = function(s,e) {
+		if(thx_Floats.canParse(s)) {
+			var f2 = thx_Floats.parse(s);
+			f(f2,e);
+		}
+	};
+	return function(el,e1) {
+		var value = dots_Dom.getValue(el);
+		f1(value,e1);
+	};
 };
 var doom_html_Html = function() { };
 doom_html_Html.__name__ = ["doom","html","Html"];
@@ -2379,13 +2702,13 @@ doom_html_Html.el = function(name,attributes,children) {
 	return doom_core__$VNode_VNode_$Impl_$.el(name,attributes,children);
 };
 doom_html_Html.text = function(content) {
-	return doom_core_VNodeImpl.Text(content);
+	return doom_core_VNodeImpl.Text(content,null,null);
 };
 doom_html_Html.comment = function(content) {
-	return doom_core_VNodeImpl.Comment(content);
+	return doom_core_VNodeImpl.Comment(content,null,null);
 };
 doom_html_Html.raw = function(content) {
-	return doom_core_VNodeImpl.Raw(content);
+	return doom_core_VNodeImpl.Raw(content,null,null);
 };
 doom_html_Html.dummy = function(text) {
 	if(text == null) {
@@ -5931,6 +6254,173 @@ haxe_IMap.prototype = {
 };
 var haxe__$Int32_Int32_$Impl_$ = {};
 haxe__$Int32_Int32_$Impl_$.__name__ = ["haxe","_Int32","Int32_Impl_"];
+haxe__$Int32_Int32_$Impl_$.ucompare = function(a,b) {
+	if(a < 0) {
+		if(b < 0) {
+			return ~b - ~a | 0;
+		} else {
+			return 1;
+		}
+	}
+	if(b < 0) {
+		return -1;
+	} else {
+		return a - b | 0;
+	}
+};
+var haxe__$Int64_Int64_$Impl_$ = {};
+haxe__$Int64_Int64_$Impl_$.__name__ = ["haxe","_Int64","Int64_Impl_"];
+haxe__$Int64_Int64_$Impl_$.divMod = function(dividend,divisor) {
+	if(divisor.high == 0) {
+		var _g = divisor.low;
+		switch(_g) {
+		case 0:
+			throw new js__$Boot_HaxeError("divide by zero");
+			break;
+		case 1:
+			var this1 = new haxe__$Int64__$_$_$Int64(dividend.high,dividend.low);
+			var this2 = new haxe__$Int64__$_$_$Int64(0,0);
+			return { quotient : this1, modulus : this2};
+		}
+	}
+	var divSign = dividend.high < 0 != divisor.high < 0;
+	var modulus;
+	if(dividend.high < 0) {
+		var high = ~dividend.high;
+		var low = -dividend.low;
+		if(low == 0) {
+			var ret = high++;
+			high = high | 0;
+		}
+		var this3 = new haxe__$Int64__$_$_$Int64(high,low);
+		modulus = this3;
+	} else {
+		var this4 = new haxe__$Int64__$_$_$Int64(dividend.high,dividend.low);
+		modulus = this4;
+	}
+	if(divisor.high < 0) {
+		var high1 = ~divisor.high;
+		var low1 = -divisor.low;
+		if(low1 == 0) {
+			var ret1 = high1++;
+			high1 = high1 | 0;
+		}
+		var this5 = new haxe__$Int64__$_$_$Int64(high1,low1);
+		divisor = this5;
+	} else {
+		divisor = divisor;
+	}
+	var this6 = new haxe__$Int64__$_$_$Int64(0,0);
+	var quotient = this6;
+	var this7 = new haxe__$Int64__$_$_$Int64(0,1);
+	var mask = this7;
+	while(!(divisor.high < 0)) {
+		var v = haxe__$Int32_Int32_$Impl_$.ucompare(divisor.high,modulus.high);
+		var cmp = v != 0 ? v : haxe__$Int32_Int32_$Impl_$.ucompare(divisor.low,modulus.low);
+		var b = 1;
+		b &= 63;
+		if(b == 0) {
+			var this8 = new haxe__$Int64__$_$_$Int64(divisor.high,divisor.low);
+			divisor = this8;
+		} else if(b < 32) {
+			var this9 = new haxe__$Int64__$_$_$Int64(divisor.high << b | divisor.low >>> 32 - b,divisor.low << b);
+			divisor = this9;
+		} else {
+			var this10 = new haxe__$Int64__$_$_$Int64(divisor.low << b - 32,0);
+			divisor = this10;
+		}
+		var b1 = 1;
+		b1 &= 63;
+		if(b1 == 0) {
+			var this11 = new haxe__$Int64__$_$_$Int64(mask.high,mask.low);
+			mask = this11;
+		} else if(b1 < 32) {
+			var this12 = new haxe__$Int64__$_$_$Int64(mask.high << b1 | mask.low >>> 32 - b1,mask.low << b1);
+			mask = this12;
+		} else {
+			var this13 = new haxe__$Int64__$_$_$Int64(mask.low << b1 - 32,0);
+			mask = this13;
+		}
+		if(cmp >= 0) {
+			break;
+		}
+	}
+	while(true) {
+		var this14 = new haxe__$Int64__$_$_$Int64(0,0);
+		var b2 = this14;
+		if(!(mask.high != b2.high || mask.low != b2.low)) {
+			break;
+		}
+		var v1 = haxe__$Int32_Int32_$Impl_$.ucompare(modulus.high,divisor.high);
+		if((v1 != 0 ? v1 : haxe__$Int32_Int32_$Impl_$.ucompare(modulus.low,divisor.low)) >= 0) {
+			var this15 = new haxe__$Int64__$_$_$Int64(quotient.high | mask.high,quotient.low | mask.low);
+			quotient = this15;
+			var high2 = modulus.high - divisor.high | 0;
+			var low2 = modulus.low - divisor.low | 0;
+			if(haxe__$Int32_Int32_$Impl_$.ucompare(modulus.low,divisor.low) < 0) {
+				var ret2 = high2--;
+				high2 = high2 | 0;
+			}
+			var this16 = new haxe__$Int64__$_$_$Int64(high2,low2);
+			modulus = this16;
+		}
+		var b3 = 1;
+		b3 &= 63;
+		if(b3 == 0) {
+			var this17 = new haxe__$Int64__$_$_$Int64(mask.high,mask.low);
+			mask = this17;
+		} else if(b3 < 32) {
+			var this18 = new haxe__$Int64__$_$_$Int64(mask.high >>> b3,mask.high << 32 - b3 | mask.low >>> b3);
+			mask = this18;
+		} else {
+			var this19 = new haxe__$Int64__$_$_$Int64(0,mask.high >>> b3 - 32);
+			mask = this19;
+		}
+		var b4 = 1;
+		b4 &= 63;
+		if(b4 == 0) {
+			var this20 = new haxe__$Int64__$_$_$Int64(divisor.high,divisor.low);
+			divisor = this20;
+		} else if(b4 < 32) {
+			var this21 = new haxe__$Int64__$_$_$Int64(divisor.high >>> b4,divisor.high << 32 - b4 | divisor.low >>> b4);
+			divisor = this21;
+		} else {
+			var this22 = new haxe__$Int64__$_$_$Int64(0,divisor.high >>> b4 - 32);
+			divisor = this22;
+		}
+	}
+	if(divSign) {
+		var high3 = ~quotient.high;
+		var low3 = -quotient.low;
+		if(low3 == 0) {
+			var ret3 = high3++;
+			high3 = high3 | 0;
+		}
+		var this23 = new haxe__$Int64__$_$_$Int64(high3,low3);
+		quotient = this23;
+	}
+	if(dividend.high < 0) {
+		var high4 = ~modulus.high;
+		var low4 = -modulus.low;
+		if(low4 == 0) {
+			var ret4 = high4++;
+			high4 = high4 | 0;
+		}
+		var this24 = new haxe__$Int64__$_$_$Int64(high4,low4);
+		modulus = this24;
+	}
+	return { quotient : quotient, modulus : modulus};
+};
+var haxe__$Int64__$_$_$Int64 = function(high,low) {
+	this.high = high;
+	this.low = low;
+};
+haxe__$Int64__$_$_$Int64.__name__ = ["haxe","_Int64","___Int64"];
+haxe__$Int64__$_$_$Int64.prototype = {
+	high: null
+	,low: null
+	,__class__: haxe__$Int64__$_$_$Int64
+};
 var haxe_Log = function() { };
 haxe_Log.__name__ = ["haxe","Log"];
 haxe_Log.trace = function(v,infos) {
@@ -14999,6 +15489,136 @@ var thx_fp_MapImpl = { __ename__ : ["thx","fp","MapImpl"], __constructs__ : ["Ti
 thx_fp_MapImpl.Tip = ["Tip",0];
 thx_fp_MapImpl.Tip.__enum__ = thx_fp_MapImpl;
 thx_fp_MapImpl.Bin = function(size,key,value,lhs,rhs) { var $x = ["Bin",1,size,key,value,lhs,rhs]; $x.__enum__ = thx_fp_MapImpl; return $x; };
+var thx_math_Const = function() { };
+thx_math_Const.__name__ = ["thx","math","Const"];
+var thx_math_random_Seed = function() { };
+thx_math_random_Seed.__name__ = ["thx","math","random","Seed"];
+thx_math_random_Seed.prototype = {
+	get_int: null
+	,get_normalized: null
+	,'int': null
+	,normalized: null
+	,next: null
+	,__class__: thx_math_random_Seed
+};
+var thx_math_random_FastRNGSeed = function(seed) {
+	if(seed == null) {
+		seed = 1;
+	}
+	this.seed = seed;
+};
+thx_math_random_FastRNGSeed.__name__ = ["thx","math","random","FastRNGSeed"];
+thx_math_random_FastRNGSeed.__interfaces__ = [thx_math_random_Seed];
+thx_math_random_FastRNGSeed.prototype = {
+	seed: null
+	,'int': null
+	,normalized: null
+	,next: function() {
+		return new thx_math_random_FastRNGSeed(this.seed * 48271.0 % 2147483647.0 | 0);
+	}
+	,get_int: function() {
+		return this.seed & 1073741823;
+	}
+	,get_normalized: function() {
+		return this.seed / 2147483647.0;
+	}
+	,__class__: thx_math_random_FastRNGSeed
+};
+var thx_math_random_LehmerSeed = function(x,n,g) {
+	this.x = x;
+	this.n = n;
+	this.g = g;
+};
+thx_math_random_LehmerSeed.__name__ = ["thx","math","random","LehmerSeed"];
+thx_math_random_LehmerSeed.__interfaces__ = [thx_math_random_Seed];
+thx_math_random_LehmerSeed.std = function(seed) {
+	return thx_math_random_LehmerSeed.create(seed,2147483647,48271);
+};
+thx_math_random_LehmerSeed.create = function(seed,n,g) {
+	var this1 = new haxe__$Int64__$_$_$Int64(n >> 31,n);
+	var this2 = new haxe__$Int64__$_$_$Int64(g >> 31,g);
+	return new thx_math_random_LehmerSeed(seed,this1,this2);
+};
+thx_math_random_LehmerSeed.prototype = {
+	x: null
+	,n: null
+	,g: null
+	,'int': null
+	,normalized: null
+	,next: function() {
+		var x = this.x;
+		var this1 = new haxe__$Int64__$_$_$Int64(x >> 31,x);
+		var a = this1;
+		var b = this.g;
+		var mask = 65535;
+		var al = a.low & mask;
+		var ah = a.low >>> 16;
+		var bl = b.low & mask;
+		var bh = b.low >>> 16;
+		var p00 = haxe__$Int32_Int32_$Impl_$._mul(al,bl);
+		var p10 = haxe__$Int32_Int32_$Impl_$._mul(ah,bl);
+		var p01 = haxe__$Int32_Int32_$Impl_$._mul(al,bh);
+		var p11 = haxe__$Int32_Int32_$Impl_$._mul(ah,bh);
+		var low = p00;
+		var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
+		p01 = p01 << 16;
+		low = low + p01 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
+			var ret = high++;
+			high = high | 0;
+		}
+		p10 = p10 << 16;
+		low = low + p10 | 0;
+		if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
+			var ret1 = high++;
+			high = high | 0;
+		}
+		high = high + (haxe__$Int32_Int32_$Impl_$._mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$._mul(a.high,b.low) | 0) | 0;
+		var this2 = new haxe__$Int64__$_$_$Int64(high,low);
+		var x1 = haxe__$Int64_Int64_$Impl_$.divMod(this2,this.n).modulus;
+		if(x1.high != x1.low >> 31) {
+			throw new js__$Boot_HaxeError("Overflow");
+		}
+		return new thx_math_random_LehmerSeed(x1.low,this.n,this.g);
+	}
+	,get_int: function() {
+		return this.x;
+	}
+	,get_normalized: function() {
+		var x = this.n;
+		if(x.high != x.low >> 31) {
+			throw new js__$Boot_HaxeError("Overflow");
+		}
+		return this.x / x.low;
+	}
+	,__class__: thx_math_random_LehmerSeed
+};
+var thx_math_random__$Random_Random_$Impl_$ = {};
+thx_math_random__$Random_Random_$Impl_$.__name__ = ["thx","math","random","_Random","Random_Impl_"];
+thx_math_random__$Random_Random_$Impl_$.between = function(this1,min,max) {
+	this1 = this1.next();
+	return Math.round(this1.get_normalized() * (max - min)) + min;
+};
+thx_math_random__$Random_Random_$Impl_$.betweenf = function(this1,min,max) {
+	this1 = this1.next();
+	return this1.get_normalized() * (max - min) + min;
+};
+thx_math_random__$Random_Random_$Impl_$.bool = function(this1) {
+	this1 = this1.next();
+	return this1.get_int() % 2 == 0;
+};
+thx_math_random__$Random_Random_$Impl_$.shuffle = function(this1,arr) {
+	var pos = [];
+	var _g1 = 0;
+	var _g = arr.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		this1 = this1.next();
+		pos.push(this1.get_normalized());
+	}
+	var ranked = thx_Arrays.rank(pos,thx_Floats.compare);
+	return thx_Arrays.applyIndexes(arr,ranked);
+};
 var thx_promise_Future = function() {
 	this.handlers = [];
 	this.state = haxe_ds_Option.None;
@@ -17698,20 +18318,20 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 			_g.h["class"] = value;
 		}
 		var _g1 = new haxe_ds_StringMap();
-		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("probabilities");
+		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("stats");
 		if(__map_reserved["class"] != null) {
 			_g1.setReserved("class",value1);
 		} else {
 			_g1.h["class"] = value1;
 		}
+		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("samples: " + thx_format_NumberFormat.number(stats.count,0),null,null)]));
 		var _g2 = new haxe_ds_StringMap();
-		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
+		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("probabilities");
 		if(__map_reserved["class"] != null) {
 			_g2.setReserved("class",value2);
 		} else {
 			_g2.h["class"] = value2;
 		}
-		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderProb))));
 		var _g3 = new haxe_ds_StringMap();
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
 		if(__map_reserved["class"] != null) {
@@ -17727,15 +18347,15 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g4.h["class"] = value4;
 		}
-		var children2 = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtMost))))]));
+		var children2 = doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderProb))));
 		var _g5 = new haxe_ds_StringMap();
-		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("stats");
+		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
 		if(__map_reserved["class"] != null) {
 			_g5.setReserved("class",value5);
 		} else {
 			_g5.h["class"] = value5;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("samples: " + thx_format_NumberFormat.number(stats.count,0))]))]));
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([children1,children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtMost))))]))]));
 	}
 	,willMount: function() {
 		view_BarChart.barChart = this;
@@ -17765,7 +18385,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g2.h["class"] = value2;
 		}
-		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + sample.value)]))]));
+		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + sample.value,null,null)]))]));
 		var _g3 = new haxe_ds_StringMap();
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar");
 		if(__map_reserved["class"] != null) {
@@ -17779,7 +18399,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g3.h["style"] = value4;
 		}
-		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("")]));
+		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("",null,null)]));
 		var _g4 = new haxe_ds_StringMap();
 		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("percent");
 		if(__map_reserved["class"] != null) {
@@ -17794,7 +18414,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g5.h["class"] = value6;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(thx_format_NumberFormat.fixed(sample.get_percent() * 100,1))]))]))]));
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(thx_format_NumberFormat.fixed(sample.get_percent() * 100,1),null,null)]))]))]));
 	}
 	,renderAtLeast: function(sample) {
 		var _g = new haxe_ds_StringMap();
@@ -17818,7 +18438,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g2.h["class"] = value2;
 		}
-		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + sample.value)]))]));
+		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + sample.value,null,null)]))]));
 		var _g3 = new haxe_ds_StringMap();
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar");
 		if(__map_reserved["class"] != null) {
@@ -17832,7 +18452,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g3.h["style"] = value4;
 		}
-		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("")]));
+		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("",null,null)]));
 		var _g4 = new haxe_ds_StringMap();
 		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("percent");
 		if(__map_reserved["class"] != null) {
@@ -17847,7 +18467,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g5.h["class"] = value6;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(thx_format_NumberFormat.fixed(sample.get_accPercent() * 100,1))]))]))]));
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(thx_format_NumberFormat.fixed(sample.get_accPercent() * 100,1),null,null)]))]))]));
 	}
 	,renderAtMost: function(sample) {
 		var v = sample.get_revPercent();
@@ -17872,7 +18492,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g2.h["class"] = value2;
 		}
-		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + sample.value)]))]));
+		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + sample.value,null,null)]))]));
 		var _g3 = new haxe_ds_StringMap();
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar");
 		if(__map_reserved["class"] != null) {
@@ -17886,7 +18506,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g3.h["style"] = value4;
 		}
-		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("")]));
+		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("",null,null)]));
 		var _g4 = new haxe_ds_StringMap();
 		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("percent");
 		if(__map_reserved["class"] != null) {
@@ -17901,7 +18521,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g5.h["class"] = value6;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(thx_format_NumberFormat.fixed(v * 100,1))]))]))]));
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(thx_format_NumberFormat.fixed(v * 100,1),null,null)]))]))]));
 	}
 	,classes: function() {
 		return "view_bar-chart";
@@ -17935,45 +18555,61 @@ view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
 			value = src2;
 			break;
 		}
-		var _g2 = new haxe_ds_StringMap();
+		var _g1 = new haxe_ds_StringMap();
 		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("expression-input");
 		if(__map_reserved["class"] != null) {
-			_g2.setReserved("class",value1);
+			_g1.setReserved("class",value1);
 		} else {
-			_g2.h["class"] = value1;
+			_g1.h["class"] = value1;
 		}
-		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString(value);
-		if(__map_reserved["value"] != null) {
-			_g2.setReserved("value",value2);
+		var _g2 = new haxe_ds_StringMap();
+		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text-editor");
+		if(__map_reserved["class"] != null) {
+			_g2.setReserved("class",value2);
 		} else {
-			_g2.h["value"] = value2;
+			_g2.h["class"] = value2;
 		}
-		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromElementHandler($bind(this,this.onInput));
+		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("true");
+		if(__map_reserved["contentEditable"] != null) {
+			_g2.setReserved("contentEditable",value3);
+		} else {
+			_g2.h["contentEditable"] = value3;
+		}
+		var f = $bind(this,this.onInput);
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+			e.preventDefault();
+			var typedEl = el;
+			f(typedEl);
+		});
 		if(__map_reserved["input"] != null) {
-			_g2.setReserved("input",value3);
+			_g2.setReserved("input",value4);
 		} else {
-			_g2.h["input"] = value3;
+			_g2.h["input"] = value4;
 		}
-		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromElementHandler($bind(this,this.selectionChange));
+		var f1 = $bind(this,this.selectionChange);
+		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
+			e1.preventDefault();
+			var typedEl1 = el1;
+			f1(typedEl1);
+		});
 		if(__map_reserved["keyup"] != null) {
-			_g2.setReserved("keyup",value4);
+			_g2.setReserved("keyup",value5);
 		} else {
-			_g2.h["keyup"] = value4;
+			_g2.h["keyup"] = value5;
 		}
-		var top = [doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("input",_g2,null)]))];
+		var top = [doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("span",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(value,null,null)]))]))];
 		var bottom;
 		var _g3 = this.props.expr;
 		if(_g3[1] == 2) {
 			var msg = _g3[3];
-			bottom = [doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(msg)]))];
+			bottom = [doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(msg,null,null)]))];
 		} else {
 			bottom = [];
 		}
 		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children(top.concat(bottom)));
 	}
 	,didUpdate: function() {
-		var input = dots_Query.find("input",this.node);
-		input.setSelectionRange(this.start,this.end);
+		var input = this.node;
 	}
 	,selectionChange: function(input) {
 		this.start = input.selectionStart;
@@ -17981,7 +18617,7 @@ view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
 	}
 	,onInput: function(input) {
 		this.selectionChange(input);
-		this.props.dispatch(Action.EvaluateExpression(input.value));
+		this.props.dispatch(Action.EvaluateExpression(input.textContent));
 	}
 	,classes: function() {
 		return "view_expression-input";
@@ -18012,7 +18648,7 @@ view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g.h["class"] = value1;
 			}
-			return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + result1)]));
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + result1,null,null)]));
 		case 2:
 			switch(result[2][1]) {
 			case 0:
@@ -18061,7 +18697,7 @@ view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g2.h["class"] = value4;
 			}
-			var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(this.renderOp(op))]));
+			var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(this.renderOp(op),null,null)]));
 			var _g3 = new haxe_ds_StringMap();
 			var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("right");
 			if(__map_reserved["class"] != null) {
@@ -18182,7 +18818,7 @@ view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g.h["class"] = value;
 			}
-			return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(op)]));
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(op,null,null)]));
 		};
 	}
 	,renderExpressionSet: function(rolls,reducer) {
@@ -18230,11 +18866,11 @@ view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
 	,displayReducer: function(reducer) {
 		switch(reducer[1]) {
 		case 1:
-			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("average")]));
+			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("average",null,null)]));
 		case 2:
-			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("min")]));
+			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("min",null,null)]));
 		case 3:
-			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("max")]));
+			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("max",null,null)]));
 		default:
 			var _g = new haxe_ds_StringMap();
 			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
@@ -18258,61 +18894,75 @@ view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
 		switch(_g) {
 		case 6:
 			var _g1 = new haxe_ds_StringMap();
-			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("die-icon roll " + r);
+			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("die-container");
 			if(__map_reserved["class"] != null) {
 				_g1.setReserved("class",value);
 			} else {
 				_g1.h["class"] = value;
 			}
 			var _g11 = new haxe_ds_StringMap();
-			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("df-dot-d6-" + die.result);
+			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("die-icon roll " + r);
 			if(__map_reserved["class"] != null) {
 				_g11.setReserved("class",value1);
 			} else {
 				_g11.h["class"] = value1;
 			}
-			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("i",_g11,null)]));
-		case 2:case 4:case 8:case 10:case 12:case 20:
 			var _g2 = new haxe_ds_StringMap();
-			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("die-icon roll " + r);
+			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("df-dot-d6-" + die.result);
 			if(__map_reserved["class"] != null) {
 				_g2.setReserved("class",value2);
 			} else {
 				_g2.h["class"] = value2;
 			}
-			var _g12 = new haxe_ds_StringMap();
-			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("df-d" + die.sides + "-" + die.result);
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g11,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("i",_g2,null)]))]));
+		case 2:case 4:case 8:case 10:case 12:case 20:
+			var _g3 = new haxe_ds_StringMap();
+			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("die-container");
 			if(__map_reserved["class"] != null) {
-				_g12.setReserved("class",value3);
+				_g3.setReserved("class",value3);
 			} else {
-				_g12.h["class"] = value3;
+				_g3.h["class"] = value3;
 			}
-			return doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("i",_g12,null)]));
+			var _g12 = new haxe_ds_StringMap();
+			var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("die-icon roll " + r);
+			if(__map_reserved["class"] != null) {
+				_g12.setReserved("class",value4);
+			} else {
+				_g12.h["class"] = value4;
+			}
+			var _g21 = new haxe_ds_StringMap();
+			var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("df-d" + die.sides + "-" + die.result);
+			if(__map_reserved["class"] != null) {
+				_g21.setReserved("class",value5);
+			} else {
+				_g21.h["class"] = value5;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g12,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("i",_g21,null)]))]));
 		default:
 			return this.details(die.result,function() {
-				var _g3 = new haxe_ds_StringMap();
-				var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("die");
+				var _g4 = new haxe_ds_StringMap();
+				var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("die");
 				if(__map_reserved["class"] != null) {
-					_g3.setReserved("class",value4);
+					_g4.setReserved("class",value6);
 				} else {
-					_g3.h["class"] = value4;
+					_g4.h["class"] = value6;
 				}
 				var _g13 = new haxe_ds_StringMap();
-				var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("d");
+				var value7 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("d");
 				if(__map_reserved["class"] != null) {
-					_g13.setReserved("class",value5);
+					_g13.setReserved("class",value7);
 				} else {
-					_g13.h["class"] = value5;
+					_g13.h["class"] = value7;
 				}
-				var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g13,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("d")]));
-				var _g21 = new haxe_ds_StringMap();
-				var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("X");
+				var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g13,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("d",null,null)]));
+				var _g22 = new haxe_ds_StringMap();
+				var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("X");
 				if(__map_reserved["class"] != null) {
-					_g21.setReserved("class",value6);
+					_g22.setReserved("class",value8);
 				} else {
-					_g21.h["class"] = value6;
+					_g22.h["class"] = value8;
 				}
-				return doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([children,doom_core__$VNode_VNode_$Impl_$.el("div",_g21,die.sides == 100 ? doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("%")]) : doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + die.sides)]))]));
+				return doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([children,doom_core__$VNode_VNode_$Impl_$.el("div",_g22,die.sides == 100 ? doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("%",null,null)]) : doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + die.sides,null,null)]))]));
 			});
 		}
 	}
@@ -18343,7 +18993,7 @@ view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + result)]));
+		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + result,null,null)]));
 		var _g2 = new haxe_ds_StringMap();
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("details");
 		if(__map_reserved["class"] != null) {
@@ -18368,11 +19018,15 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 		var _g = this.props;
 		switch(_g[1]) {
 		case 0:
-			var expr = _g[2];
-			var roller = new dr_Roller(function(sides) {
-				return 1 + Math.floor(Math.random() * sides);
-			});
-			var r = roller.roll(expr);
+			var update = _g[2].updateSeed;
+			var seed = _g[2].seed;
+			var expr = _g[2].expression;
+			var seeded = thx_math_random_LehmerSeed.std(seed);
+			var r = new dr_Roller(function(sides) {
+				var v = Math.floor(seeded.get_normalized() * sides) + 1;
+				seeded = seeded.next();
+				return v;
+			}).roll(expr);
 			var _g1 = new haxe_ds_StringMap();
 			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("roll-box");
 			if(__map_reserved["class"] != null) {
@@ -18381,13 +19035,12 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 				_g1.h["class"] = value;
 			}
 			var _g11 = new haxe_ds_StringMap();
-			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromHandler($bind(this,this.roll));
-			if(__map_reserved["click"] != null) {
-				_g11.setReserved("click",value1);
+			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("rolling");
+			if(__map_reserved["class"] != null) {
+				_g11.setReserved("class",value1);
 			} else {
-				_g11.h["click"] = value1;
+				_g11.h["class"] = value1;
 			}
-			var children = doom_core__$VNode_VNode_$Impl_$.el("button",_g11,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("roll again")]));
 			var _g2 = new haxe_ds_StringMap();
 			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("roll-result");
 			if(__map_reserved["class"] != null) {
@@ -18395,21 +19048,82 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g2.h["class"] = value2;
 			}
-			var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + dr_RollResultExtensions.getResult(r))]));
 			var _g3 = new haxe_ds_StringMap();
-			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("roll-details");
-			if(__map_reserved["class"] != null) {
-				_g3.setReserved("class",value3);
+			var f = $bind(this,this.roll);
+			var a1 = seeded.get_int();
+			var f1 = function() {
+				f(a1);
+			};
+			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+				e.preventDefault();
+				f1();
+			});
+			if(__map_reserved["click"] != null) {
+				_g3.setReserved("click",value3);
 			} else {
-				_g3.h["class"] = value3;
+				_g3.h["click"] = value3;
 			}
-			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Comp(new view_RollDetailsView(r))]))]));
+			var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("#");
+			if(__map_reserved["href"] != null) {
+				_g3.setReserved("href",value4);
+			} else {
+				_g3.h["href"] = value4;
+			}
+			var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("a",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + dr_RollResultExtensions.getResult(r),null,null)]))]));
+			var _g4 = new haxe_ds_StringMap();
+			var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("roll-seed");
+			if(__map_reserved["class"] != null) {
+				_g4.setReserved("class",value5);
+			} else {
+				_g4.h["class"] = value5;
+			}
+			var children1 = doom_core__$VNode_VNode_$Impl_$.el("span",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("seed: ",null,null)]));
+			var _g5 = new haxe_ds_StringMap();
+			var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text-editor");
+			if(__map_reserved["class"] != null) {
+				_g5.setReserved("class",value6);
+			} else {
+				_g5.h["class"] = value6;
+			}
+			var f2 = $bind(this,this.changeSeed);
+			var value7 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
+				e1.preventDefault();
+				var value8 = dots_Dom.getValue(el1);
+				f2(value8);
+			});
+			if(__map_reserved["input"] != null) {
+				_g5.setReserved("input",value7);
+			} else {
+				_g5.h["input"] = value7;
+			}
+			var value9 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("true");
+			if(__map_reserved["contentEditable"] != null) {
+				_g5.setReserved("contentEditable",value9);
+			} else {
+				_g5.h["contentEditable"] = value9;
+			}
+			var children2 = doom_core__$VNode_VNode_$Impl_$.el("div",_g11,doom_core__$VNodes_VNodes_$Impl_$.children([children,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([children1,doom_core__$VNode_VNode_$Impl_$.el("span",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + seed,null,null)]))]))]));
+			var _g6 = new haxe_ds_StringMap();
+			var value10 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("roll-details");
+			if(__map_reserved["class"] != null) {
+				_g6.setReserved("class",value10);
+			} else {
+				_g6.h["class"] = value10;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g6,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Comp(new view_RollDetailsView(r))]))]));
 		case 1:
-			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("nothing to roll")]));
+			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("nothing to roll",null,null)]));
 		}
 	}
-	,roll: function() {
-		this.update(this.props,{ fileName : "RollView.hx", lineNumber : 29, className : "view.RollView", methodName : "roll"});
+	,changeSeed: function(value) {
+		var v = Std.parseInt(value);
+		this.roll(v < 1 ? 1 : v >= 2147483647 ? 2147483646 : v);
+	}
+	,roll: function(next) {
+		thx_Options.map(this.props,function(v) {
+			v.updateSeed(next);
+			return;
+		});
 	}
 	,didMount: function() {
 		this.rollEffect();
@@ -18595,202 +19309,210 @@ doom_html_Attributes.properties = (function($this) {
 	}
 	{
 		var value7 = doom_html_AttributeType.BooleanAttribute;
-		if(__map_reserved["controls"] != null) {
-			_g.setReserved("controls",value7);
+		if(__map_reserved["contentEditable"] != null) {
+			_g.setReserved("contentEditable",value7);
 		} else {
-			_g.h["controls"] = value7;
+			_g.h["contentEditable"] = value7;
 		}
 	}
 	{
 		var value8 = doom_html_AttributeType.BooleanAttribute;
-		if(__map_reserved["default"] != null) {
-			_g.setReserved("default",value8);
+		if(__map_reserved["controls"] != null) {
+			_g.setReserved("controls",value8);
 		} else {
-			_g.h["default"] = value8;
+			_g.h["controls"] = value8;
 		}
 	}
 	{
 		var value9 = doom_html_AttributeType.BooleanAttribute;
-		if(__map_reserved["defer"] != null) {
-			_g.setReserved("defer",value9);
+		if(__map_reserved["default"] != null) {
+			_g.setReserved("default",value9);
 		} else {
-			_g.h["defer"] = value9;
+			_g.h["default"] = value9;
 		}
 	}
 	{
 		var value10 = doom_html_AttributeType.BooleanAttribute;
+		if(__map_reserved["defer"] != null) {
+			_g.setReserved("defer",value10);
+		} else {
+			_g.h["defer"] = value10;
+		}
+	}
+	{
+		var value11 = doom_html_AttributeType.BooleanAttribute;
 		if(__map_reserved["disabled"] != null) {
-			_g.setReserved("disabled",value10);
+			_g.setReserved("disabled",value11);
 		} else {
-			_g.h["disabled"] = value10;
+			_g.h["disabled"] = value11;
 		}
 	}
 	{
-		var value11 = doom_html_AttributeType.OverloadedBooleanAttribute;
+		var value12 = doom_html_AttributeType.OverloadedBooleanAttribute;
 		if(__map_reserved["download"] != null) {
-			_g.setReserved("download",value11);
+			_g.setReserved("download",value12);
 		} else {
-			_g.h["download"] = value11;
-		}
-	}
-	{
-		var value12 = doom_html_AttributeType.BooleanAttribute;
-		if(__map_reserved["formNoValidate"] != null) {
-			_g.setReserved("formNoValidate",value12);
-		} else {
-			_g.h["formNoValidate"] = value12;
+			_g.h["download"] = value12;
 		}
 	}
 	{
 		var value13 = doom_html_AttributeType.BooleanAttribute;
-		if(__map_reserved["hidden"] != null) {
-			_g.setReserved("hidden",value13);
+		if(__map_reserved["formNoValidate"] != null) {
+			_g.setReserved("formNoValidate",value13);
 		} else {
-			_g.h["hidden"] = value13;
+			_g.h["formNoValidate"] = value13;
 		}
 	}
 	{
 		var value14 = doom_html_AttributeType.BooleanAttribute;
-		if(__map_reserved["loop"] != null) {
-			_g.setReserved("loop",value14);
+		if(__map_reserved["hidden"] != null) {
+			_g.setReserved("hidden",value14);
 		} else {
-			_g.h["loop"] = value14;
+			_g.h["hidden"] = value14;
 		}
 	}
 	{
-		var value15 = doom_html_AttributeType.BooleanProperty;
-		if(__map_reserved["multiple"] != null) {
-			_g.setReserved("multiple",value15);
+		var value15 = doom_html_AttributeType.BooleanAttribute;
+		if(__map_reserved["loop"] != null) {
+			_g.setReserved("loop",value15);
 		} else {
-			_g.h["multiple"] = value15;
+			_g.h["loop"] = value15;
 		}
 	}
 	{
 		var value16 = doom_html_AttributeType.BooleanProperty;
-		if(__map_reserved["muted"] != null) {
-			_g.setReserved("muted",value16);
+		if(__map_reserved["multiple"] != null) {
+			_g.setReserved("multiple",value16);
 		} else {
-			_g.h["muted"] = value16;
+			_g.h["multiple"] = value16;
 		}
 	}
 	{
-		var value17 = doom_html_AttributeType.BooleanAttribute;
-		if(__map_reserved["noValidate"] != null) {
-			_g.setReserved("noValidate",value17);
+		var value17 = doom_html_AttributeType.BooleanProperty;
+		if(__map_reserved["muted"] != null) {
+			_g.setReserved("muted",value17);
 		} else {
-			_g.h["noValidate"] = value17;
+			_g.h["muted"] = value17;
 		}
 	}
 	{
 		var value18 = doom_html_AttributeType.BooleanAttribute;
-		if(__map_reserved["open"] != null) {
-			_g.setReserved("open",value18);
+		if(__map_reserved["noValidate"] != null) {
+			_g.setReserved("noValidate",value18);
 		} else {
-			_g.h["open"] = value18;
+			_g.h["noValidate"] = value18;
 		}
 	}
 	{
 		var value19 = doom_html_AttributeType.BooleanAttribute;
-		if(__map_reserved["readOnly"] != null) {
-			_g.setReserved("readOnly",value19);
+		if(__map_reserved["open"] != null) {
+			_g.setReserved("open",value19);
 		} else {
-			_g.h["readOnly"] = value19;
+			_g.h["open"] = value19;
 		}
 	}
 	{
 		var value20 = doom_html_AttributeType.BooleanAttribute;
-		if(__map_reserved["required"] != null) {
-			_g.setReserved("required",value20);
+		if(__map_reserved["readOnly"] != null) {
+			_g.setReserved("readOnly",value20);
 		} else {
-			_g.h["required"] = value20;
+			_g.h["readOnly"] = value20;
 		}
 	}
 	{
 		var value21 = doom_html_AttributeType.BooleanAttribute;
+		if(__map_reserved["required"] != null) {
+			_g.setReserved("required",value21);
+		} else {
+			_g.h["required"] = value21;
+		}
+	}
+	{
+		var value22 = doom_html_AttributeType.BooleanAttribute;
 		if(__map_reserved["reversed"] != null) {
-			_g.setReserved("reversed",value21);
+			_g.setReserved("reversed",value22);
 		} else {
-			_g.h["reversed"] = value21;
+			_g.h["reversed"] = value22;
 		}
 	}
 	{
-		var value22 = doom_html_AttributeType.PositiveNumericAttribute;
+		var value23 = doom_html_AttributeType.PositiveNumericAttribute;
 		if(__map_reserved["rows"] != null) {
-			_g.setReserved("rows",value22);
+			_g.setReserved("rows",value23);
 		} else {
-			_g.h["rows"] = value22;
+			_g.h["rows"] = value23;
 		}
 	}
 	{
-		var value23 = doom_html_AttributeType.NumericAttribute;
+		var value24 = doom_html_AttributeType.NumericAttribute;
 		if(__map_reserved["rowSpan"] != null) {
-			_g.setReserved("rowSpan",value23);
+			_g.setReserved("rowSpan",value24);
 		} else {
-			_g.h["rowSpan"] = value23;
-		}
-	}
-	{
-		var value24 = doom_html_AttributeType.BooleanAttribute;
-		if(__map_reserved["scoped"] != null) {
-			_g.setReserved("scoped",value24);
-		} else {
-			_g.h["scoped"] = value24;
+			_g.h["rowSpan"] = value24;
 		}
 	}
 	{
 		var value25 = doom_html_AttributeType.BooleanAttribute;
+		if(__map_reserved["scoped"] != null) {
+			_g.setReserved("scoped",value25);
+		} else {
+			_g.h["scoped"] = value25;
+		}
+	}
+	{
+		var value26 = doom_html_AttributeType.BooleanAttribute;
 		if(__map_reserved["seamless"] != null) {
-			_g.setReserved("seamless",value25);
+			_g.setReserved("seamless",value26);
 		} else {
-			_g.h["seamless"] = value25;
+			_g.h["seamless"] = value26;
 		}
 	}
 	{
-		var value26 = doom_html_AttributeType.BooleanProperty;
+		var value27 = doom_html_AttributeType.BooleanProperty;
 		if(__map_reserved["selected"] != null) {
-			_g.setReserved("selected",value26);
+			_g.setReserved("selected",value27);
 		} else {
-			_g.h["selected"] = value26;
-		}
-	}
-	{
-		var value27 = doom_html_AttributeType.PositiveNumericAttribute;
-		if(__map_reserved["size"] != null) {
-			_g.setReserved("size",value27);
-		} else {
-			_g.h["size"] = value27;
+			_g.h["selected"] = value27;
 		}
 	}
 	{
 		var value28 = doom_html_AttributeType.PositiveNumericAttribute;
+		if(__map_reserved["size"] != null) {
+			_g.setReserved("size",value28);
+		} else {
+			_g.h["size"] = value28;
+		}
+	}
+	{
+		var value29 = doom_html_AttributeType.PositiveNumericAttribute;
 		if(__map_reserved["span"] != null) {
-			_g.setReserved("span",value28);
+			_g.setReserved("span",value29);
 		} else {
-			_g.h["span"] = value28;
+			_g.h["span"] = value29;
 		}
 	}
 	{
-		var value29 = doom_html_AttributeType.NumericAttribute;
+		var value30 = doom_html_AttributeType.NumericAttribute;
 		if(__map_reserved["start"] != null) {
-			_g.setReserved("start",value29);
+			_g.setReserved("start",value30);
 		} else {
-			_g.h["start"] = value29;
+			_g.h["start"] = value30;
 		}
 	}
 	{
-		var value30 = doom_html_AttributeType.SideEffectProperty;
+		var value31 = doom_html_AttributeType.SideEffectProperty;
 		if(__map_reserved["value"] != null) {
-			_g.setReserved("value",value30);
+			_g.setReserved("value",value31);
 		} else {
-			_g.h["value"] = value30;
+			_g.h["value"] = value31;
 		}
 	}
 	{
-		var value31 = doom_html_AttributeType.BooleanAttribute;
+		var value32 = doom_html_AttributeType.BooleanAttribute;
 		if(__map_reserved["itemScope"] != null) {
-			_g.setReserved("itemScope",value31);
+			_g.setReserved("itemScope",value32);
 		} else {
-			_g.h["itemScope"] = value31;
+			_g.h["itemScope"] = value32;
 		}
 	}
 	$r = _g;
@@ -18857,202 +19579,210 @@ dots_Attributes.properties = (function($this) {
 	}
 	{
 		var value7 = dots_AttributeType.BooleanAttribute;
-		if(__map_reserved["controls"] != null) {
-			_g.setReserved("controls",value7);
+		if(__map_reserved["contentEditable"] != null) {
+			_g.setReserved("contentEditable",value7);
 		} else {
-			_g.h["controls"] = value7;
+			_g.h["contentEditable"] = value7;
 		}
 	}
 	{
 		var value8 = dots_AttributeType.BooleanAttribute;
-		if(__map_reserved["default"] != null) {
-			_g.setReserved("default",value8);
+		if(__map_reserved["controls"] != null) {
+			_g.setReserved("controls",value8);
 		} else {
-			_g.h["default"] = value8;
+			_g.h["controls"] = value8;
 		}
 	}
 	{
 		var value9 = dots_AttributeType.BooleanAttribute;
-		if(__map_reserved["defer"] != null) {
-			_g.setReserved("defer",value9);
+		if(__map_reserved["default"] != null) {
+			_g.setReserved("default",value9);
 		} else {
-			_g.h["defer"] = value9;
+			_g.h["default"] = value9;
 		}
 	}
 	{
 		var value10 = dots_AttributeType.BooleanAttribute;
+		if(__map_reserved["defer"] != null) {
+			_g.setReserved("defer",value10);
+		} else {
+			_g.h["defer"] = value10;
+		}
+	}
+	{
+		var value11 = dots_AttributeType.BooleanAttribute;
 		if(__map_reserved["disabled"] != null) {
-			_g.setReserved("disabled",value10);
+			_g.setReserved("disabled",value11);
 		} else {
-			_g.h["disabled"] = value10;
+			_g.h["disabled"] = value11;
 		}
 	}
 	{
-		var value11 = dots_AttributeType.OverloadedBooleanAttribute;
+		var value12 = dots_AttributeType.OverloadedBooleanAttribute;
 		if(__map_reserved["download"] != null) {
-			_g.setReserved("download",value11);
+			_g.setReserved("download",value12);
 		} else {
-			_g.h["download"] = value11;
-		}
-	}
-	{
-		var value12 = dots_AttributeType.BooleanAttribute;
-		if(__map_reserved["formNoValidate"] != null) {
-			_g.setReserved("formNoValidate",value12);
-		} else {
-			_g.h["formNoValidate"] = value12;
+			_g.h["download"] = value12;
 		}
 	}
 	{
 		var value13 = dots_AttributeType.BooleanAttribute;
-		if(__map_reserved["hidden"] != null) {
-			_g.setReserved("hidden",value13);
+		if(__map_reserved["formNoValidate"] != null) {
+			_g.setReserved("formNoValidate",value13);
 		} else {
-			_g.h["hidden"] = value13;
+			_g.h["formNoValidate"] = value13;
 		}
 	}
 	{
 		var value14 = dots_AttributeType.BooleanAttribute;
-		if(__map_reserved["loop"] != null) {
-			_g.setReserved("loop",value14);
+		if(__map_reserved["hidden"] != null) {
+			_g.setReserved("hidden",value14);
 		} else {
-			_g.h["loop"] = value14;
+			_g.h["hidden"] = value14;
 		}
 	}
 	{
-		var value15 = dots_AttributeType.BooleanProperty;
-		if(__map_reserved["multiple"] != null) {
-			_g.setReserved("multiple",value15);
+		var value15 = dots_AttributeType.BooleanAttribute;
+		if(__map_reserved["loop"] != null) {
+			_g.setReserved("loop",value15);
 		} else {
-			_g.h["multiple"] = value15;
+			_g.h["loop"] = value15;
 		}
 	}
 	{
 		var value16 = dots_AttributeType.BooleanProperty;
-		if(__map_reserved["muted"] != null) {
-			_g.setReserved("muted",value16);
+		if(__map_reserved["multiple"] != null) {
+			_g.setReserved("multiple",value16);
 		} else {
-			_g.h["muted"] = value16;
+			_g.h["multiple"] = value16;
 		}
 	}
 	{
-		var value17 = dots_AttributeType.BooleanAttribute;
-		if(__map_reserved["noValidate"] != null) {
-			_g.setReserved("noValidate",value17);
+		var value17 = dots_AttributeType.BooleanProperty;
+		if(__map_reserved["muted"] != null) {
+			_g.setReserved("muted",value17);
 		} else {
-			_g.h["noValidate"] = value17;
+			_g.h["muted"] = value17;
 		}
 	}
 	{
 		var value18 = dots_AttributeType.BooleanAttribute;
-		if(__map_reserved["open"] != null) {
-			_g.setReserved("open",value18);
+		if(__map_reserved["noValidate"] != null) {
+			_g.setReserved("noValidate",value18);
 		} else {
-			_g.h["open"] = value18;
+			_g.h["noValidate"] = value18;
 		}
 	}
 	{
 		var value19 = dots_AttributeType.BooleanAttribute;
-		if(__map_reserved["readOnly"] != null) {
-			_g.setReserved("readOnly",value19);
+		if(__map_reserved["open"] != null) {
+			_g.setReserved("open",value19);
 		} else {
-			_g.h["readOnly"] = value19;
+			_g.h["open"] = value19;
 		}
 	}
 	{
 		var value20 = dots_AttributeType.BooleanAttribute;
-		if(__map_reserved["required"] != null) {
-			_g.setReserved("required",value20);
+		if(__map_reserved["readOnly"] != null) {
+			_g.setReserved("readOnly",value20);
 		} else {
-			_g.h["required"] = value20;
+			_g.h["readOnly"] = value20;
 		}
 	}
 	{
 		var value21 = dots_AttributeType.BooleanAttribute;
+		if(__map_reserved["required"] != null) {
+			_g.setReserved("required",value21);
+		} else {
+			_g.h["required"] = value21;
+		}
+	}
+	{
+		var value22 = dots_AttributeType.BooleanAttribute;
 		if(__map_reserved["reversed"] != null) {
-			_g.setReserved("reversed",value21);
+			_g.setReserved("reversed",value22);
 		} else {
-			_g.h["reversed"] = value21;
+			_g.h["reversed"] = value22;
 		}
 	}
 	{
-		var value22 = dots_AttributeType.PositiveNumericAttribute;
+		var value23 = dots_AttributeType.PositiveNumericAttribute;
 		if(__map_reserved["rows"] != null) {
-			_g.setReserved("rows",value22);
+			_g.setReserved("rows",value23);
 		} else {
-			_g.h["rows"] = value22;
+			_g.h["rows"] = value23;
 		}
 	}
 	{
-		var value23 = dots_AttributeType.NumericAttribute;
+		var value24 = dots_AttributeType.NumericAttribute;
 		if(__map_reserved["rowSpan"] != null) {
-			_g.setReserved("rowSpan",value23);
+			_g.setReserved("rowSpan",value24);
 		} else {
-			_g.h["rowSpan"] = value23;
-		}
-	}
-	{
-		var value24 = dots_AttributeType.BooleanAttribute;
-		if(__map_reserved["scoped"] != null) {
-			_g.setReserved("scoped",value24);
-		} else {
-			_g.h["scoped"] = value24;
+			_g.h["rowSpan"] = value24;
 		}
 	}
 	{
 		var value25 = dots_AttributeType.BooleanAttribute;
+		if(__map_reserved["scoped"] != null) {
+			_g.setReserved("scoped",value25);
+		} else {
+			_g.h["scoped"] = value25;
+		}
+	}
+	{
+		var value26 = dots_AttributeType.BooleanAttribute;
 		if(__map_reserved["seamless"] != null) {
-			_g.setReserved("seamless",value25);
+			_g.setReserved("seamless",value26);
 		} else {
-			_g.h["seamless"] = value25;
+			_g.h["seamless"] = value26;
 		}
 	}
 	{
-		var value26 = dots_AttributeType.BooleanProperty;
+		var value27 = dots_AttributeType.BooleanProperty;
 		if(__map_reserved["selected"] != null) {
-			_g.setReserved("selected",value26);
+			_g.setReserved("selected",value27);
 		} else {
-			_g.h["selected"] = value26;
-		}
-	}
-	{
-		var value27 = dots_AttributeType.PositiveNumericAttribute;
-		if(__map_reserved["size"] != null) {
-			_g.setReserved("size",value27);
-		} else {
-			_g.h["size"] = value27;
+			_g.h["selected"] = value27;
 		}
 	}
 	{
 		var value28 = dots_AttributeType.PositiveNumericAttribute;
+		if(__map_reserved["size"] != null) {
+			_g.setReserved("size",value28);
+		} else {
+			_g.h["size"] = value28;
+		}
+	}
+	{
+		var value29 = dots_AttributeType.PositiveNumericAttribute;
 		if(__map_reserved["span"] != null) {
-			_g.setReserved("span",value28);
+			_g.setReserved("span",value29);
 		} else {
-			_g.h["span"] = value28;
+			_g.h["span"] = value29;
 		}
 	}
 	{
-		var value29 = dots_AttributeType.NumericAttribute;
+		var value30 = dots_AttributeType.NumericAttribute;
 		if(__map_reserved["start"] != null) {
-			_g.setReserved("start",value29);
+			_g.setReserved("start",value30);
 		} else {
-			_g.h["start"] = value29;
+			_g.h["start"] = value30;
 		}
 	}
 	{
-		var value30 = dots_AttributeType.SideEffectProperty;
+		var value31 = dots_AttributeType.SideEffectProperty;
 		if(__map_reserved["value"] != null) {
-			_g.setReserved("value",value30);
+			_g.setReserved("value",value31);
 		} else {
-			_g.h["value"] = value30;
+			_g.h["value"] = value31;
 		}
 	}
 	{
-		var value31 = dots_AttributeType.BooleanAttribute;
+		var value32 = dots_AttributeType.BooleanAttribute;
 		if(__map_reserved["itemScope"] != null) {
-			_g.setReserved("itemScope",value31);
+			_g.setReserved("itemScope",value32);
 		} else {
-			_g.h["itemScope"] = value31;
+			_g.h["itemScope"] = value32;
 		}
 	}
 	$r = _g;
@@ -19295,6 +20025,21 @@ thx_culture_Pattern.percentPositives = ["n %","n%","%n","% n"];
 thx_format_NumberFormat.BASE = "0123456789abcdefghijklmnopqrstuvwxyz";
 thx_fp__$Map_Map_$Impl_$.delta = 5;
 thx_fp__$Map_Map_$Impl_$.ratio = 2;
+thx_math_Const.TWO_PI = 6.283185307179586477;
+thx_math_Const.PI = 3.141592653589793238;
+thx_math_Const.HALF_PI = 1.570796326794896619;
+thx_math_Const.TO_DEGREE = 57.29577951308232088;
+thx_math_Const.TO_RADIAN = 0.01745329251994329577;
+thx_math_Const.LN10 = 2.302585092994046;
+thx_math_Const.E = 2.71828182845904523536;
+thx_math_Const.GOLDEN_RATIO = 1.6180339887498948482;
+thx_math_Const.EULER = 0.5772156649015329;
+thx_math_Const.KAPPA = 0.5522847498307936;
+thx_math_Const.INT16_MAX = 32767;
+thx_math_Const.INT16_MIN = -32768;
+thx_math_Const.INT32_MAX = 2147483647;
+thx_math_Const.INT32_MIN = -2147483648;
+thx_math_random_LehmerSeed.MINSTD_RAND = 48271;
 view_BarChart.barHeight = 100.0;
 view_BarChart.STORAGE_PREFIX = "dice.run-expression:";
 view_BarChart.worker = (function($this) {

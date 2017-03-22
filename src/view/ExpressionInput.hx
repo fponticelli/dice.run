@@ -14,12 +14,16 @@ class ExpressionInput extends Component<SimulatorProps> {
       case Parsed(src, _): src;
       case Error(src, _): src;
     }
-    var top = [div(input([
-          "class" => "expression-input",
-          "value" => value,
-          "input" => onInput,
-          "keyup" => selectionChange
-        ]))];
+    var top = [div([
+        "class" => "expression-input"
+      ],
+      span([
+        "class" => "text-editor",
+        // "value" => value,
+        "contentEditable" => "true",
+        "input" => onInput,
+        "keyup" => selectionChange
+      ], value))];
     var bottom = switch props.expr {
           case Error(_, msg):
             [div(msg)];
@@ -32,8 +36,8 @@ class ExpressionInput extends Component<SimulatorProps> {
   }
 
   override function didUpdate() {
-    var input: js.html.InputElement = cast Query.find("input", this.element);
-    input.setSelectionRange(start, end);
+    var input: js.html.InputElement = cast this.element; // cast Query.find("input", this.element);
+    // input.setSelectionRange(start, end);
   }
 
   function selectionChange(input: js.html.InputElement) {
@@ -43,7 +47,7 @@ class ExpressionInput extends Component<SimulatorProps> {
 
   function onInput(input: js.html.InputElement) {
     selectionChange(input);
-    props.dispatch(EvaluateExpression(input.value));
+    props.dispatch(EvaluateExpression(input.textContent));
   }
 }
 

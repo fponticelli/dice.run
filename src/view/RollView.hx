@@ -7,26 +7,50 @@ import dr.DiceExpression;
 using dr.RollResultExtensions;
 import dr.Roller;
 using thx.Arrays;
+import thx.math.random.Random;
+import thx.math.random.Seed;
+import thx.math.random.FastRNGSeed;
+import thx.math.random.LehmerSeed;
+using thx.Objects;
+using thx.Options;
 
-class RollView extends Component<Option<DiceExpression>> {
+class RollView extends Component<Option<{ expression: DiceExpression, seed: Int, updateSeed: Int -> Void }>> {
   override function render()
     return switch props {
       case None:
         div("nothing to roll");
-      case Some(expr):
-        var roller = new Roller(function(sides) {
-          return 1 + Math.floor(Math.random() * sides);
-        });
-        var r = roller.roll(expr);
+      case Some({ expression: expr, seed: seed, updateSeed: update }):
+        var seeded = LehmerSeed.std(seed);
+        var r = new Roller(function(sides) {
+          var v = Math.floor(seeded.normalized * sides) + 1;
+          seeded = seeded.next();
+          return v;
+        }).roll(expr);
         div(["class" => "roll-box"], [
-          button(["click" => roll], "roll again"),
-          div(["class" => "roll-result"], '${r.getResult()}'),
+          div(["class" => "rolling"], [
+            div(["class" => "roll-result"], [
+              a(["click" => roll.bind(seeded.int), "href" => "#"], '${r.getResult()}')
+            ]),
+            div(["class" => "roll-seed"], [
+              span("seed: "),
+              span([
+                "class" => "text-editor",
+                "input" => changeSeed,
+                "contentEditable" => "true"
+              ], '$seed')
+            ])
+          ]),
           div(["class" => "roll-details"], new RollDetailsView(r))
         ]);
     };
 
-  function roll()
-    update(props);
+  function changeSeed(value: String) {
+    var v = Std.parseInt(value);
+    roll(v < 1 ? 1 : (v >= thx.math.Const.INT32_MAX) ? thx.math.Const.INT32_MAX-1 : v);
+  }
+
+  function roll(next: Int)
+    props.map(function(v) return v.updateSeed(next));
 
   override function didMount()
     rollEffect();
