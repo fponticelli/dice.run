@@ -2,8 +2,6 @@ package view;
 
 import ProbabilitiesResult;
 import dr.DiceExpression;
-import dr.DiceParser;
-using dr.DiceExpressionExtensions;
 import doom.html.Html.*;
 using thx.format.NumberFormat;
 import js.html.Worker;

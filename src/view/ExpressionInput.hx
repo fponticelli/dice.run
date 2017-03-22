@@ -3,7 +3,6 @@ package view;
 import doom.html.Component;
 import doom.html.Html.*;
 import State;
-import dots.Query;
 
 class ExpressionInput extends Component<SimulatorProps> {
   var start = 0;

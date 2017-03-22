@@ -7,11 +7,7 @@ import dr.DiceExpression;
 using dr.RollResultExtensions;
 import dr.Roller;
 using thx.Arrays;
-import thx.math.random.Random;
-import thx.math.random.Seed;
-import thx.math.random.FastRNGSeed;
 import thx.math.random.LehmerSeed;
-using thx.Objects;
 using thx.Options;
 
 class RollView extends Component<Option<{ expression: DiceExpression, seed: Int, updateSeed: Int -> Void }>> {
