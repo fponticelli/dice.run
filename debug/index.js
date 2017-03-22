@@ -855,71 +855,79 @@ var Main = function(props,children) {
 };
 Main.__name__ = ["Main"];
 Main.main = function() {
-	var state = { page : PageView.DiceSimulator(Expression.Unparsed(""))};
+	var state = { expression : Expression.Unparsed("")};
 	var mw = new Middleware();
 	var store = new thx_stream_Store(new thx_stream_Property(state),Reducer.reduce,$bind(mw,mw.api));
 	var app = new Main(store);
 	Doom.browser.mount(doom_core_VNodeImpl.Comp(app),dots_Query.find("#main"));
 	store.stream().next(function(_) {
-		app.update(store,{ fileName : "Main.hx", lineNumber : 20, className : "Main", methodName : "main"});
+		app.update(store,{ fileName : "Main.hx", lineNumber : 21, className : "Main", methodName : "main"});
 	}).run();
-	store.dispatch(Action.EvaluateExpression("2d6 explode once on 4 or more"),{ fileName : "Main.hx", lineNumber : 22, className : "Main", methodName : "main"});
+	var dispatchHash = function() {
+		var h = thx_Strings.trimCharsLeft(window.location.hash,"#/");
+		if(StringTools.startsWith(h,"d/")) {
+			var dispatchHash1 = Action.EvaluateExpression(Main.prettify(h.substring(2)));
+			store.dispatch(dispatchHash1,{ fileName : "Main.hx", lineNumber : 28, className : "Main", methodName : "main"});
+		} else if(h == "") {
+			store.dispatch(Action.EvaluateExpression("4d6 drop 1"),{ fileName : "Main.hx", lineNumber : 30, className : "Main", methodName : "main"});
+		}
+	};
+	window.onhashchange = function(e) {
+		dispatchHash();
+	};
+	dispatchHash();
+};
+Main.prettify = function(s) {
+	return StringTools.replace(s,"_"," ");
 };
 Main.__super__ = doom_html_Component;
 Main.prototype = $extend(doom_html_Component.prototype,{
 	render: function() {
 		var _gthis = this;
 		var state = this.props.get();
-		var _g = state.page;
-		var expr = _g[2];
 		var children = new view_ExpressionInput({ dispatch : function(a) {
-			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 31, className : "Main", methodName : "render"});
-		}, expr : expr}).asNode();
-		var _g2 = new haxe_ds_StringMap();
-		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("split");
-		if(__map_reserved["class"] != null) {
-			_g2.setReserved("class",value);
-		} else {
-			_g2.h["class"] = value;
-		}
+			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 46, className : "Main", methodName : "render"});
+		}, expr : state.expression}).asNode();
 		var children1;
-		if(expr[1] == 1) {
-			var e = expr[4];
-			children1 = haxe_ds_Option.Some(e);
+		var _g3 = state.expression;
+		if(_g3[1] == 1) {
+			var e = _g3[4];
+			var n = _g3[3];
+			var s = _g3[2];
+			children1 = new view_BarChart({ expression : n, parsed : e, probabilities : new ProbabilitiesResult()}).asNode();
 		} else {
-			children1 = haxe_ds_Option.None;
-		}
-		var children2 = new view_RollView(children1).asNode();
-		var children3;
-		if(expr[1] == 1) {
-			var e1 = expr[4];
-			var n = expr[3];
-			var s = expr[2];
-			children3 = new view_BarChart({ expression : n, parsed : e1, probabilities : new ProbabilitiesResult()}).asNode();
-		} else {
-			var _g1 = new haxe_ds_StringMap();
-			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
+			var _g = new haxe_ds_StringMap();
+			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
 			if(__map_reserved["style"] != null) {
-				_g1.setReserved("style",value1);
+				_g.setReserved("style",value);
 			} else {
-				_g1.h["style"] = value1;
+				_g.h["style"] = value;
 			}
-			var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
+			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
 			if(__map_reserved["data-comment"] != null) {
-				_g1.setReserved("data-comment",value2);
+				_g.setReserved("data-comment",value1);
 			} else {
-				_g1.h["data-comment"] = value2;
+				_g.h["data-comment"] = value1;
 			}
-			children3 = doom_core__$VNode_VNode_$Impl_$.el("div",_g1);
+			children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g);
 		}
-		var _g3 = new haxe_ds_StringMap();
-		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("description");
-		if(__map_reserved["class"] != null) {
-			_g3.setReserved("class",value3);
+		var _g4 = state.expression;
+		var children2;
+		if(_g4[1] == 1) {
+			var e1 = _g4[4];
+			children2 = haxe_ds_Option.Some(e1);
 		} else {
-			_g3.h["class"] = value3;
+			children2 = haxe_ds_Option.None;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([children,doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([children2,children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Raw(Markdown.markdownToHtml(Loc.description))]))]))]));
+		var children3 = new view_RollView(children2).asNode();
+		var _g5 = new haxe_ds_StringMap();
+		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("description");
+		if(__map_reserved["class"] != null) {
+			_g5.setReserved("class",value2);
+		} else {
+			_g5.h["class"] = value2;
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Raw(Markdown.markdownToHtml(Loc.description))]))]));
 	}
 	,classes: function() {
 		return "main";
@@ -1196,10 +1204,10 @@ Reducer.reduce = function(state,action) {
 	switch(_g[1]) {
 	case 0:
 		var e = _g[2];
-		return { page : PageView.DiceSimulator(Expression.Error(expr,e.toString()))};
+		return { expression : Expression.Error(expr,e.toString())};
 	case 1:
 		var parsed = _g[2];
-		return { page : PageView.DiceSimulator(Expression.Parsed(expr,dr_DiceExpressionExtensions.toString(parsed),parsed))};
+		return { expression : Expression.Parsed(expr,dr_DiceExpressionExtensions.toString(parsed),parsed)};
 	}
 };
 var Reflect = function() { };
@@ -1282,8 +1290,6 @@ Reflect.deleteField = function(o,field) {
 	delete(o[field]);
 	return true;
 };
-var PageView = { __ename__ : ["PageView"], __constructs__ : ["DiceSimulator"] };
-PageView.DiceSimulator = function(expr) { var $x = ["DiceSimulator",0,expr]; $x.__enum__ = PageView; return $x; };
 var Expression = { __ename__ : ["Expression"], __constructs__ : ["Unparsed","Parsed","Error"] };
 Expression.Unparsed = function(source) { var $x = ["Unparsed",0,source]; $x.__enum__ = Expression; return $x; };
 Expression.Parsed = function(source,normalized,expr) { var $x = ["Parsed",1,source,normalized,expr]; $x.__enum__ = Expression; return $x; };
@@ -17685,20 +17691,19 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 	,render: function() {
 		var stats = this.props.probabilities.stats();
 		var _g = new haxe_ds_StringMap();
-		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("probabilities");
+		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bars");
 		if(__map_reserved["class"] != null) {
 			_g.setReserved("class",value);
 		} else {
 			_g.h["class"] = value;
 		}
 		var _g1 = new haxe_ds_StringMap();
-		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
+		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("probabilities");
 		if(__map_reserved["class"] != null) {
 			_g1.setReserved("class",value1);
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderProb))));
 		var _g2 = new haxe_ds_StringMap();
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
 		if(__map_reserved["class"] != null) {
@@ -17706,7 +17711,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g2.h["class"] = value2;
 		}
-		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtLeast))));
+		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderProb))));
 		var _g3 = new haxe_ds_StringMap();
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
 		if(__map_reserved["class"] != null) {
@@ -17714,15 +17719,23 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g3.h["class"] = value3;
 		}
-		var children2 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtMost))));
+		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtLeast))));
 		var _g4 = new haxe_ds_StringMap();
-		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("stats");
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
 		if(__map_reserved["class"] != null) {
 			_g4.setReserved("class",value4);
 		} else {
 			_g4.h["class"] = value4;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("samples: " + thx_format_NumberFormat.number(stats.count,0))]))]));
+		var children2 = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtMost))))]));
+		var _g5 = new haxe_ds_StringMap();
+		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("stats");
+		if(__map_reserved["class"] != null) {
+			_g5.setReserved("class",value5);
+		} else {
+			_g5.h["class"] = value5;
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("samples: " + thx_format_NumberFormat.number(stats.count,0))]))]));
 	}
 	,willMount: function() {
 		view_BarChart.barChart = this;
@@ -18519,7 +18532,7 @@ doom_html_Render.defaultNamespaces = (function($this) {
 	return $r;
 }(this));
 Doom.browser = new doom_html_Render();
-Loc.description = "Type your dice expressions in the box.\n\nThe simples expression is [`d`](#/d/d) which means roll one die with 6 faces. You can be more explicit and input [`1d6`](#/d/1d6). Of course you can run multiple dice ([`3d6`](#/d/3d6)) and with different number of sides [`2d10`](#/d/2d10).\n\nYou can use basic mathematical operators [`3d6 + 4 - 1d4`](#/d/3d6+4-1d4).\n\nexpressions sets\n\ndice set\n\nexplode/reroll\n\ndrop/keep\n\nmin max average sum\n\nd%\n\ndice font\n\ndice roller\n";
+Loc.description = "# Basic Expressions\n\nType your dice expressions in the box.\n\nThe simplest expression is [`d`](#/d/d) which means roll one die with 6 faces. You can be more explicit and input [`1d6`](#/d/1d6) or  [`d6`](#/d/d6). Of course you can run multiple dice ([`3d6`](#/d/3d6)) and with different number of sides [`2d10`](#/d/2d10). The popular [`d100`](#/d/d100) (a percent die) can also be expressed as [`d%`](#/d/d%).\n\n# Math Operations\n\nYou can use basic mathematical operators [`3d6+4-1d4`](#/d/3d6+4-1d4). All math operations will return integer numbers: [`5d6/2`](#/d/5d6/2)\n\n# Expression Set and Reducing\n\nMany expressions can be provided in a set like [`{2d6,3d8,1d10+2}`](#/d/{2d6,3d8,1d10+2}). By default the result of each expression will be summed together. You can also be explicit [`{2d6,3d8,1d10+2} sum`](#/d/{2d6,3d8,1d10+2}sum) or you can use other reducing function like [`min`](#/d/{2d6,3d8,1d10+2}min), [`max`](#/d/{2d6,3d8,1d10+2}max) or [`average`](#/d/{2d6,3d8,1d10+2}average).\n\nYou can use expression set to force the order of arithmetic operations: [`{3d6+2}*2`](#/d/{3d6+2}*2) which is equivalent to [`{3d6,2}*2`](#/d/{3d6,2}*2). Reduced sets can be used as part of more complex mathematical expressions [`{3d6,9} keep 1 * 2`](#/d/{3d6,9}_keep_1_*_2).\n\n# Filtering\n\nIt is also possible to peform filtering operations on a set of expressions like *drop* and *keep*. Drop will only keep the values that do not match a condition: [`4d6 drop lowest 1`](#/d/4d6_drop_lowest_1). For *drop* the default matching condition is *lowest* so you can ommit it: [`4d6 drop 1`](#/d/4d6_drop_1). *Keep* will retain by default the top `N` values. [`4d6 keep 3`](#/d/4d6_keep_3) is basically equivalend to the `drop 1` above. You can be explicit and state [`4d6 keep highest 3`](#/d/4d6_keep_highest_3).\n\n# Dice Set\n\nSimpler sets of dice like [`5d6`](#/d/5d6) are expanded into [`{d6,d6,d6,d6,d6}`](#/d/{d6,d6,d6,d6,d6}). On these simple sets it is possible to apply two special functions: *explode* and *reroll*.\n\nA dice set can be composed of dice with different denominations [`{d2,d4,d6,d8,d10}`](#/d/{d2,d4,d6,d8,d10}). On the other hand a dice set can only be composed of nominal dice: [`{d6,2d8}`](#/d/{d6,2d8}) is NOT a dice set! It is still a valid expression set that can be reduced and filtered.\n\n# Explode / Reroll\n\nTODO\n\n  * dice set\n  * explode/reroll\n  * dice font\n  * dice roller\n  * dice link template: [``](#/d/)\n";
 Loc.msg = "";
 doom_html_Attributes.properties = (function($this) {
 	var $r;
@@ -19058,7 +19071,7 @@ dr_DiceParser.OPEN_SET_BRACKET = parsihax_Parser.string("{");
 dr_DiceParser.CLOSE_SET_BRACKET = parsihax_Parser.string("}");
 dr_DiceParser.COMMA = parsihax_Parser.string(",");
 dr_DiceParser.PERCENT = parsihax_Parser.string("%");
-dr_DiceParser.WS = parsihax_Parser.regexp(new EReg("\\s+","m"));
+dr_DiceParser.WS = parsihax_Parser.regexp(new EReg("[\\s_]+","m"));
 dr_DiceParser.OWS = parsihax_Parser.or(dr_DiceParser.WS,parsihax_Parser.string(""));
 dr_DiceParser.MULTIPLICATION = parsihax_Parser["as"](parsihax_Parser.regexp(new EReg("[*⋅×x]","")),"×");
 dr_DiceParser.DIVISION = parsihax_Parser.or(parsihax_Parser.or(parsihax_Parser.string("/"),parsihax_Parser.string("÷")),parsihax_Parser.string(":"));

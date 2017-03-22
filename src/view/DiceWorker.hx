@@ -27,7 +27,6 @@ class DiceWorker {
       var dwd = new DiceWorkerData(f);
       var res = Reflect.field(data, f);
       dwd.results = ProbabilitiesResult.fromObject(res);
-      // dwd.results.count = res.count;
       map.set(f, dwd);
     }
     cache = map;

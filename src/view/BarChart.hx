@@ -66,10 +66,12 @@ class BarChart extends doom.html.Component<BarChartProps> {
     // var max = pairs.map.fn(_.instances).max();
     // var mid = Math.floor((minValue + maxValue) / 2);
 
-    return div(["class" => "probabilities"], [
-      div(["class" => "barchart"], stats.map(renderProb)),
-      div(["class" => "barchart"], stats.map(renderAtLeast)),
-      div(["class" => "barchart"], stats.map(renderAtMost)),
+    return div(["class" => "bars"],  [
+      div(["class" => "probabilities"], [
+        div(["class" => "barchart"], stats.map(renderProb)),
+        div(["class" => "barchart"], stats.map(renderAtLeast)),
+        div(["class" => "barchart"], stats.map(renderAtMost))
+      ]),
       div(["class" => "stats"], 'samples: ${NumberFormat.number(stats.count, 0)}')
     ]);
   }

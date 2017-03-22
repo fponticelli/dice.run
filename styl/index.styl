@@ -3,8 +3,9 @@
 
 .barchart
   display: flex
-  height: 140px
-  width: 300px
+  height: 110px
+  width: 100%
+  margin: 0 0.25rem
 
 .bar-container:first-child .text,
 .bar-container:last-child .text,
@@ -31,9 +32,10 @@
 
 .roll-details
   display: flex
-  max-width: 200px
-  overflow-y: hidden
-  overflow-x: auto
+
+  > *
+    margin: 0 auto
+    border-top: 1px solid #ddd
 
 .bar-container
   display: flex
@@ -59,9 +61,11 @@
   bottom: 0
 
 .expression-input
-  font-size: 1.6rem
+  font-size: 2rem
+  font-weight: bold
+  font-family: monospace
   width: 100%
-  line-height: 1.4rem
+  line-height: 3.2rem
   text-align: center
   border: none
 
@@ -71,8 +75,7 @@
   white-space: nowrap
 
 .roll-result
-  font-size: 4rem
-  border-bottom: 1px solid #ccc
+  font-size: 6rem
 
 .roll-box
   text-align: center
@@ -138,3 +141,26 @@
 
 .discard .die-icon
   color: #ccc
+
+.description
+  code
+    padding: 0.1rem 0.25rem
+    background-color: #f3f3f3
+    font-family: monospace
+    font-weight: bold
+  a
+    text-decoration: none
+    color: #309
+  h1
+    margin: 0.0rem
+    font-size: 1rem
+  p
+    margin: 0.5rem
+    &:first-child
+      margin-top: 0
+    &:last-child
+      margin-bottom: 0
+
+.probabilities
+  display: flex
+  justify-content: space-between

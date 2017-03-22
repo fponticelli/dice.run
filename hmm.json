@@ -68,6 +68,12 @@
       "url": "git@github.com:fponticelli/thx.format"
     },
     {
+      "name": "thx.math",
+      "type": "git",
+      "ref": "f012d9f",
+      "url": "git@github.com:fponticelli/thx.math"
+    },
+    {
       "name": "thx.promise",
       "type": "git",
       "ref": "65379a9",
@@ -103,6 +109,12 @@
       "type": "git",
       "ref": "fbd6f28",
       "url": "git@github.com:fponticelli/thx.tpl"
+    },
+    {
+      "name": "tiki-tk",
+      "type": "git",
+      "ref": "82f050b",
+      "url": "git@github.com:mlms13/tiki-tk"
     },
     {
       "name": "utest",

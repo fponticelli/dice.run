@@ -7,9 +7,9 @@ class Reducer {
       case EvaluateExpression(expr):
         switch parse(expr) {
           case Left(e):
-            { page: DiceSimulator(Error(expr, e.toString())) };
+            { expression: Error(expr, e.toString()) };
           case Right(parsed):
-            { page: DiceSimulator(Parsed(expr, parsed.toString(), parsed)) };
+            { expression: Parsed(expr, parsed.toString(), parsed) };
         }
     };
   }
