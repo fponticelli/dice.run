@@ -955,51 +955,72 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 	render: function() {
 		var _gthis = this;
 		var state = this.props.get();
-		var children = new view_ExpressionInput({ dispatch : function(a) {
-			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 46, className : "Main", methodName : "render"});
-		}, expr : state.expression}).asNode();
-		var children1;
-		var _g3 = state.expression;
-		if(_g3[1] == 1) {
-			var e = _g3[4];
-			var n = _g3[3];
-			var s = _g3[2];
-			children1 = new view_BarChart({ expression : n, parsed : e, probabilities : new ProbabilitiesResult()}).asNode();
+		var _g = new haxe_ds_StringMap();
+		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("content");
+		if(__map_reserved["class"] != null) {
+			_g.setReserved("class",value);
 		} else {
-			var _g = new haxe_ds_StringMap();
-			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
-			if(__map_reserved["style"] != null) {
-				_g.setReserved("style",value);
-			} else {
-				_g.h["style"] = value;
-			}
-			var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
-			if(__map_reserved["data-comment"] != null) {
-				_g.setReserved("data-comment",value1);
-			} else {
-				_g.h["data-comment"] = value1;
-			}
-			children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g);
+			_g.h["class"] = value;
 		}
-		var _g4 = state.expression;
-		var children2;
-		if(_g4[1] == 1) {
-			var e1 = _g4[4];
-			children2 = haxe_ds_Option.Some({ expression : e1, seed : state.seed, updateSeed : function(seed) {
-				_gthis.props.dispatch(Action.UpdateSeed(seed),{ fileName : "Main.hx", lineNumber : 59, className : "Main", methodName : "render"});
+		var _g1 = new haxe_ds_StringMap();
+		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("header");
+		if(__map_reserved["class"] != null) {
+			_g1.setReserved("class",value1);
+		} else {
+			_g1.h["class"] = value1;
+		}
+		var children = new view_ExpressionInput({ dispatch : function(a) {
+			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 47, className : "Main", methodName : "render"});
+		}, expr : state.expression}).asNode();
+		var _g2 = state.expression;
+		var children1;
+		if(_g2[1] == 1) {
+			var e = _g2[4];
+			children1 = haxe_ds_Option.Some({ expression : e, seed : state.seed, updateSeed : function(seed) {
+				_gthis.props.dispatch(Action.UpdateSeed(seed),{ fileName : "Main.hx", lineNumber : 54, className : "Main", methodName : "render"});
 			}});
 		} else {
-			children2 = haxe_ds_Option.None;
+			children1 = haxe_ds_Option.None;
 		}
-		var children3 = new view_RollView(children2).asNode();
-		var _g5 = new haxe_ds_StringMap();
-		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("description");
+		var children2 = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,new view_RollView(children1).asNode()]));
+		var _g3 = new haxe_ds_StringMap();
+		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("body");
 		if(__map_reserved["class"] != null) {
-			_g5.setReserved("class",value2);
+			_g3.setReserved("class",value2);
 		} else {
-			_g5.h["class"] = value2;
+			_g3.h["class"] = value2;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Raw(Markdown.markdownToHtml(Loc.description),null,null)]))]));
+		var children3;
+		var _g4 = state.expression;
+		if(_g4[1] == 1) {
+			var e1 = _g4[4];
+			var n = _g4[3];
+			var s = _g4[2];
+			children3 = new view_BarChart({ expression : n, parsed : e1, probabilities : new ProbabilitiesResult()}).asNode();
+		} else {
+			var _g5 = new haxe_ds_StringMap();
+			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
+			if(__map_reserved["style"] != null) {
+				_g5.setReserved("style",value3);
+			} else {
+				_g5.h["style"] = value3;
+			}
+			var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
+			if(__map_reserved["data-comment"] != null) {
+				_g5.setReserved("data-comment",value4);
+			} else {
+				_g5.h["data-comment"] = value4;
+			}
+			children3 = doom_core__$VNode_VNode_$Impl_$.el("div",_g5);
+		}
+		var _g51 = new haxe_ds_StringMap();
+		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("description");
+		if(__map_reserved["class"] != null) {
+			_g51.setReserved("class",value5);
+		} else {
+			_g51.h["class"] = value5;
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g51,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Raw(Markdown.markdownToHtml(Loc.description),null,null)]))]))]));
 	}
 	,classes: function() {
 		return "main";

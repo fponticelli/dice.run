@@ -41,26 +41,30 @@ class Main extends Component<Store<State, Action>> {
 
   override function render() {
     var state = props.get();
-    return div([
-      new ExpressionInput({
-        dispatch: function(a) props.dispatch(a),
-        expr: state.expression
-      }).asNode(),
-      switch state.expression {
-        case Parsed(s, n, e):
-          new BarChart({ expression: n, parsed: e, probabilities: new ProbabilitiesResult() }).asNode();
-        case _:
-          dummy();
-      },
-      new RollView(switch state.expression {
-        case Parsed(_, _, e): Some({
-          expression: e,
-          seed: state.seed,
-          updateSeed: function(seed: Int) props.dispatch(UpdateSeed(seed))
-        });
-        case _: None;
-      }).asNode(),
-      div(["class" => "description"], raw(markdownToHtml(Loc.description)))
+    return div(["class" => "content"], [
+      div(["class" => "header"], [
+        new ExpressionInput({
+          dispatch: function(a) props.dispatch(a),
+          expr: state.expression
+        }).asNode(),
+        new RollView(switch state.expression {
+          case Parsed(_, _, e): Some({
+            expression: e,
+            seed: state.seed,
+            updateSeed: function(seed: Int) props.dispatch(UpdateSeed(seed))
+          });
+          case _: None;
+        }).asNode(),
+      ]),
+      div(["class" => "body"], [
+        switch state.expression {
+          case Parsed(s, n, e):
+            new BarChart({ expression: n, parsed: e, probabilities: new ProbabilitiesResult() }).asNode();
+          case _:
+            dummy();
+        },
+        div(["class" => "description"], raw(markdownToHtml(Loc.description)))
+      ])
     ]);
   }
 }
