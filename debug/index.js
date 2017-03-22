@@ -15501,29 +15501,6 @@ thx_math_random_Seed.prototype = {
 	,next: null
 	,__class__: thx_math_random_Seed
 };
-var thx_math_random_FastRNGSeed = function(seed) {
-	if(seed == null) {
-		seed = 1;
-	}
-	this.seed = seed;
-};
-thx_math_random_FastRNGSeed.__name__ = ["thx","math","random","FastRNGSeed"];
-thx_math_random_FastRNGSeed.__interfaces__ = [thx_math_random_Seed];
-thx_math_random_FastRNGSeed.prototype = {
-	seed: null
-	,'int': null
-	,normalized: null
-	,next: function() {
-		return new thx_math_random_FastRNGSeed(this.seed * 48271.0 % 2147483647.0 | 0);
-	}
-	,get_int: function() {
-		return this.seed & 1073741823;
-	}
-	,get_normalized: function() {
-		return this.seed / 2147483647.0;
-	}
-	,__class__: thx_math_random_FastRNGSeed
-};
 var thx_math_random_LehmerSeed = function(x,n,g) {
 	this.x = x;
 	this.n = n;
@@ -15592,32 +15569,6 @@ thx_math_random_LehmerSeed.prototype = {
 		return this.x / x.low;
 	}
 	,__class__: thx_math_random_LehmerSeed
-};
-var thx_math_random__$Random_Random_$Impl_$ = {};
-thx_math_random__$Random_Random_$Impl_$.__name__ = ["thx","math","random","_Random","Random_Impl_"];
-thx_math_random__$Random_Random_$Impl_$.between = function(this1,min,max) {
-	this1 = this1.next();
-	return Math.round(this1.get_normalized() * (max - min)) + min;
-};
-thx_math_random__$Random_Random_$Impl_$.betweenf = function(this1,min,max) {
-	this1 = this1.next();
-	return this1.get_normalized() * (max - min) + min;
-};
-thx_math_random__$Random_Random_$Impl_$.bool = function(this1) {
-	this1 = this1.next();
-	return this1.get_int() % 2 == 0;
-};
-thx_math_random__$Random_Random_$Impl_$.shuffle = function(this1,arr) {
-	var pos = [];
-	var _g1 = 0;
-	var _g = arr.length;
-	while(_g1 < _g) {
-		var i = _g1++;
-		this1 = this1.next();
-		pos.push(this1.get_normalized());
-	}
-	var ranked = thx_Arrays.rank(pos,thx_Floats.compare);
-	return thx_Arrays.applyIndexes(arr,ranked);
 };
 var thx_promise_Future = function() {
 	this.handlers = [];
@@ -20053,7 +20004,7 @@ view_BarChart.worker = (function($this) {
 		var tmp1 = JSON.stringify(e.data.results);
 		storage.setItem(tmp,tmp1);
 		if(null != view_BarChart.barChart && expr == view_BarChart.barChart.props.expression) {
-			view_BarChart.barChart.update({ expression : view_BarChart.barChart.props.expression, parsed : view_BarChart.barChart.props.parsed, probabilities : p},{ fileName : "BarChart.hx", lineNumber : 23, className : "view.BarChart", methodName : "worker"});
+			view_BarChart.barChart.update({ expression : view_BarChart.barChart.props.expression, parsed : view_BarChart.barChart.props.parsed, probabilities : p},{ fileName : "BarChart.hx", lineNumber : 21, className : "view.BarChart", methodName : "worker"});
 		}
 	};
 	var collect = { };

@@ -1,6 +1,19 @@
 * {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
+#main {
+  margin: 20px 120px;
+}
+@media screen and (max-width: 960px) {
+  #main {
+    margin: 20px 60px;
+  }
+}
+@media screen and (max-width: 720px) {
+  #main {
+    margin: 20px 20px;
+  }
+}
 .barchart {
   display: flex;
   height: 120px;
@@ -223,8 +236,9 @@
   outline: none;
 }
 .stats {
-  position: absolute;
-  right: 0;
+  text-align: right;
   font-size: 0.8rem;
   color: #999;
+  margin-bottom: -1rem;
+  font-style: italic;
 }
