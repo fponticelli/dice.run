@@ -57,10 +57,15 @@ class BarChart extends doom.html.Component<BarChartProps> {
     return div(["class" => "bars"],  [
       div(["class" => "stats"], 'samples: ${NumberFormat.number(stats.count, 0)}'),
       div(["class" => "probabilities"], [
-        div(["class" => "barchart"], stats.map(renderAtLeast)),
+        div(["class" => "barchart"], stats.map(renderAtMost)),
         div(["class" => "barchart"], stats.map(renderProb)),
-        div(["class" => "barchart"], stats.map(renderAtMost))
+        div(["class" => "barchart"], stats.map(renderAtLeast))
       ]),
+      div(["class" => "probabilities-labels"], [
+        div(["class" => "label"], Loc.msg.atMost),
+        div(["class" => "label"], Loc.msg.probabilities),
+        div(["class" => "label"], Loc.msg.atLeast)
+      ])
     ]);
   }
 
@@ -75,26 +80,30 @@ class BarChart extends doom.html.Component<BarChartProps> {
   function renderProb(sample: Sample) {
     return div(["class" => "bar-container"], [
       div(["class" => "label"], div(["class" => "text"], '${sample.value}')),
-      div(["class" => "bar", "style" => 'height: ${sample.maxPercent*barHeight}px'], ""),
+      div(["class" => "bar", "style" => 'height: ${height(sample.maxPercent*barHeight)}'], ""),
       div(["class" => "percent"], div(["class" => "text"], (sample.percent*100).fixed(1))),
     ]);
   }
 
-  function renderAtLeast(sample: Sample) {
+  function renderAtMost(sample: Sample) {
     return div(["class" => "bar-container"], [
       div(["class" => "label"], div(["class" => "text"], '${sample.value}')),
-      div(["class" => "bar", "style" => 'height: ${sample.accPercent*barHeight}px'], ""),
+      div(["class" => "bar", "style" => 'height: ${height(sample.accPercent*barHeight)}'], ""),
       div(["class" => "percent"], div(["class" => "text"], (sample.accPercent*100).fixed(1))),
     ]);
   }
 
-  function renderAtMost(sample: Sample) {
+  function renderAtLeast(sample: Sample) {
     var v = sample.revPercent;
     return div(["class" => "bar-container"], [
       div(["class" => "label"], div(["class" => "text"], '${sample.value}')),
-      div(["class" => "bar", "style" => 'height: ${v*barHeight}px'], ""),
+      div(["class" => "bar", "style" => 'height: ${height(v*barHeight)}'], ""),
       div(["class" => "percent"], div(["class" => "text"], (v*100).fixed(1))),
     ]);
+  }
+
+  function height(v: Float) {
+    return Math.round(v*10)/10 + "px";
   }
 }
 

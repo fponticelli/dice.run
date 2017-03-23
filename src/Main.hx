@@ -44,6 +44,7 @@ class Main extends Component<Store<State, Action>> {
     var state = props.get();
     return div(["class" => "content"], [
       div(["class" => "header"], [
+        div(["class" => "ribbon"], a(["href" => "https://jumpersideas.com/#!dice-roller"], "jumpersideas.com")),
         new ExpressionInput({
           dispatch: function(a) props.dispatch(a),
           expr: state.expression

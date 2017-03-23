@@ -9,6 +9,7 @@
 -lib parsihax
 -lib diceroller
 -lib tiki-tk
+-lib yaml
 -cp src
 -main Main
 -js debug/index.js

@@ -978,58 +978,73 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var children = new view_ExpressionInput({ dispatch : function(a) {
-			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 48, className : "Main", methodName : "render"});
+		var _g2 = new haxe_ds_StringMap();
+		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("ribbon");
+		if(__map_reserved["class"] != null) {
+			_g2.setReserved("class",value2);
+		} else {
+			_g2.h["class"] = value2;
+		}
+		var _g3 = new haxe_ds_StringMap();
+		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("https://jumpersideas.com/#!dice-roller");
+		if(__map_reserved["href"] != null) {
+			_g3.setReserved("href",value3);
+		} else {
+			_g3.h["href"] = value3;
+		}
+		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("a",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("jumpersideas.com",null,null)]))]));
+		var children1 = new view_ExpressionInput({ dispatch : function(a) {
+			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 49, className : "Main", methodName : "render"});
 		}, expr : state.expression}).asNode();
-		var _g2 = state.expression;
-		var children1;
-		if(_g2[1] == 1) {
-			var e = _g2[4];
-			children1 = haxe_ds_Option.Some({ expression : e, seed : state.seed, updateSeed : function(seed) {
-				_gthis.props.dispatch(Action.UpdateSeed(seed),{ fileName : "Main.hx", lineNumber : 55, className : "Main", methodName : "render"});
+		var _g4 = state.expression;
+		var children2;
+		if(_g4[1] == 1) {
+			var e = _g4[4];
+			children2 = haxe_ds_Option.Some({ expression : e, seed : state.seed, updateSeed : function(seed) {
+				_gthis.props.dispatch(Action.UpdateSeed(seed),{ fileName : "Main.hx", lineNumber : 56, className : "Main", methodName : "render"});
 			}});
 		} else {
-			children1 = haxe_ds_Option.None;
+			children2 = haxe_ds_Option.None;
 		}
-		var children2 = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,new view_RollView(children1).asNode()]));
-		var _g3 = new haxe_ds_StringMap();
-		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("body");
+		var children3 = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,new view_RollView(children2).asNode()]));
+		var _g5 = new haxe_ds_StringMap();
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("body");
 		if(__map_reserved["class"] != null) {
-			_g3.setReserved("class",value2);
+			_g5.setReserved("class",value4);
 		} else {
-			_g3.h["class"] = value2;
+			_g5.h["class"] = value4;
 		}
-		var children3;
-		var _g4 = state.expression;
-		if(_g4[1] == 1) {
-			var e1 = _g4[4];
-			var n = _g4[3];
-			var s = _g4[2];
-			children3 = new view_BarChart({ expression : n, parsed : e1, probabilities : Main.sampleProbabilities(n,e1)}).asNode();
+		var children4;
+		var _g6 = state.expression;
+		if(_g6[1] == 1) {
+			var e1 = _g6[4];
+			var n = _g6[3];
+			var s = _g6[2];
+			children4 = new view_BarChart({ expression : n, parsed : e1, probabilities : Main.sampleProbabilities(n,e1)}).asNode();
 		} else {
-			var _g5 = new haxe_ds_StringMap();
-			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
+			var _g7 = new haxe_ds_StringMap();
+			var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
 			if(__map_reserved["style"] != null) {
-				_g5.setReserved("style",value3);
+				_g7.setReserved("style",value5);
 			} else {
-				_g5.h["style"] = value3;
+				_g7.h["style"] = value5;
 			}
-			var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
+			var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
 			if(__map_reserved["data-comment"] != null) {
-				_g5.setReserved("data-comment",value4);
+				_g7.setReserved("data-comment",value6);
 			} else {
-				_g5.h["data-comment"] = value4;
+				_g7.h["data-comment"] = value6;
 			}
-			children3 = doom_core__$VNode_VNode_$Impl_$.el("div",_g5);
+			children4 = doom_core__$VNode_VNode_$Impl_$.el("div",_g7);
 		}
-		var _g51 = new haxe_ds_StringMap();
-		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("description");
+		var _g71 = new haxe_ds_StringMap();
+		var value7 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("description");
 		if(__map_reserved["class"] != null) {
-			_g51.setReserved("class",value5);
+			_g71.setReserved("class",value7);
 		} else {
-			_g51.h["class"] = value5;
+			_g71.h["class"] = value7;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g51,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Raw(Markdown.markdownToHtml(Loc.description),null,null)]))]))]));
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([children4,doom_core__$VNode_VNode_$Impl_$.el("div",_g71,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Raw(Markdown.markdownToHtml(Loc.description),null,null)]))]))]));
 	}
 	,classes: function() {
 		return "main";
@@ -18320,7 +18335,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g3.h["class"] = value3;
 		}
-		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtLeast))));
+		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtMost))));
 		var _g4 = new haxe_ds_StringMap();
 		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
 		if(__map_reserved["class"] != null) {
@@ -18336,7 +18351,38 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g5.h["class"] = value5;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([children1,children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtMost))))]))]));
+		var children3 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([children1,children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtLeast))))]));
+		var _g6 = new haxe_ds_StringMap();
+		var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("probabilities-labels");
+		if(__map_reserved["class"] != null) {
+			_g6.setReserved("class",value6);
+		} else {
+			_g6.h["class"] = value6;
+		}
+		var _g7 = new haxe_ds_StringMap();
+		var value7 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
+		if(__map_reserved["class"] != null) {
+			_g7.setReserved("class",value7);
+		} else {
+			_g7.h["class"] = value7;
+		}
+		var children4 = doom_core__$VNode_VNode_$Impl_$.el("div",_g7,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.atMost,null,null)]));
+		var _g8 = new haxe_ds_StringMap();
+		var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
+		if(__map_reserved["class"] != null) {
+			_g8.setReserved("class",value8);
+		} else {
+			_g8.h["class"] = value8;
+		}
+		var children5 = doom_core__$VNode_VNode_$Impl_$.el("div",_g8,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.probabilities,null,null)]));
+		var _g9 = new haxe_ds_StringMap();
+		var value9 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
+		if(__map_reserved["class"] != null) {
+			_g9.setReserved("class",value9);
+		} else {
+			_g9.h["class"] = value9;
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g6,doom_core__$VNodes_VNodes_$Impl_$.children([children4,children5,doom_core__$VNode_VNode_$Impl_$.el("div",_g9,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.atLeast,null,null)]))]))]));
 	}
 	,willMount: function() {
 		view_BarChart.barChart = this;
@@ -18374,7 +18420,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g3.h["class"] = value3;
 		}
-		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("height: " + sample.get_maxPercent() * view_BarChart.barHeight + "px");
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("height: " + this.height(sample.get_maxPercent() * view_BarChart.barHeight));
 		if(__map_reserved["style"] != null) {
 			_g3.setReserved("style",value4);
 		} else {
@@ -18397,7 +18443,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		}
 		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(thx_format_NumberFormat.fixed(sample.get_percent() * 100,1),null,null)]))]))]));
 	}
-	,renderAtLeast: function(sample) {
+	,renderAtMost: function(sample) {
 		var _g = new haxe_ds_StringMap();
 		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar-container");
 		if(__map_reserved["class"] != null) {
@@ -18427,7 +18473,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g3.h["class"] = value3;
 		}
-		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("height: " + sample.get_accPercent() * view_BarChart.barHeight + "px");
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("height: " + this.height(sample.get_accPercent() * view_BarChart.barHeight));
 		if(__map_reserved["style"] != null) {
 			_g3.setReserved("style",value4);
 		} else {
@@ -18450,7 +18496,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		}
 		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(thx_format_NumberFormat.fixed(sample.get_accPercent() * 100,1),null,null)]))]))]));
 	}
-	,renderAtMost: function(sample) {
+	,renderAtLeast: function(sample) {
 		var v = sample.get_revPercent();
 		var _g = new haxe_ds_StringMap();
 		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar-container");
@@ -18481,7 +18527,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g3.h["class"] = value3;
 		}
-		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("height: " + v * view_BarChart.barHeight + "px");
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("height: " + this.height(v * view_BarChart.barHeight));
 		if(__map_reserved["style"] != null) {
 			_g3.setReserved("style",value4);
 		} else {
@@ -18503,6 +18549,9 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 			_g5.h["class"] = value6;
 		}
 		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(thx_format_NumberFormat.fixed(v * 100,1),null,null)]))]))]));
+	}
+	,height: function(v) {
+		return Math.round(v * 10) / 10 + "px";
 	}
 	,classes: function() {
 		return "view_bar-chart";
@@ -19322,7 +19371,7 @@ doom_html_Render.defaultNamespaces = (function($this) {
 }(this));
 Doom.browser = new doom_html_Render();
 Loc.description = "# Basic Expressions\n\nType your dice expressions in the box.\n\nThe simplest expression is [`d`](#/d/d) which means roll one die with 6 faces. You can be more explicit and input [`1d6`](#/d/1d6) or  [`d6`](#/d/d6). Of course you can run multiple dice ([`3d6`](#/d/3d6)) and with different number of sides [`2d10`](#/d/2d10). The popular [`d100`](#/d/d100) (a percent die) can also be expressed as [`d%`](#/d/d%).\n\n# Math Operations\n\nYou can use basic mathematical operators [`3d6+4-1d4`](#/d/3d6+4-1d4). All math operations will return integer numbers: [`5d6/2`](#/d/5d6/2)\n\n# Expression Set and Reducing\n\nMany expressions can be provided in a set like [`{2d6,3d8,1d10+2}`](#/d/{2d6,3d8,1d10+2}). By default the result of each expression will be summed together. You can also be explicit [`{2d6,3d8,1d10+2} sum`](#/d/{2d6,3d8,1d10+2}sum) or you can use other reducing function like [`min`](#/d/{2d6,3d8,1d10+2}min), [`max`](#/d/{2d6,3d8,1d10+2}max) or [`average`](#/d/{2d6,3d8,1d10+2}average).\n\nYou can use expression set to force the order of arithmetic operations: [`{3d6+2}*2`](#/d/{3d6+2}*2) which is equivalent to [`{3d6,2}*2`](#/d/{3d6,2}*2). Reduced sets can be used as part of more complex mathematical expressions [`{3d6,9} keep 1 * 2`](#/d/{3d6,9}_keep_1_*_2).\n\n# Filtering\n\nIt is also possible to peform filtering operations on a set of expressions like *drop* and *keep*. Drop will only keep the values that do not match a condition: [`4d6 drop lowest 1`](#/d/4d6_drop_lowest_1). For *drop* the default matching condition is *lowest* so you can ommit it: [`4d6 drop 1`](#/d/4d6_drop_1). *Keep* will retain by default the top `N` values. [`4d6 keep 3`](#/d/4d6_keep_3) is basically equivalend to the `drop 1` above. You can be explicit and state [`4d6 keep highest 3`](#/d/4d6_keep_highest_3).\n\n# Dice Set\n\nSimpler sets of dice like [`5d6`](#/d/5d6) are expanded into [`{d6,d6,d6,d6,d6}`](#/d/{d6,d6,d6,d6,d6}). On these simple sets it is possible to apply two special functions: *explode* and *reroll*.\n\nA dice set can be composed of dice with different denominations [`{d2,d4,d6,d8,d10}`](#/d/{d2,d4,d6,d8,d10}). On the other hand a dice set can only be composed of nominal dice: [`{d6,2d8}`](#/d/{d6,2d8}) is NOT a dice set! It is still a valid expression set that can be reduced and filtered.\n\n# Explode / Reroll\n\nTODO\n\n  * dice set\n  * explode/reroll\n  * dice font\n  * dice roller\n  * dice link template: [``](#/d/)\n";
-Loc.msg = "";
+Loc.msg = { atLeast : "at least", probabilities : "probabilities", atMost : "at most"};
 doom_html_Attributes.properties = (function($this) {
 	var $r;
 	var _g = new haxe_ds_StringMap();

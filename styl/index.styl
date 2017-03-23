@@ -4,6 +4,7 @@
 
 body
   overflow: hidden
+  margin: 0
 
 .content
   // padding 20px 120px 0
@@ -15,10 +16,10 @@ body
 .body
   overflow: auto
   padding: 1rem 4rem
+  background-color: #f6f6f6
 
 .barchart
   display: flex
-  height: 120px
   width: 100%
   margin: 0 0.25rem
 
@@ -135,7 +136,7 @@ body
   text-align: center
   justify-content: center
   display: flex
-  padding: 0.5rem 0
+  padding: 1rem 0 0.5rem
 
 .pair
   display: flex
@@ -187,6 +188,11 @@ body
   z-index: -1
   background: linear-gradient(135deg, rgba(255,255,255,0) 48.75%, rgba(255,0,0,0.8) 48.8%, rgba(255,0,0,0.8) 51.2%,  rgba(255,255,255,0) 51.25%), linear-gradient(45deg, rgba(255,255,255,0) 48.75%, rgba(255,0,0,0.8) 48.8%, rgba(255,0,0,0.8) 51.2%,  rgba(255,255,255,0) 51.25%)
 
+.header
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.1)
+  border-bottom: 1px solid #ddd
+  z-index: 1
+
 .keep .result
   color: #333
 
@@ -229,9 +235,17 @@ body
   overflow-y: hidden
   padding: 0 0.5rem
 
+.probabilities-labels
+  display: flex
+  justify-content: space-around
+  .label
+    text-align: center
+    color: #999
+    font-size: 0.8rem
+
 .roll-seed
   color: #999
-  margin-top: 0.5rem
+  margin-top: 1rem
   font-size: 0.8rem
 
 .text-editor
@@ -277,7 +291,10 @@ body
     padding-top: 8px
   .body
     padding: 1rem 2rem
-
+  .roll-seed
+    margin-top: 0.5rem
+  .roll-box
+    padding: 0.5rem 0
 
 @media screen and (max-width: 720px)
   // .content
@@ -306,3 +323,31 @@ body
     padding-top: 4px
   .body
     padding: 1rem 1rem
+
+
+
+
+.ribbon
+  position: absolute
+  top: -35px
+  right: -114px
+  padding: 1px 0
+  transform-origin: top left
+  transform: rotate(45deg)
+  background-color: #0076ea
+  background-image: linear-gradient(0, rgba(0, 0, 0, 0.2), transparent)
+  box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.2)
+
+  a
+    display: inline-block
+    width: 250px
+    font-family: 'Helvetica Neue'
+    color: #fff
+    font-size: 0.8em
+    letter-spacing: 0.06em
+    text-shadow: 0 -1px #777
+    text-decoration: none
+    text-align: center
+    line-height: 30px
+    border-top: 1px dotted #ffc284
+    border-bottom: 1px dotted #ffa951
