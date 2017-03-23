@@ -24,7 +24,7 @@ class DiceWorker {
   static function init(data) {
     var map = new Map();
     for(f in Reflect.fields(data)) {
-      var dwd = new DiceWorkerData(f);
+      var dwd = DiceWorkerData.create(f);
       var res = Reflect.field(data, f);
       dwd.results = ProbabilitiesResult.fromObject(res);
       map.set(f, dwd);
@@ -36,7 +36,7 @@ class DiceWorker {
     cancel();
     var worker = cache.get(expr);
     if(null == worker) {
-      worker = new DiceWorkerData(expr);
+      worker = DiceWorkerData.create(expr);
       cache.set(worker.exprString, worker);
     }
     if(worker.results.count >= MAXRUNS) {
@@ -69,9 +69,12 @@ class DiceWorkerData {
   public var exprString: String;
   var expr: DiceExpression;
   var roller: Roller;
-  public function new(exprString: String) {
+  public static function create(exprString: String)
+    return new DiceWorkerData(exprString, DiceParser.unsafeParse(exprString));
+
+  public function new(exprString: String, parsed: DiceExpression) {
     this.exprString = exprString;
-    this.expr = DiceParser.unsafeParse(exprString);
+    this.expr = parsed;
     this.roller = new Roller(function(sides) {
       return 1 + Math.floor(Math.random() * sides);
     });

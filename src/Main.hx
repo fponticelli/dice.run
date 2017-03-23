@@ -8,6 +8,7 @@ import thx.stream.Store;
 import State;
 import Markdown.*;
 using thx.Strings;
+import view.DiceWorker.DiceWorkerData;
 
 class Main extends Component<Store<State, Action>> {
   static public function main() {
@@ -59,12 +60,20 @@ class Main extends Component<Store<State, Action>> {
       div(["class" => "body"], [
         switch state.expression {
           case Parsed(s, n, e):
-            new BarChart({ expression: n, parsed: e, probabilities: new ProbabilitiesResult() }).asNode();
+            new BarChart({ expression: n, parsed: e, probabilities: sampleProbabilities(n, e) }).asNode();
           case _:
             dummy();
         },
         div(["class" => "description"], raw(markdownToHtml(Loc.description)))
       ])
     ]);
+  }
+
+  // feed some numbers to start with and make some smooth animation
+  public static function sampleProbabilities(n, e) {
+    var data = new DiceWorkerData(n, e);
+    for(i in 0...100)
+      data.roll();
+    return data.results;
   }
 }

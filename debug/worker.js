@@ -9819,7 +9819,7 @@ view_DiceWorker.init = function(data) {
 	while(_g < _g1.length) {
 		var f = _g1[_g];
 		++_g;
-		var dwd = new view_DiceWorkerData(f);
+		var dwd = view_DiceWorkerData.create(f);
 		var res = Reflect.field(data,f);
 		dwd.results = ProbabilitiesResult.fromObject(res);
 		if(__map_reserved[f] != null) {
@@ -9835,7 +9835,7 @@ view_DiceWorker.evaluate = function(expr) {
 	var _this = view_DiceWorker.cache;
 	var worker = __map_reserved[expr] != null ? _this.getReserved(expr) : _this.h[expr];
 	if(null == worker) {
-		worker = new view_DiceWorkerData(expr);
+		worker = view_DiceWorkerData.create(expr);
 		var key = worker.exprString;
 		var _this1 = view_DiceWorker.cache;
 		if(__map_reserved[key] != null) {
@@ -9873,15 +9873,18 @@ view_DiceWorker.run = function(worker) {
 view_DiceWorker.send = function(worker) {
 	postMessage({ expression : worker.exprString, results : worker.results.toObject()});
 };
-var view_DiceWorkerData = function(exprString) {
+var view_DiceWorkerData = function(exprString,parsed) {
 	this.exprString = exprString;
-	this.expr = dr_DiceParser.unsafeParse(exprString);
+	this.expr = parsed;
 	this.roller = new dr_Roller(function(sides) {
 		return 1 + Math.floor(Math.random() * sides);
 	});
 	this.results = new ProbabilitiesResult();
 };
 view_DiceWorkerData.__name__ = ["view","DiceWorkerData"];
+view_DiceWorkerData.create = function(exprString) {
+	return new view_DiceWorkerData(exprString,dr_DiceParser.unsafeParse(exprString));
+};
 view_DiceWorkerData.prototype = {
 	results: null
 	,exprString: null
@@ -9964,7 +9967,7 @@ dr_DiceParser.OPEN_SET_BRACKET = parsihax_Parser.string("{");
 dr_DiceParser.CLOSE_SET_BRACKET = parsihax_Parser.string("}");
 dr_DiceParser.COMMA = parsihax_Parser.string(",");
 dr_DiceParser.PERCENT = parsihax_Parser.string("%");
-dr_DiceParser.WS = parsihax_Parser.regexp(new EReg("\\s+","m"));
+dr_DiceParser.WS = parsihax_Parser.regexp(new EReg("[\\s_]+","m"));
 dr_DiceParser.OWS = parsihax_Parser.or(dr_DiceParser.WS,parsihax_Parser.string(""));
 dr_DiceParser.MULTIPLICATION = parsihax_Parser["as"](parsihax_Parser.regexp(new EReg("[*⋅×x]","")),"×");
 dr_DiceParser.DIVISION = parsihax_Parser.or(parsihax_Parser.or(parsihax_Parser.string("/"),parsihax_Parser.string("÷")),parsihax_Parser.string(":"));

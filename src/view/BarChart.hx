@@ -46,10 +46,6 @@ class BarChart extends doom.html.Component<BarChartProps> {
     super(props, []);
     barChart = this;
     post(props.expression);
-    // worker;
-    // worker.onmessage(function(e) {
-    // });
-    // worker.postMessage(props.expression);
   }
 
   override function migrationFields() {
@@ -58,12 +54,6 @@ class BarChart extends doom.html.Component<BarChartProps> {
 
   override function render() {
     var stats = props.probabilities.stats();
-    // var total = pairs.map.fn(_.instances).sum();
-    // var minValue = pairs.map.fn(_.roll).min();
-    // var maxValue = pairs.map.fn(_.roll).max();
-    // var max = pairs.map.fn(_.instances).max();
-    // var mid = Math.floor((minValue + maxValue) / 2);
-
     return div(["class" => "bars"],  [
       div(["class" => "stats"], 'samples: ${NumberFormat.number(stats.count, 0)}'),
       div(["class" => "probabilities"], [
