@@ -1020,7 +1020,7 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 			var e1 = _g6[4];
 			var n = _g6[3];
 			var s = _g6[2];
-			children4 = new view_BarChart({ expression : n, parsed : e1, probabilities : Main.sampleProbabilities(n,e1)}).asNode();
+			children4 = new view_BarChart({ expression : n, parsed : e1, probabilities : Main.sampleProbabilities(n,e1), selected : haxe_ds_Option.None}).asNode();
 		} else {
 			var _g7 = new haxe_ds_StringMap();
 			var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
@@ -18299,6 +18299,12 @@ view_BarChart.__name__ = ["view","BarChart"];
 view_BarChart.post = function(expr) {
 	view_BarChart.worker.postMessage({ expression : expr});
 };
+view_BarChart.percent = function(v) {
+	var f = thx_format_NumberFormat.fixed(v * 100,view_BarChart.ROUND).split(".");
+	f[1] = thx_Strings.trimCharsRight(f[1],"0");
+	f = f.filter(thx_Strings.hasContent);
+	return f.join(".") + "%";
+};
 view_BarChart.__super__ = doom_html_Component;
 view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 	migrationFields: function() {
@@ -18306,6 +18312,9 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 	}
 	,render: function() {
 		var stats = this.props.probabilities.stats();
+		var f = function(f1) {
+			return thx_format_NumberFormat.number(f1,0);
+		};
 		var _g = new haxe_ds_StringMap();
 		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bars");
 		if(__map_reserved["class"] != null) {
@@ -18320,7 +18329,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("samples: " + thx_format_NumberFormat.number(stats.count,0),null,null)]));
+		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("values between " + f(stats.minValue) + " and " + f(stats.maxValue) + ", samples: " + f(stats.count),null,null)]));
 		var _g2 = new haxe_ds_StringMap();
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("probabilities");
 		if(__map_reserved["class"] != null) {
@@ -18335,7 +18344,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g3.h["class"] = value3;
 		}
-		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtMost))));
+		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtLeast))));
 		var _g4 = new haxe_ds_StringMap();
 		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
 		if(__map_reserved["class"] != null) {
@@ -18351,7 +18360,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g5.h["class"] = value5;
 		}
-		var children3 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([children1,children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtLeast))))]));
+		var children3 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([children1,children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtMost))))]));
 		var _g6 = new haxe_ds_StringMap();
 		var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("probabilities-labels");
 		if(__map_reserved["class"] != null) {
@@ -18366,7 +18375,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g7.h["class"] = value7;
 		}
-		var children4 = doom_core__$VNode_VNode_$Impl_$.el("div",_g7,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.atMost,null,null)]));
+		var children4 = doom_core__$VNode_VNode_$Impl_$.el("div",_g7,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.atLeast,null,null)]));
 		var _g8 = new haxe_ds_StringMap();
 		var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
 		if(__map_reserved["class"] != null) {
@@ -18382,7 +18391,7 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g9.h["class"] = value9;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g6,doom_core__$VNodes_VNodes_$Impl_$.children([children4,children5,doom_core__$VNode_VNode_$Impl_$.el("div",_g9,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.atLeast,null,null)]))]))]));
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g6,doom_core__$VNodes_VNodes_$Impl_$.children([children4,children5,doom_core__$VNode_VNode_$Impl_$.el("div",_g9,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.atMost,null,null)]))]))]));
 	}
 	,willMount: function() {
 		view_BarChart.barChart = this;
@@ -18390,165 +18399,277 @@ view_BarChart.prototype = $extend(doom_html_Component.prototype,{
 	,willUnmount: function() {
 		view_BarChart.barChart = null;
 	}
+	,mouseEnter: function(value) {
+		var _gthis = this;
+		return function() {
+			_gthis.update({ expression : _gthis.props.expression, parsed : _gthis.props.parsed, probabilities : _gthis.props.probabilities, selected : haxe_ds_Option.Some(value)},{ fileName : "BarChart.hx", lineNumber : 88, className : "view.BarChart", methodName : "mouseEnter"});
+		};
+	}
 	,renderProb: function(sample) {
-		var _g = new haxe_ds_StringMap();
-		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar-container");
-		if(__map_reserved["class"] != null) {
-			_g.setReserved("class",value);
-		} else {
-			_g.h["class"] = value;
-		}
 		var _g1 = new haxe_ds_StringMap();
-		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
+		var _g = new haxe_ds_StringMap();
+		if(__map_reserved["bar-container"] != null) {
+			_g.setReserved("bar-container",true);
+		} else {
+			_g.h["bar-container"] = true;
+		}
+		var value = this.isSelected(sample.value);
+		if(__map_reserved["selected"] != null) {
+			_g.setReserved("selected",value);
+		} else {
+			_g.h["selected"] = value;
+		}
+		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromBoolMap(_g);
 		if(__map_reserved["class"] != null) {
 			_g1.setReserved("class",value1);
 		} else {
 			_g1.h["class"] = value1;
 		}
+		var f = this.mouseEnter(sample.value);
+		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+			e.preventDefault();
+			f();
+		});
+		if(__map_reserved["mouseenter"] != null) {
+			_g1.setReserved("mouseenter",value2);
+		} else {
+			_g1.h["mouseenter"] = value2;
+		}
+		var f1 = this.mouseEnter(sample.value);
+		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
+			e1.preventDefault();
+			f1();
+		});
+		if(__map_reserved["tap"] != null) {
+			_g1.setReserved("tap",value3);
+		} else {
+			_g1.h["tap"] = value3;
+		}
 		var _g2 = new haxe_ds_StringMap();
-		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
 		if(__map_reserved["class"] != null) {
-			_g2.setReserved("class",value2);
+			_g2.setReserved("class",value4);
 		} else {
-			_g2.h["class"] = value2;
+			_g2.h["class"] = value4;
 		}
-		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + sample.value,null,null)]))]));
 		var _g3 = new haxe_ds_StringMap();
-		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar");
+		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
 		if(__map_reserved["class"] != null) {
-			_g3.setReserved("class",value3);
+			_g3.setReserved("class",value5);
 		} else {
-			_g3.h["class"] = value3;
+			_g3.h["class"] = value5;
 		}
-		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("height: " + this.height(sample.get_maxPercent() * view_BarChart.barHeight));
-		if(__map_reserved["style"] != null) {
-			_g3.setReserved("style",value4);
-		} else {
-			_g3.h["style"] = value4;
-		}
-		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("",null,null)]));
+		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + sample.value,null,null)]))]));
 		var _g4 = new haxe_ds_StringMap();
-		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("percent");
+		var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar");
 		if(__map_reserved["class"] != null) {
-			_g4.setReserved("class",value5);
+			_g4.setReserved("class",value6);
 		} else {
-			_g4.h["class"] = value5;
+			_g4.h["class"] = value6;
 		}
+		var value7 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("height: " + this.height(sample.get_maxPercent() * view_BarChart.barHeight));
+		if(__map_reserved["style"] != null) {
+			_g4.setReserved("style",value7);
+		} else {
+			_g4.h["style"] = value7;
+		}
+		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("",null,null)]));
 		var _g5 = new haxe_ds_StringMap();
-		var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
+		var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("percent");
 		if(__map_reserved["class"] != null) {
-			_g5.setReserved("class",value6);
+			_g5.setReserved("class",value8);
 		} else {
-			_g5.h["class"] = value6;
+			_g5.h["class"] = value8;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(thx_format_NumberFormat.fixed(sample.get_percent() * 100,1),null,null)]))]))]));
+		var _g6 = new haxe_ds_StringMap();
+		var value9 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
+		if(__map_reserved["class"] != null) {
+			_g6.setReserved("class",value9);
+		} else {
+			_g6.h["class"] = value9;
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g6,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(view_BarChart.percent(sample.get_percent()),null,null)]))]))]));
+	}
+	,isSelected: function(value) {
+		var _g = this.props.selected;
+		switch(_g[1]) {
+		case 0:
+			var v = _g[2];
+			return v == value;
+		case 1:
+			return false;
+		}
 	}
 	,renderAtMost: function(sample) {
-		var _g = new haxe_ds_StringMap();
-		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar-container");
-		if(__map_reserved["class"] != null) {
-			_g.setReserved("class",value);
-		} else {
-			_g.h["class"] = value;
-		}
 		var _g1 = new haxe_ds_StringMap();
-		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
+		var _g = new haxe_ds_StringMap();
+		if(__map_reserved["bar-container"] != null) {
+			_g.setReserved("bar-container",true);
+		} else {
+			_g.h["bar-container"] = true;
+		}
+		var value = this.isSelected(sample.value);
+		if(__map_reserved["selected"] != null) {
+			_g.setReserved("selected",value);
+		} else {
+			_g.h["selected"] = value;
+		}
+		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromBoolMap(_g);
 		if(__map_reserved["class"] != null) {
 			_g1.setReserved("class",value1);
 		} else {
 			_g1.h["class"] = value1;
 		}
+		var f = this.mouseEnter(sample.value);
+		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+			e.preventDefault();
+			f();
+		});
+		if(__map_reserved["mouseenter"] != null) {
+			_g1.setReserved("mouseenter",value2);
+		} else {
+			_g1.h["mouseenter"] = value2;
+		}
+		var f1 = this.mouseEnter(sample.value);
+		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
+			e1.preventDefault();
+			f1();
+		});
+		if(__map_reserved["tap"] != null) {
+			_g1.setReserved("tap",value3);
+		} else {
+			_g1.h["tap"] = value3;
+		}
 		var _g2 = new haxe_ds_StringMap();
-		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
 		if(__map_reserved["class"] != null) {
-			_g2.setReserved("class",value2);
+			_g2.setReserved("class",value4);
 		} else {
-			_g2.h["class"] = value2;
+			_g2.h["class"] = value4;
 		}
-		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + sample.value,null,null)]))]));
 		var _g3 = new haxe_ds_StringMap();
-		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar");
+		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
 		if(__map_reserved["class"] != null) {
-			_g3.setReserved("class",value3);
+			_g3.setReserved("class",value5);
 		} else {
-			_g3.h["class"] = value3;
+			_g3.h["class"] = value5;
 		}
-		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("height: " + this.height(sample.get_accPercent() * view_BarChart.barHeight));
-		if(__map_reserved["style"] != null) {
-			_g3.setReserved("style",value4);
-		} else {
-			_g3.h["style"] = value4;
-		}
-		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("",null,null)]));
+		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + sample.value,null,null)]))]));
 		var _g4 = new haxe_ds_StringMap();
-		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("percent");
+		var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar");
 		if(__map_reserved["class"] != null) {
-			_g4.setReserved("class",value5);
+			_g4.setReserved("class",value6);
 		} else {
-			_g4.h["class"] = value5;
+			_g4.h["class"] = value6;
 		}
+		var value7 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("height: " + this.height(sample.get_accPercent() * view_BarChart.barHeight));
+		if(__map_reserved["style"] != null) {
+			_g4.setReserved("style",value7);
+		} else {
+			_g4.h["style"] = value7;
+		}
+		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("",null,null)]));
 		var _g5 = new haxe_ds_StringMap();
-		var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
+		var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("percent");
 		if(__map_reserved["class"] != null) {
-			_g5.setReserved("class",value6);
+			_g5.setReserved("class",value8);
 		} else {
-			_g5.h["class"] = value6;
+			_g5.h["class"] = value8;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(thx_format_NumberFormat.fixed(sample.get_accPercent() * 100,1),null,null)]))]))]));
+		var _g6 = new haxe_ds_StringMap();
+		var value9 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
+		if(__map_reserved["class"] != null) {
+			_g6.setReserved("class",value9);
+		} else {
+			_g6.h["class"] = value9;
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g6,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(view_BarChart.percent(sample.get_accPercent()),null,null)]))]))]));
 	}
 	,renderAtLeast: function(sample) {
 		var v = sample.get_revPercent();
-		var _g = new haxe_ds_StringMap();
-		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar-container");
-		if(__map_reserved["class"] != null) {
-			_g.setReserved("class",value);
-		} else {
-			_g.h["class"] = value;
-		}
 		var _g1 = new haxe_ds_StringMap();
-		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
+		var _g = new haxe_ds_StringMap();
+		if(__map_reserved["bar-container"] != null) {
+			_g.setReserved("bar-container",true);
+		} else {
+			_g.h["bar-container"] = true;
+		}
+		var value = this.isSelected(sample.value);
+		if(__map_reserved["selected"] != null) {
+			_g.setReserved("selected",value);
+		} else {
+			_g.h["selected"] = value;
+		}
+		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromBoolMap(_g);
 		if(__map_reserved["class"] != null) {
 			_g1.setReserved("class",value1);
 		} else {
 			_g1.h["class"] = value1;
 		}
+		var f = this.mouseEnter(sample.value);
+		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+			e.preventDefault();
+			f();
+		});
+		if(__map_reserved["mouseenter"] != null) {
+			_g1.setReserved("mouseenter",value2);
+		} else {
+			_g1.h["mouseenter"] = value2;
+		}
+		var f1 = this.mouseEnter(sample.value);
+		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
+			e1.preventDefault();
+			f1();
+		});
+		if(__map_reserved["tap"] != null) {
+			_g1.setReserved("tap",value3);
+		} else {
+			_g1.h["tap"] = value3;
+		}
 		var _g2 = new haxe_ds_StringMap();
-		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
 		if(__map_reserved["class"] != null) {
-			_g2.setReserved("class",value2);
+			_g2.setReserved("class",value4);
 		} else {
-			_g2.h["class"] = value2;
+			_g2.h["class"] = value4;
 		}
-		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + sample.value,null,null)]))]));
 		var _g3 = new haxe_ds_StringMap();
-		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar");
+		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
 		if(__map_reserved["class"] != null) {
-			_g3.setReserved("class",value3);
+			_g3.setReserved("class",value5);
 		} else {
-			_g3.h["class"] = value3;
+			_g3.h["class"] = value5;
 		}
-		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("height: " + this.height(v * view_BarChart.barHeight));
-		if(__map_reserved["style"] != null) {
-			_g3.setReserved("style",value4);
-		} else {
-			_g3.h["style"] = value4;
-		}
-		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("",null,null)]));
+		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + sample.value,null,null)]))]));
 		var _g4 = new haxe_ds_StringMap();
-		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("percent");
+		var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("bar");
 		if(__map_reserved["class"] != null) {
-			_g4.setReserved("class",value5);
+			_g4.setReserved("class",value6);
 		} else {
-			_g4.h["class"] = value5;
+			_g4.h["class"] = value6;
 		}
+		var value7 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("height: " + this.height(v * view_BarChart.barHeight));
+		if(__map_reserved["style"] != null) {
+			_g4.setReserved("style",value7);
+		} else {
+			_g4.h["style"] = value7;
+		}
+		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("",null,null)]));
 		var _g5 = new haxe_ds_StringMap();
-		var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
+		var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("percent");
 		if(__map_reserved["class"] != null) {
-			_g5.setReserved("class",value6);
+			_g5.setReserved("class",value8);
 		} else {
-			_g5.h["class"] = value6;
+			_g5.h["class"] = value8;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(thx_format_NumberFormat.fixed(v * 100,1),null,null)]))]))]));
+		var _g6 = new haxe_ds_StringMap();
+		var value9 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("text");
+		if(__map_reserved["class"] != null) {
+			_g6.setReserved("class",value9);
+		} else {
+			_g6.h["class"] = value9;
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g6,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(view_BarChart.percent(v),null,null)]))]))]));
 	}
 	,height: function(v) {
 		return Math.round(v * 10) / 10 + "px";
@@ -20164,6 +20285,7 @@ thx_math_Const.INT16_MIN = -32768;
 thx_math_Const.INT32_MAX = 2147483647;
 thx_math_Const.INT32_MIN = -2147483648;
 thx_math_random_LehmerSeed.MINSTD_RAND = 48271;
+view_BarChart.ROUND = 1;
 view_BarChart.barHeight = 100.0;
 view_BarChart.STORAGE_PREFIX = "dice.run-expression:";
 view_BarChart.worker = (function($this) {
@@ -20177,7 +20299,7 @@ view_BarChart.worker = (function($this) {
 		var tmp1 = JSON.stringify(e.data.results);
 		storage.setItem(tmp,tmp1);
 		if(null != view_BarChart.barChart && expr == view_BarChart.barChart.props.expression) {
-			view_BarChart.barChart.update({ expression : view_BarChart.barChart.props.expression, parsed : view_BarChart.barChart.props.parsed, probabilities : p},{ fileName : "BarChart.hx", lineNumber : 21, className : "view.BarChart", methodName : "worker"});
+			view_BarChart.barChart.update({ expression : view_BarChart.barChart.props.expression, parsed : view_BarChart.barChart.props.parsed, probabilities : p, selected : view_BarChart.barChart.props.selected},{ fileName : "BarChart.hx", lineNumber : 23, className : "view.BarChart", methodName : "worker"});
 		}
 	};
 	var collect = { };

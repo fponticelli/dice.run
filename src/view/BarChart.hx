@@ -6,8 +6,10 @@ import doom.html.Html.*;
 using thx.format.NumberFormat;
 import js.html.Worker;
 using thx.Strings;
+import haxe.ds.Option;
 
 class BarChart extends doom.html.Component<BarChartProps> {
+  static var ROUND = 1;
   static var barHeight = 100.0;
   static var STORAGE_PREFIX = "dice.run-expression:";
   public static var worker: js.html.Worker = {
@@ -21,7 +23,8 @@ class BarChart extends doom.html.Component<BarChartProps> {
         barChart.update({
           expression: barChart.props.expression,
           parsed: barChart.props.parsed,
-          probabilities: p
+          probabilities: p,
+          selected: barChart.props.selected
         });
       }
     };
@@ -54,17 +57,20 @@ class BarChart extends doom.html.Component<BarChartProps> {
 
   override function render() {
     var stats = props.probabilities.stats();
+    var f = NumberFormat.number.bind(_, 0);
     return div(["class" => "bars"],  [
-      div(["class" => "stats"], 'samples: ${NumberFormat.number(stats.count, 0)}'),
+      div(["class" => "stats"],
+        'values between ${f(stats.minValue)} and ${f(stats.maxValue)}, samples: ${f(stats.count)}'
+      ),
       div(["class" => "probabilities"], [
-        div(["class" => "barchart"], stats.map(renderAtMost)),
+        div(["class" => "barchart"], stats.map(renderAtLeast)),
         div(["class" => "barchart"], stats.map(renderProb)),
-        div(["class" => "barchart"], stats.map(renderAtLeast))
+        div(["class" => "barchart"], stats.map(renderAtMost)),
       ]),
       div(["class" => "probabilities-labels"], [
-        div(["class" => "label"], Loc.msg.atMost),
+        div(["class" => "label"], Loc.msg.atLeast),
         div(["class" => "label"], Loc.msg.probabilities),
-        div(["class" => "label"], Loc.msg.atLeast)
+        div(["class" => "label"], Loc.msg.atMost),
       ])
     ]);
   }
@@ -77,38 +83,80 @@ class BarChart extends doom.html.Component<BarChartProps> {
     barChart = null;
   }
 
+  function mouseEnter(value: Int) {
+    return function() {
+      update({
+        expression: props.expression,
+        parsed: props.parsed,
+        probabilities: props.probabilities,
+        selected: Some(value)
+      });
+    }
+  }
+
   function renderProb(sample: Sample) {
-    return div(["class" => "bar-container"], [
+    return div(["class" => [
+      "bar-container" => true,
+      "selected" => isSelected(sample.value)
+    ],
+      "mouseenter" => mouseEnter(sample.value),
+      "tap" => mouseEnter(sample.value)
+    ], [
       div(["class" => "label"], div(["class" => "text"], '${sample.value}')),
       div(["class" => "bar", "style" => 'height: ${height(sample.maxPercent*barHeight)}'], ""),
-      div(["class" => "percent"], div(["class" => "text"], (sample.percent*100).fixed(1))),
+      div(["class" => "percent"], div(["class" => "text"], percent(sample.percent))),
     ]);
   }
 
+  function isSelected(value) return switch props.selected {
+    case Some(v): v == value;
+    case None: false;
+  }
+
   function renderAtMost(sample: Sample) {
-    return div(["class" => "bar-container"], [
+    return div(["class" => [
+      "bar-container" => true,
+      "selected" => isSelected(sample.value)
+    ],
+      "mouseenter" => mouseEnter(sample.value),
+      "tap" => mouseEnter(sample.value)
+    ], [
       div(["class" => "label"], div(["class" => "text"], '${sample.value}')),
       div(["class" => "bar", "style" => 'height: ${height(sample.accPercent*barHeight)}'], ""),
-      div(["class" => "percent"], div(["class" => "text"], (sample.accPercent*100).fixed(1))),
+      div(["class" => "percent"], div(["class" => "text"], percent(sample.accPercent))),
     ]);
   }
 
   function renderAtLeast(sample: Sample) {
     var v = sample.revPercent;
-    return div(["class" => "bar-container"], [
+    return div(["class" => [
+      "bar-container" => true,
+      "selected" => isSelected(sample.value)
+    ],
+      "mouseenter" => mouseEnter(sample.value),
+      "tap" => mouseEnter(sample.value)
+    ], [
       div(["class" => "label"], div(["class" => "text"], '${sample.value}')),
       div(["class" => "bar", "style" => 'height: ${height(v*barHeight)}'], ""),
-      div(["class" => "percent"], div(["class" => "text"], (v*100).fixed(1))),
+      div(["class" => "percent"], div(["class" => "text"], percent(v))),
     ]);
   }
 
   function height(v: Float) {
     return Math.round(v*10)/10 + "px";
   }
+
+  static function percent(v: Float) {
+    var f = (v*100).fixed(ROUND).split(".");
+    f[1] = f[1].trimCharsRight("0");
+    f = f.filter(Strings.hasContent);
+    return f.join(".") + "%";
+  }
 }
 
 typedef BarChartProps = {
   expression: String,
   parsed: DiceExpression,
-  probabilities: ProbabilitiesResult
+  probabilities: ProbabilitiesResult,
+  selected: Option<Int>
 }

@@ -23,25 +23,22 @@ body
   width: 100%
   margin: 0 0.25rem
 
-.bar-container:first-child .text,
-.bar-container:last-child .text,
-.bar-container.middle .text
-  color: #999
-  text-shadow: 0 0 1px #FFF
-
-.bar-container:hover .text
+.bar-container.selected .text
   color: #000
-  text-shadow: 0 0 1px #FFF
+  font-weight: bold
+  background-color: rgba(255,255,255,0.6)
+  padding: 0 0.2rem
+
+.bar-container.selected
+  .bar
+    background-color: #911
+    background-image: none
 
 .bar
   background-color: #e33
   transition: all 2s, background-color 0.2s
   min-width: 1px
   background-image: linear-gradient(to top, #fee 0%, #e33 100%)
-
-.bar:hover
-  background-color: #a22
-  background-image: none
 
 .split
   display: flex
