@@ -30,103 +30,6 @@ doom_core_IRender.prototype = {
 	apply: null
 	,__class__: doom_core_IRender
 };
-var haxe_IMap = function() { };
-haxe_IMap.__name__ = ["haxe","IMap"];
-haxe_IMap.prototype = {
-	get: null
-	,set: null
-	,exists: null
-	,remove: null
-	,keys: null
-	,iterator: null
-	,__class__: haxe_IMap
-};
-var haxe_ds_StringMap = function() {
-	this.h = { };
-};
-haxe_ds_StringMap.__name__ = ["haxe","ds","StringMap"];
-haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
-haxe_ds_StringMap.prototype = {
-	h: null
-	,rh: null
-	,set: function(key,value) {
-		if(__map_reserved[key] != null) {
-			this.setReserved(key,value);
-		} else {
-			this.h[key] = value;
-		}
-	}
-	,get: function(key) {
-		if(__map_reserved[key] != null) {
-			return this.getReserved(key);
-		}
-		return this.h[key];
-	}
-	,exists: function(key) {
-		if(__map_reserved[key] != null) {
-			return this.existsReserved(key);
-		}
-		return this.h.hasOwnProperty(key);
-	}
-	,setReserved: function(key,value) {
-		if(this.rh == null) {
-			this.rh = { };
-		}
-		this.rh["$" + key] = value;
-	}
-	,getReserved: function(key) {
-		if(this.rh == null) {
-			return null;
-		} else {
-			return this.rh["$" + key];
-		}
-	}
-	,existsReserved: function(key) {
-		if(this.rh == null) {
-			return false;
-		}
-		return this.rh.hasOwnProperty("$" + key);
-	}
-	,remove: function(key) {
-		if(__map_reserved[key] != null) {
-			key = "$" + key;
-			if(this.rh == null || !this.rh.hasOwnProperty(key)) {
-				return false;
-			}
-			delete(this.rh[key]);
-			return true;
-		} else {
-			if(!this.h.hasOwnProperty(key)) {
-				return false;
-			}
-			delete(this.h[key]);
-			return true;
-		}
-	}
-	,keys: function() {
-		return HxOverrides.iter(this.arrayKeys());
-	}
-	,arrayKeys: function() {
-		var out = [];
-		for( var key in this.h ) {
-		if(this.h.hasOwnProperty(key)) {
-			out.push(key);
-		}
-		}
-		if(this.rh != null) {
-			for( var key in this.rh ) {
-			if(key.charCodeAt(0) == 36) {
-				out.push(key.substr(1));
-			}
-			}
-		}
-		return out;
-	}
-	,iterator: function() {
-		return new haxe_ds__$StringMap_StringMapIterator(this,this.arrayKeys());
-	}
-	,__class__: haxe_ds_StringMap
-};
 var doom_html_Render = function(doc,namespaces) {
 	if(null == doc) {
 		this.doc = window.document;
@@ -758,52 +661,6 @@ doom_html__$Render_DomComponentMap.prototype = {
 	}
 	,__class__: doom_html__$Render_DomComponentMap
 };
-var haxe_ds_ObjectMap = function() {
-	this.h = { __keys__ : { }};
-};
-haxe_ds_ObjectMap.__name__ = ["haxe","ds","ObjectMap"];
-haxe_ds_ObjectMap.__interfaces__ = [haxe_IMap];
-haxe_ds_ObjectMap.prototype = {
-	h: null
-	,set: function(key,value) {
-		var id = key.__id__ || (key.__id__ = ++haxe_ds_ObjectMap.count);
-		this.h[id] = value;
-		this.h.__keys__[id] = key;
-	}
-	,get: function(key) {
-		return this.h[key.__id__];
-	}
-	,exists: function(key) {
-		return this.h.__keys__[key.__id__] != null;
-	}
-	,remove: function(key) {
-		var id = key.__id__;
-		if(this.h.__keys__[id] == null) {
-			return false;
-		}
-		delete(this.h[id]);
-		delete(this.h.__keys__[id]);
-		return true;
-	}
-	,keys: function() {
-		var a = [];
-		for( var key in this.h.__keys__ ) {
-		if(this.h.hasOwnProperty(key)) {
-			a.push(this.h.__keys__[key]);
-		}
-		}
-		return HxOverrides.iter(a);
-	}
-	,iterator: function() {
-		return { ref : this.h, it : this.keys(), hasNext : function() {
-			return this.it.hasNext();
-		}, next : function() {
-			var i = this.it.next();
-			return this.ref[i.__id__];
-		}};
-	}
-	,__class__: haxe_ds_ObjectMap
-};
 var Doom = function() { };
 Doom.__name__ = ["Doom"];
 var EReg = function(r,opt) {
@@ -1135,59 +992,75 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g3.h["href"] = value3;
 		}
-		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("a",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("jumpersideas.com",null,null)]))]));
-		var children1 = new view_ExpressionInput({ dispatch : function(a) {
-			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 49, className : "Main", methodName : "render"});
+		var _g4 = new haxe_ds_StringMap();
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("prefix");
+		if(__map_reserved["class"] != null) {
+			_g4.setReserved("class",value4);
+		} else {
+			_g4.h["class"] = value4;
+		}
+		var children = doom_core__$VNode_VNode_$Impl_$.el("span",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("as confabulated on",null,null)]));
+		var children1 = doom_core__$VNode_VNode_$Impl_$.el("br",null,null);
+		var _g5 = new haxe_ds_StringMap();
+		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("domain");
+		if(__map_reserved["class"] != null) {
+			_g5.setReserved("class",value5);
+		} else {
+			_g5.h["class"] = value5;
+		}
+		var children2 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("a",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("span",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("jumpersideas.com",null,null)]))]))]));
+		var children3 = new view_ExpressionInput({ dispatch : function(a) {
+			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 54, className : "Main", methodName : "render"});
 		}, expr : state.expression}).asNode();
-		var _g4 = state.expression;
-		var children2;
-		if(_g4[1] == 1) {
-			var e = _g4[4];
-			children2 = haxe_ds_Option.Some({ expression : e, seed : state.seed, updateSeed : function(seed) {
-				_gthis.props.dispatch(Action.UpdateSeed(seed),{ fileName : "Main.hx", lineNumber : 56, className : "Main", methodName : "render"});
+		var _g6 = state.expression;
+		var children4;
+		if(_g6[1] == 1) {
+			var e = _g6[4];
+			children4 = haxe_ds_Option.Some({ expression : e, seed : state.seed, updateSeed : function(seed) {
+				_gthis.props.dispatch(Action.UpdateSeed(seed),{ fileName : "Main.hx", lineNumber : 61, className : "Main", methodName : "render"});
 			}});
 		} else {
-			children2 = haxe_ds_Option.None;
+			children4 = haxe_ds_Option.None;
 		}
-		var children3 = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,new view_RollView(children2).asNode()]));
-		var _g5 = new haxe_ds_StringMap();
-		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("body");
+		var children5 = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children2,children3,new view_RollView(children4).asNode()]));
+		var _g7 = new haxe_ds_StringMap();
+		var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("body");
 		if(__map_reserved["class"] != null) {
-			_g5.setReserved("class",value4);
+			_g7.setReserved("class",value6);
 		} else {
-			_g5.h["class"] = value4;
+			_g7.h["class"] = value6;
 		}
-		var children4;
-		var _g6 = state.expression;
-		if(_g6[1] == 1) {
-			var e1 = _g6[4];
-			var n = _g6[3];
-			var s = _g6[2];
-			children4 = new view_ProbabilitiesView({ expression : n, parsed : e1, probabilities : Main.sampleProbabilities(n,e1), selected : haxe_ds_Option.None}).asNode();
+		var children6;
+		var _g8 = state.expression;
+		if(_g8[1] == 1) {
+			var e1 = _g8[4];
+			var n = _g8[3];
+			var s = _g8[2];
+			children6 = new view_ProbabilitiesView({ expression : n, parsed : e1, probabilities : Main.sampleProbabilities(n,e1), selected : haxe_ds_Option.None}).asNode();
 		} else {
-			var _g7 = new haxe_ds_StringMap();
-			var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
+			var _g9 = new haxe_ds_StringMap();
+			var value7 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
 			if(__map_reserved["style"] != null) {
-				_g7.setReserved("style",value5);
+				_g9.setReserved("style",value7);
 			} else {
-				_g7.h["style"] = value5;
+				_g9.h["style"] = value7;
 			}
-			var value11 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
+			var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
 			if(__map_reserved["data-comment"] != null) {
-				_g7.setReserved("data-comment",value11);
+				_g9.setReserved("data-comment",value8);
 			} else {
-				_g7.h["data-comment"] = value11;
+				_g9.h["data-comment"] = value8;
 			}
-			children4 = doom_core__$VNode_VNode_$Impl_$.el("div",_g7);
+			children6 = doom_core__$VNode_VNode_$Impl_$.el("div",_g9);
 		}
-		var _g71 = new haxe_ds_StringMap();
-		var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("description");
+		var _g91 = new haxe_ds_StringMap();
+		var value9 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("description");
 		if(__map_reserved["class"] != null) {
-			_g71.setReserved("class",value6);
+			_g91.setReserved("class",value9);
 		} else {
-			_g71.h["class"] = value6;
+			_g91.h["class"] = value9;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([children4,doom_core__$VNode_VNode_$Impl_$.el("div",_g71,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Raw(Markdown.markdownToHtml(Loc.description),null,null)]))]))]));
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children5,doom_core__$VNode_VNode_$Impl_$.el("div",_g7,doom_core__$VNodes_VNodes_$Impl_$.children([children6,doom_core__$VNode_VNode_$Impl_$.el("div",_g91,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Raw(Markdown.markdownToHtml(Loc.description),null,null)]))]))]));
 	}
 	,classes: function() {
 		return "main";
@@ -6429,6 +6302,17 @@ haxe_CallStack.makeStack = function(s) {
 		return s;
 	}
 };
+var haxe_IMap = function() { };
+haxe_IMap.__name__ = ["haxe","IMap"];
+haxe_IMap.prototype = {
+	get: null
+	,set: null
+	,exists: null
+	,remove: null
+	,keys: null
+	,iterator: null
+	,__class__: haxe_IMap
+};
 var haxe__$Int32_Int32_$Impl_$ = {};
 haxe__$Int32_Int32_$Impl_$.__name__ = ["haxe","_Int32","Int32_Impl_"];
 haxe__$Int32_Int32_$Impl_$.ucompare = function(a,b) {
@@ -6901,6 +6785,52 @@ haxe_ds_IntMap.prototype = {
 	}
 	,__class__: haxe_ds_IntMap
 };
+var haxe_ds_ObjectMap = function() {
+	this.h = { __keys__ : { }};
+};
+haxe_ds_ObjectMap.__name__ = ["haxe","ds","ObjectMap"];
+haxe_ds_ObjectMap.__interfaces__ = [haxe_IMap];
+haxe_ds_ObjectMap.prototype = {
+	h: null
+	,set: function(key,value) {
+		var id = key.__id__ || (key.__id__ = ++haxe_ds_ObjectMap.count);
+		this.h[id] = value;
+		this.h.__keys__[id] = key;
+	}
+	,get: function(key) {
+		return this.h[key.__id__];
+	}
+	,exists: function(key) {
+		return this.h.__keys__[key.__id__] != null;
+	}
+	,remove: function(key) {
+		var id = key.__id__;
+		if(this.h.__keys__[id] == null) {
+			return false;
+		}
+		delete(this.h[id]);
+		delete(this.h.__keys__[id]);
+		return true;
+	}
+	,keys: function() {
+		var a = [];
+		for( var key in this.h.__keys__ ) {
+		if(this.h.hasOwnProperty(key)) {
+			a.push(this.h.__keys__[key]);
+		}
+		}
+		return HxOverrides.iter(a);
+	}
+	,iterator: function() {
+		return { ref : this.h, it : this.keys(), hasNext : function() {
+			return this.it.hasNext();
+		}, next : function() {
+			var i = this.it.next();
+			return this.ref[i.__id__];
+		}};
+	}
+	,__class__: haxe_ds_ObjectMap
+};
 var haxe_ds_Option = { __ename__ : ["haxe","ds","Option"], __constructs__ : ["Some","None"] };
 haxe_ds_Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe_ds_Option; return $x; };
 haxe_ds_Option.None = ["None",1];
@@ -6930,6 +6860,92 @@ haxe_ds__$StringMap_StringMapIterator.prototype = {
 		}
 	}
 	,__class__: haxe_ds__$StringMap_StringMapIterator
+};
+var haxe_ds_StringMap = function() {
+	this.h = { };
+};
+haxe_ds_StringMap.__name__ = ["haxe","ds","StringMap"];
+haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
+haxe_ds_StringMap.prototype = {
+	h: null
+	,rh: null
+	,set: function(key,value) {
+		if(__map_reserved[key] != null) {
+			this.setReserved(key,value);
+		} else {
+			this.h[key] = value;
+		}
+	}
+	,get: function(key) {
+		if(__map_reserved[key] != null) {
+			return this.getReserved(key);
+		}
+		return this.h[key];
+	}
+	,exists: function(key) {
+		if(__map_reserved[key] != null) {
+			return this.existsReserved(key);
+		}
+		return this.h.hasOwnProperty(key);
+	}
+	,setReserved: function(key,value) {
+		if(this.rh == null) {
+			this.rh = { };
+		}
+		this.rh["$" + key] = value;
+	}
+	,getReserved: function(key) {
+		if(this.rh == null) {
+			return null;
+		} else {
+			return this.rh["$" + key];
+		}
+	}
+	,existsReserved: function(key) {
+		if(this.rh == null) {
+			return false;
+		}
+		return this.rh.hasOwnProperty("$" + key);
+	}
+	,remove: function(key) {
+		if(__map_reserved[key] != null) {
+			key = "$" + key;
+			if(this.rh == null || !this.rh.hasOwnProperty(key)) {
+				return false;
+			}
+			delete(this.rh[key]);
+			return true;
+		} else {
+			if(!this.h.hasOwnProperty(key)) {
+				return false;
+			}
+			delete(this.h[key]);
+			return true;
+		}
+	}
+	,keys: function() {
+		return HxOverrides.iter(this.arrayKeys());
+	}
+	,arrayKeys: function() {
+		var out = [];
+		for( var key in this.h ) {
+		if(this.h.hasOwnProperty(key)) {
+			out.push(key);
+		}
+		}
+		if(this.rh != null) {
+			for( var key in this.rh ) {
+			if(key.charCodeAt(0) == 36) {
+				out.push(key.substr(1));
+			}
+			}
+		}
+		return out;
+	}
+	,iterator: function() {
+		return new haxe_ds__$StringMap_StringMapIterator(this,this.arrayKeys());
+	}
+	,__class__: haxe_ds_StringMap
 };
 var js__$Boot_HaxeError = function(val) {
 	Error.call(this);
@@ -18431,22 +18447,22 @@ view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g2.h["contentEditable"] = value3;
 		}
-		var f1 = $bind(this,this.onInput);
+		var f = $bind(this,this.onInput);
 		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
 			var typedEl = el;
-			f1(typedEl);
+			f(typedEl);
 		});
 		if(__map_reserved["input"] != null) {
 			_g2.setReserved("input",value4);
 		} else {
 			_g2.h["input"] = value4;
 		}
-		var f11 = $bind(this,this.selectionChange);
+		var f1 = $bind(this,this.selectionChange);
 		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
 			var typedEl1 = el1;
-			f11(typedEl1);
+			f1(typedEl1);
 		});
 		if(__map_reserved["keyup"] != null) {
 			_g2.setReserved("keyup",value5);
@@ -18615,20 +18631,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f1();
+			f();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f11 = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f11();
+			f1();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -18710,20 +18726,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f1();
+			f();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f11 = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f11();
+			f1();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -18796,20 +18812,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f1();
+			f();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f11 = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f11();
+			f1();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -19330,11 +19346,11 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g5.h["class"] = value6;
 			}
-			var f11 = $bind(this,this.changeSeed);
+			var f2 = $bind(this,this.changeSeed);
 			var value7 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 				e1.preventDefault();
 				var value8 = dots_Dom.getValue(el1);
-				f11(value8);
+				f2(value8);
 			});
 			if(__map_reserved["input"] != null) {
 				_g5.setReserved("input",value7);
@@ -19399,7 +19415,6 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; }
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
-var __map_reserved = {}
 String.prototype.__class__ = String;
 String.__name__ = ["String"];
 Array.__name__ = ["Array"];
@@ -19413,6 +19428,7 @@ var Bool = Boolean;
 Bool.__ename__ = ["Bool"];
 var Class = { __name__ : ["Class"]};
 var Enum = { };
+var __map_reserved = {}
 var scope = ("undefined" !== typeof window && window) || ("undefined" !== typeof global && global) || Function("return this")();
 if(!scope.setImmediate) {
 	scope.setImmediate = function(callback) {
@@ -19490,7 +19506,6 @@ doom_html_Render.defaultNamespaces = (function($this) {
 	$r = _g;
 	return $r;
 }(this));
-haxe_ds_ObjectMap.count = 0;
 Doom.browser = new doom_html_Render();
 Loc.description = "# Basic Expressions\n\nType your dice expressions in the box.\n\nThe simplest expression is [`d`](#/d/d) which means roll one die with 6 faces. You can be more explicit and input [`1d6`](#/d/1d6) or  [`d6`](#/d/d6). Of course you can run multiple dice ([`3d6`](#/d/3d6)) and with different number of sides [`2d10`](#/d/2d10). The popular [`d100`](#/d/d100) (a percent die) can also be expressed as [`d%`](#/d/d%).\n\n# Math Operations\n\nYou can use basic mathematical operators [`3d6+4-1d4`](#/d/3d6+4-1d4). All math operations will return integer numbers: [`5d6/2`](#/d/5d6/2)\n\n# Expression Set and Reducing\n\nMany expressions can be provided in a set like [`{2d6,3d8,1d10+2}`](#/d/{2d6,3d8,1d10+2}). By default the result of each expression will be summed together. You can also be explicit [`{2d6,3d8,1d10+2} sum`](#/d/{2d6,3d8,1d10+2}sum) or you can use other reducing function like [`min`](#/d/{2d6,3d8,1d10+2}min), [`max`](#/d/{2d6,3d8,1d10+2}max) or [`average`](#/d/{2d6,3d8,1d10+2}average).\n\nYou can use expression set to force the order of arithmetic operations: [`{3d6+2}*2`](#/d/{3d6+2}*2) which is equivalent to [`{3d6,2}*2`](#/d/{3d6,2}*2). Reduced sets can be used as part of more complex mathematical expressions [`{3d6,9} keep 1 * 2`](#/d/{3d6,9}_keep_1_*_2).\n\n# Filtering\n\nIt is also possible to peform filtering operations on a set of expressions like *drop* and *keep*. Drop will only keep the values that do not match a condition: [`4d6 drop lowest 1`](#/d/4d6_drop_lowest_1). For *drop* the default matching condition is *lowest* so you can ommit it: [`4d6 drop 1`](#/d/4d6_drop_1). *Keep* will retain by default the top `N` values. [`4d6 keep 3`](#/d/4d6_keep_3) is basically equivalend to the `drop 1` above. You can be explicit and state [`4d6 keep highest 3`](#/d/4d6_keep_highest_3).\n\n# Dice Set\n\nSimpler sets of dice like [`5d6`](#/d/5d6) are expanded into [`{d6,d6,d6,d6,d6}`](#/d/{d6,d6,d6,d6,d6}). On these simple sets it is possible to apply two special functions: *explode* and *reroll*.\n\nA dice set can be composed of dice with different denominations [`{d2,d4,d6,d8,d10}`](#/d/{d2,d4,d6,d8,d10}). On the other hand a dice set can only be composed of nominal dice: [`{d6,2d8}`](#/d/{d6,2d8}) is NOT a dice set! It is still a valid expression set that can be reduced and filtered.\n\n# Explode / Reroll\n\nTODO\n\n  * dice set\n  * explode/reroll\n  * dice font\n  * dice roller\n  * dice link template: [``](#/d/)\n";
 Loc.msg = { atLeast : "at least", probabilities : "probabilities", atMost : "at most"};
@@ -20193,6 +20208,7 @@ haxe__$Int32_Int32_$Impl_$._mul = Math.imul != null ? Math.imul : function(a,b) 
 	return a * (b & 65535) + (a * (b >>> 16) << 16 | 0) | 0;
 };
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+haxe_ds_ObjectMap.count = 0;
 markdown_BlockSyntax.RE_EMPTY = new EReg("^([ \\t]*)$","");
 markdown_BlockSyntax.RE_SETEXT = new EReg("^((=+)|(-+))$","");
 markdown_BlockSyntax.RE_HEADER = new EReg("^(#{1,6})(.*?)#*$","");

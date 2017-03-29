@@ -5,6 +5,7 @@
 body
   overflow: hidden
   margin: 0
+  background-color: #f6f6f6
 
 .content
   // padding 20px 120px 0
@@ -16,7 +17,6 @@ body
 .body
   overflow: auto
   padding: 1rem 4rem
-  background-color: #f6f6f6
 
 .barchart
   display: flex
@@ -83,6 +83,8 @@ body
   width: 100%
   text-align: center
   border: none
+  background-color: #f6f6f6
+  border-bottom: 1px dashed #bbb
 
 .details > .die
   font-size: 0.6rem
@@ -179,6 +181,7 @@ body
   box-shadow: 0px 4px 12px rgba(0,0,0,0.1)
   border-bottom: 1px solid #ddd
   z-index: 1
+  background-color: #fff
 
 .keep .result
   color: #333
@@ -238,7 +241,6 @@ body
 .text-editor
   // display: inline-block
   min-width: 30px
-  border-bottom: 1px dashed #999
   padding: 0 4px
 
 .text-editor:focus
@@ -311,19 +313,17 @@ body
   .body
     padding: 1rem 1rem
 
-
-
-
 .ribbon
   position: absolute
-  top: -35px
-  right: -114px
+  top: -45px
+  right: -125px
   padding: 1px 0
   transform-origin: top left
   transform: rotate(45deg)
   background-color: #0076ea
   background-image: linear-gradient(0, rgba(0, 0, 0, 0.2), transparent)
   box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.2)
+  line-height: 0.8rem
 
   a
     display: inline-block
@@ -335,6 +335,10 @@ body
     text-shadow: 0 -1px #777
     text-decoration: none
     text-align: center
-    line-height: 30px
     border-top: 1px dotted #ffc284
     border-bottom: 1px dotted #ffa951
+    padding: 0 0 0.2rem 0
+
+    .prefix
+      font-size: 0.6rem
+      color: #ccc
