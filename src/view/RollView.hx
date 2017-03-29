@@ -14,7 +14,7 @@ class RollView extends Component<Option<{ expression: DiceExpression, seed: Int,
   override function render()
     return switch props {
       case None:
-        div("nothing to roll");
+        dummy();
       case Some({ expression: expr, seed: seed, updateSeed: update }):
         var seeded = LehmerSeed.std(seed);
         var r = new Roller(function(sides) {

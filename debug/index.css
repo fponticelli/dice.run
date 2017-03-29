@@ -359,3 +359,23 @@ body {
   font-size: 0.6rem;
   color: #ccc;
 }
+.error {
+  text-align: center;
+  padding: 0.5rem 1rem;
+  border-left: 2rem solid #a20;
+  line-height: 1.5rem;
+}
+.error .label {
+  color: #999;
+}
+.error .expected,
+.error .got {
+  padding: 0 0.5rem;
+}
+.error .expected {
+  font-family: monospace;
+  background-color: #eee;
+}
+.error .got {
+  background-color: #e99;
+}

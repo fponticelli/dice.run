@@ -2768,8 +2768,8 @@ dr_DiceParser.parse = function(s) {
 		return thx_Either.Right(value);
 	} else {
 		var v = _g;
-		var msg = parsihax_ParseUtil.formatError(v,s);
-		return thx_Either.Left(msg);
+		var err = dr_DiceParseError.fromResult(v,s);
+		return thx_Either.Left(err);
 	}
 };
 dr_DiceParser.unsafeParse = function(s) {
@@ -2817,6 +2817,45 @@ dr_DiceParser.diceReduce = function(reduceable) {
 };
 dr_DiceParser.commaSeparated = function(element) {
 	return parsihax_Parser.then(parsihax_Parser.then(dr_DiceParser.OPEN_SET_BRACKET,dr_DiceParser.OWS),parsihax_Parser.skip(parsihax_Parser.or(parsihax_Parser.sepBy1(element,parsihax_Parser.then(parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.COMMA),dr_DiceParser.OWS)),parsihax_Parser.succeed([])),parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.CLOSE_SET_BRACKET)));
+};
+var dr_DiceParseError = function(expected,furthest,input) {
+	this.expected = expected;
+	this.furthest = furthest;
+	this.input = input;
+};
+dr_DiceParseError.__name__ = ["dr","DiceParseError"];
+dr_DiceParseError.fromResult = function(r,s) {
+	var expected = thx_Arrays.distinct(r.expected.map(dr_DiceParseError.expectedToString));
+	return new dr_DiceParseError(expected,r.furthest,s);
+};
+dr_DiceParseError.expectedToString = function(e) {
+	var s = Std.string(e);
+	if(StringTools.startsWith(s,"{\n\tr : ")) {
+		s = thx_Strings.trimCharsRight(thx_Strings.trimCharsLeft(s,"{ \n\tr:"),"\n\t }");
+	}
+	return s;
+};
+dr_DiceParseError.prototype = {
+	expected: null
+	,furthest: null
+	,input: null
+	,positionToString: function() {
+		if(this.furthest >= this.input.length) {
+			return haxe_ds_Option.None;
+		} else {
+			return haxe_ds_Option.Some(this.input.substring(this.furthest));
+		}
+	}
+	,toString: function() {
+		var _e = this.positionToString();
+		var got = thx_Options.getOrElse((function(callback) {
+			return thx_Options.map(_e,callback);
+		})(function(_) {
+			return "…" + thx_Strings.ellipsis(_,20);
+		}),"end of file");
+		return "expected " + this.expected.join(", ") + " but got " + got;
+	}
+	,__class__: dr_DiceParseError
 };
 var dr_RollResult = { __ename__ : ["dr","RollResult"], __constructs__ : ["OneResult","LiteralResult","DiceReduceResult","BinaryOpResult","UnaryOpResult"] };
 dr_RollResult.OneResult = function(die) { var $x = ["OneResult",0,die]; $x.__enum__ = dr_RollResult; return $x; };

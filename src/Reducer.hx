@@ -7,7 +7,7 @@ class Reducer {
       case EvaluateExpression(expr):
         switch parse(expr) {
           case Left(e):
-            { expression: Error(expr, e.toString()), seed: state.seed };
+            { expression: Error(expr, e), seed: state.seed };
           case Right(parsed):
             { expression: Parsed(expr, parsed.toString(), parsed), seed: state.seed };
         }

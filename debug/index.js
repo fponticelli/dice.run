@@ -1339,7 +1339,7 @@ Reducer.reduce = function(state,action) {
 		switch(_g[1]) {
 		case 0:
 			var e = _g[2];
-			return { expression : Expression.Error(expr,e.toString()), seed : state.seed};
+			return { expression : Expression.Error(expr,e), seed : state.seed};
 		case 1:
 			var parsed = _g[2];
 			return { expression : Expression.Parsed(expr,dr_DiceExpressionExtensions.toString(parsed),parsed), seed : state.seed};
@@ -1433,7 +1433,7 @@ Reflect.deleteField = function(o,field) {
 var Expression = { __ename__ : ["Expression"], __constructs__ : ["Unparsed","Parsed","Error"] };
 Expression.Unparsed = function(source) { var $x = ["Unparsed",0,source]; $x.__enum__ = Expression; return $x; };
 Expression.Parsed = function(source,normalized,expr) { var $x = ["Parsed",1,source,normalized,expr]; $x.__enum__ = Expression; return $x; };
-Expression.Error = function(source,message) { var $x = ["Error",2,source,message]; $x.__enum__ = Expression; return $x; };
+Expression.Error = function(source,err) { var $x = ["Error",2,source,err]; $x.__enum__ = Expression; return $x; };
 var Std = function() { };
 Std.__name__ = ["Std"];
 Std.string = function(s) {
@@ -5779,8 +5779,8 @@ dr_DiceParser.parse = function(s) {
 		return thx_Either.Right(value);
 	} else {
 		var v = _g;
-		var msg = parsihax_ParseUtil.formatError(v,s);
-		return thx_Either.Left(msg);
+		var err = dr_DiceParseError.fromResult(v,s);
+		return thx_Either.Left(err);
 	}
 };
 dr_DiceParser.unsafeParse = function(s) {
@@ -5828,6 +5828,45 @@ dr_DiceParser.diceReduce = function(reduceable) {
 };
 dr_DiceParser.commaSeparated = function(element) {
 	return parsihax_Parser.then(parsihax_Parser.then(dr_DiceParser.OPEN_SET_BRACKET,dr_DiceParser.OWS),parsihax_Parser.skip(parsihax_Parser.or(parsihax_Parser.sepBy1(element,parsihax_Parser.then(parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.COMMA),dr_DiceParser.OWS)),parsihax_Parser.succeed([])),parsihax_Parser.then(dr_DiceParser.OWS,dr_DiceParser.CLOSE_SET_BRACKET)));
+};
+var dr_DiceParseError = function(expected,furthest,input) {
+	this.expected = expected;
+	this.furthest = furthest;
+	this.input = input;
+};
+dr_DiceParseError.__name__ = ["dr","DiceParseError"];
+dr_DiceParseError.fromResult = function(r,s) {
+	var expected = thx_Arrays.distinct(r.expected.map(dr_DiceParseError.expectedToString));
+	return new dr_DiceParseError(expected,r.furthest,s);
+};
+dr_DiceParseError.expectedToString = function(e) {
+	var s = Std.string(e);
+	if(StringTools.startsWith(s,"{\n\tr : ")) {
+		s = thx_Strings.trimCharsRight(thx_Strings.trimCharsLeft(s,"{ \n\tr:"),"\n\t }");
+	}
+	return s;
+};
+dr_DiceParseError.prototype = {
+	expected: null
+	,furthest: null
+	,input: null
+	,positionToString: function() {
+		if(this.furthest >= this.input.length) {
+			return haxe_ds_Option.None;
+		} else {
+			return haxe_ds_Option.Some(this.input.substring(this.furthest));
+		}
+	}
+	,toString: function() {
+		var _e = this.positionToString();
+		var got = thx_Options.getOrElse((function(callback) {
+			return thx_Options.map(_e,callback);
+		})(function(_) {
+			return "…" + thx_Strings.ellipsis(_,20);
+		}),"end of file");
+		return "expected " + this.expected.join(", ") + " but got " + got;
+	}
+	,__class__: dr_DiceParseError
 };
 var dr_RollResult = { __ename__ : ["dr","RollResult"], __constructs__ : ["OneResult","LiteralResult","DiceReduceResult","BinaryOpResult","UnaryOpResult"] };
 dr_RollResult.OneResult = function(die) { var $x = ["OneResult",0,die]; $x.__enum__ = dr_RollResult; return $x; };
@@ -18406,6 +18445,63 @@ var view_ExpressionInput = function(props,children) {
 	doom_html_Component.call(this,props,children);
 };
 view_ExpressionInput.__name__ = ["view","ExpressionInput"];
+view_ExpressionInput.renderError = function(err) {
+	var _g = new haxe_ds_StringMap();
+	var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
+	if(__map_reserved["class"] != null) {
+		_g.setReserved("class",value);
+	} else {
+		_g.h["class"] = value;
+	}
+	var tmp = [doom_core__$VNode_VNode_$Impl_$.el("span",_g,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("expected one of",null,null)])),doom_core__$VNode_VNode_$Impl_$.el("br",null,null)].concat(thx_Arrays.interspersef(err.expected.map(function(_) {
+		var _g1 = new haxe_ds_StringMap();
+		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("expected");
+		if(__map_reserved["class"] != null) {
+			_g1.setReserved("class",value1);
+		} else {
+			_g1.h["class"] = value1;
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("span",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(_,null,null)]));
+	}),function() {
+		return doom_core__$VNode_VNode_$Impl_$.el("span",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(", ",null,null)]));
+	}));
+	var tmp1 = doom_core__$VNode_VNode_$Impl_$.el("br",null,null);
+	var _g11 = new haxe_ds_StringMap();
+	var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
+	if(__map_reserved["class"] != null) {
+		_g11.setReserved("class",value2);
+	} else {
+		_g11.h["class"] = value2;
+	}
+	var tmp2 = tmp.concat([tmp1,doom_core__$VNode_VNode_$Impl_$.el("span",_g11,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("found",null,null)]))]);
+	var _g2 = err.positionToString();
+	var tmp3;
+	switch(_g2[1]) {
+	case 0:
+		var content = _g2[2];
+		var tmp4 = doom_core__$VNode_VNode_$Impl_$.el("br",null,null);
+		var _g21 = new haxe_ds_StringMap();
+		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("got");
+		if(__map_reserved["class"] != null) {
+			_g21.setReserved("class",value3);
+		} else {
+			_g21.h["class"] = value3;
+		}
+		tmp3 = [tmp4,doom_core__$VNode_VNode_$Impl_$.el("span",_g21,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(content,null,null)]))];
+		break;
+	case 1:
+		var _g22 = new haxe_ds_StringMap();
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("eof");
+		if(__map_reserved["class"] != null) {
+			_g22.setReserved("class",value4);
+		} else {
+			_g22.h["class"] = value4;
+		}
+		tmp3 = [doom_core__$VNode_VNode_$Impl_$.el("span",_g22,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(" end of file",null,null)]))];
+		break;
+	}
+	return tmp2.concat(tmp3);
+};
 view_ExpressionInput.__super__ = doom_html_Component;
 view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
 	start: null
@@ -18473,8 +18569,15 @@ view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
 		var bottom;
 		var _g3 = this.props.expr;
 		if(_g3[1] == 2) {
-			var msg = _g3[3];
-			bottom = [doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(msg,null,null)]))];
+			var err = _g3[3];
+			var _g31 = new haxe_ds_StringMap();
+			var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("error");
+			if(__map_reserved["class"] != null) {
+				_g31.setReserved("class",value6);
+			} else {
+				_g31.h["class"] = value6;
+			}
+			bottom = [doom_core__$VNode_VNode_$Impl_$.el("div",_g31,doom_core__$VNodes_VNodes_$Impl_$.children(view_ExpressionInput.renderError(err)))];
 		} else {
 			bottom = [];
 		}
@@ -19373,7 +19476,20 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			}
 			return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g6,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Comp(new view_RollDetailsView(r))]))]));
 		case 1:
-			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("nothing to roll",null,null)]));
+			var _g7 = new haxe_ds_StringMap();
+			var value11 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
+			if(__map_reserved["style"] != null) {
+				_g7.setReserved("style",value11);
+			} else {
+				_g7.h["style"] = value11;
+			}
+			var value12 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
+			if(__map_reserved["data-comment"] != null) {
+				_g7.setReserved("data-comment",value12);
+			} else {
+				_g7.h["data-comment"] = value12;
+			}
+			return doom_core__$VNode_VNode_$Impl_$.el("div",_g7);
 		}
 	}
 	,changeSeed: function(value) {

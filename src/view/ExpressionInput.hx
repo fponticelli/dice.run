@@ -3,6 +3,9 @@ package view;
 import doom.html.Component;
 import doom.html.Html.*;
 import State;
+import dr.DiceParser.DiceParseError;
+using thx.Arrays;
+using thx.Functions;
 
 class ExpressionInput extends Component<SimulatorProps> {
   var start = 0;
@@ -24,13 +27,32 @@ class ExpressionInput extends Component<SimulatorProps> {
         "keyup" => selectionChange
       ], value))];
     var bottom = switch props.expr {
-          case Error(_, msg):
-            [div(msg)];
+          case Error(_, err):
+            [div(["class" => "error"], renderError(err))];
           case _:
             [];
         };
     return div(
       top.concat(bottom)
+    );
+  }
+
+  static function renderError(err: DiceParseError) {
+    return [span(["class" => "label"], "expected one of"), br()]
+    .concat(
+      err.expected
+        .map.fn(span(["class" => "expected"], _))
+        .interspersef(function() return span(", "))
+    )
+    .concat([
+      br(),
+      span(["class" => "label"], "found")
+    ])
+    .concat(
+      switch err.positionToString() {
+        case None: [span(["class" => "eof"], " end of file")];
+        case Some(content): [br(), span(["class" => "got"], content)];
+      }
     );
   }
 
