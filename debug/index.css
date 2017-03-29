@@ -25,12 +25,11 @@ body {
 .bar-container.selected .text {
   color: #000;
   font-weight: bold;
-  background-color: rgba(255,255,255,0.6);
   padding: 0 0.2rem;
+  text-shadow: -1px -1px 0 rgba(255,255,255,0.6), 0 -1px 0 rgba(255,255,255,0.6), 1px -1px 0 rgba(255,255,255,0.6), -1px 0 0 rgba(255,255,255,0.6), 1px 0 0 rgba(255,255,255,0.6), -1px 1px 0 rgba(255,255,255,0.6), 0 1px 0 rgba(255,255,255,0.6), 1px 1px 0 rgba(255,255,255,0.6);
 }
 .bar-container.selected .bar {
-  background-color: #911;
-  background-image: none;
+  background-image: linear-gradient(to top, #a21 0%, #c66 100%);
 }
 .bar {
   background-color: #e33;
@@ -101,18 +100,6 @@ body {
   box-shadow: 0 3px 3px rgba(0,0,0,0.25), 0 6px 9px rgba(0,0,0,0.1);
   text-decoration: none;
   color: #000;
-}
-.roll-result a::before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  top: -16px;
-  right: -16px;
-  bottom: -16px;
-  left: -16px;
-  background-color: #eaeaea;
-  border-radius: 8rem;
-  opacity: 0.5;
 }
 .roll-result a::after {
   content: '';
@@ -265,7 +252,7 @@ body {
   text-align: right;
   font-size: 0.8rem;
   color: #999;
-  margin-bottom: -1rem;
+  margin-bottom: -0.5rem;
   font-style: italic;
 }
 @media screen and (max-width: 960px) {

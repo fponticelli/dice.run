@@ -8,7 +8,7 @@ import js.html.Worker;
 using thx.Strings;
 import haxe.ds.Option;
 
-class BarChart extends doom.html.Component<BarChartProps> {
+class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
   static var ROUND = 1;
   static var barHeight = 100.0;
   static var STORAGE_PREFIX = "dice.run-expression:";
@@ -19,12 +19,12 @@ class BarChart extends doom.html.Component<BarChartProps> {
       var expr = e.data.expression;
       var p = ProbabilitiesResult.fromObject(e.data.results);
       storage.setItem('$STORAGE_PREFIX$expr', haxe.Json.stringify(e.data.results));
-      if(null != barChart && expr == barChart.props.expression) {
-        barChart.update({
-          expression: barChart.props.expression,
-          parsed: barChart.props.parsed,
+      if(null != view && expr == view.props.expression) {
+        view.update({
+          expression: view.props.expression,
+          parsed: view.props.parsed,
           probabilities: p,
-          selected: barChart.props.selected
+          selected: view.props.selected
         });
       }
     };
@@ -39,15 +39,15 @@ class BarChart extends doom.html.Component<BarChartProps> {
     worker.postMessage({ init: collect });
     worker;
   };
-  public static var barChart: BarChart;
+  public static var view: ProbabilitiesView;
 
   public static function post(expr: String) {
     worker.postMessage({ expression: expr });
   }
 
-  public function new(props: BarChartProps) {
+  public function new(props: ProbabilitiesViewProps) {
     super(props, []);
-    barChart = this;
+    view = this;
     post(props.expression);
   }
 
@@ -76,11 +76,11 @@ class BarChart extends doom.html.Component<BarChartProps> {
   }
 
   override function willMount() {
-    barChart = this;
+    view = this;
   }
 
   override function willUnmount() {
-    barChart = null;
+    view = null;
   }
 
   function mouseEnter(value: Int) {
@@ -100,7 +100,7 @@ class BarChart extends doom.html.Component<BarChartProps> {
       "selected" => isSelected(sample.value)
     ],
       "mouseenter" => mouseEnter(sample.value),
-      "tap" => mouseEnter(sample.value)
+      "click" => mouseEnter(sample.value)
     ], [
       div(["class" => "label"], div(["class" => "text"], '${sample.value}')),
       div(["class" => "bar", "style" => 'height: ${height(sample.maxPercent*barHeight)}'], ""),
@@ -119,7 +119,7 @@ class BarChart extends doom.html.Component<BarChartProps> {
       "selected" => isSelected(sample.value)
     ],
       "mouseenter" => mouseEnter(sample.value),
-      "tap" => mouseEnter(sample.value)
+      "click" => mouseEnter(sample.value)
     ], [
       div(["class" => "label"], div(["class" => "text"], '${sample.value}')),
       div(["class" => "bar", "style" => 'height: ${height(sample.accPercent*barHeight)}'], ""),
@@ -134,7 +134,7 @@ class BarChart extends doom.html.Component<BarChartProps> {
       "selected" => isSelected(sample.value)
     ],
       "mouseenter" => mouseEnter(sample.value),
-      "tap" => mouseEnter(sample.value)
+      "click" => mouseEnter(sample.value)
     ], [
       div(["class" => "label"], div(["class" => "text"], '${sample.value}')),
       div(["class" => "bar", "style" => 'height: ${height(v*barHeight)}'], ""),
@@ -154,7 +154,7 @@ class BarChart extends doom.html.Component<BarChartProps> {
   }
 }
 
-typedef BarChartProps = {
+typedef ProbabilitiesViewProps = {
   expression: String,
   parsed: DiceExpression,
   probabilities: ProbabilitiesResult,

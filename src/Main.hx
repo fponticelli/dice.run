@@ -61,7 +61,7 @@ class Main extends Component<Store<State, Action>> {
       div(["class" => "body"], [
         switch state.expression {
           case Parsed(s, n, e):
-            new BarChart({
+            new ProbabilitiesView({
               expression: n,
               parsed: e,
               probabilities: sampleProbabilities(n, e),
