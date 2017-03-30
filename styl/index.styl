@@ -13,6 +13,7 @@ body
   display: flex
   flex-direction: column
   height: 100%
+  max-width: 100%
 
 .body
   overflow: auto
@@ -21,7 +22,16 @@ body
 .barchart
   display: flex
   width: 100%
-  margin: 0 0.25rem
+  margin: 0
+
+
+.barchart
+  border-left: 1px dashed #bbb
+  border-right: 1px dashed #bbb
+  &:first-child
+    border-right: none
+  &:last-child
+    border-left: none
 
 .bar-container.selected .text
   color: #000
@@ -218,12 +228,15 @@ body
     &:last-child
       margin-bottom: 0
 
+.probabilities-container
+  overflow-x: auto
+  overflow-y: hidden
+  padding: 0 20px
+
 .probabilities
   display: flex
   justify-content: space-between
-  overflow-x: auto
-  overflow-y: hidden
-  padding: 0 0.5rem
+  padding: 0
 
 .probabilities-labels
   display: flex

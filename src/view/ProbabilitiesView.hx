@@ -62,15 +62,17 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
       div(["class" => "stats"],
         'values between ${f(stats.minValue)} and ${f(stats.maxValue)}, samples: ${f(stats.count)}'
       ),
-      div(["class" => "probabilities"], [
-        div(["class" => "barchart"], stats.map(renderAtLeast)),
-        div(["class" => "barchart"], stats.map(renderProb)),
-        div(["class" => "barchart"], stats.map(renderAtMost)),
-      ]),
-      div(["class" => "probabilities-labels"], [
-        div(["class" => "label"], Loc.msg.atLeast),
-        div(["class" => "label"], Loc.msg.probabilities),
-        div(["class" => "label"], Loc.msg.atMost),
+      div(["class" => "probabilities-container"], [
+        div(["class" => "probabilities"], [
+          div(["class" => "barchart"], stats.map(renderAtLeast)),
+          div(["class" => "barchart"], stats.map(renderProb)),
+          div(["class" => "barchart"], stats.map(renderAtMost)),
+        ]),
+        div(["class" => "probabilities-labels"], [
+          div(["class" => "label"], Loc.msg.atLeast),
+          div(["class" => "label"], Loc.msg.probabilities),
+          div(["class" => "label"], Loc.msg.atMost),
+        ])
       ])
     ]);
   }
