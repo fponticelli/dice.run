@@ -14,7 +14,7 @@ class Main extends Component<Store<State, Action>> {
   static public function main() {
     var state: State = { expression: Unparsed(""), seed: 1234567890 };
     var mw = new Middleware();
-    var store = new Store(new Property(state), Reducer.reduce, mw.api);
+    var store = new Store(new Property(state), Reducer.reduce, mw.use());
     var app = new Main(store);
 
     Doom.browser.mount(app, Query.find("#main"));
