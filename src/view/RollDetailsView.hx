@@ -96,9 +96,10 @@ class RollDetailsView extends Component<RollResult> {
   function displayReducer(reducer) {
     return switch reducer {
       case Average: div("average");
+      case Median: div("median");
       case Min: div("min");
       case Max: div("max");
-      case _: dummy();
+      case Sum: dummy();
     };
   }
 

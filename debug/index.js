@@ -30,6 +30,103 @@ doom_core_IRender.prototype = {
 	apply: null
 	,__class__: doom_core_IRender
 };
+var haxe_IMap = function() { };
+haxe_IMap.__name__ = ["haxe","IMap"];
+haxe_IMap.prototype = {
+	get: null
+	,set: null
+	,exists: null
+	,remove: null
+	,keys: null
+	,iterator: null
+	,__class__: haxe_IMap
+};
+var haxe_ds_StringMap = function() {
+	this.h = { };
+};
+haxe_ds_StringMap.__name__ = ["haxe","ds","StringMap"];
+haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
+haxe_ds_StringMap.prototype = {
+	h: null
+	,rh: null
+	,set: function(key,value) {
+		if(__map_reserved[key] != null) {
+			this.setReserved(key,value);
+		} else {
+			this.h[key] = value;
+		}
+	}
+	,get: function(key) {
+		if(__map_reserved[key] != null) {
+			return this.getReserved(key);
+		}
+		return this.h[key];
+	}
+	,exists: function(key) {
+		if(__map_reserved[key] != null) {
+			return this.existsReserved(key);
+		}
+		return this.h.hasOwnProperty(key);
+	}
+	,setReserved: function(key,value) {
+		if(this.rh == null) {
+			this.rh = { };
+		}
+		this.rh["$" + key] = value;
+	}
+	,getReserved: function(key) {
+		if(this.rh == null) {
+			return null;
+		} else {
+			return this.rh["$" + key];
+		}
+	}
+	,existsReserved: function(key) {
+		if(this.rh == null) {
+			return false;
+		}
+		return this.rh.hasOwnProperty("$" + key);
+	}
+	,remove: function(key) {
+		if(__map_reserved[key] != null) {
+			key = "$" + key;
+			if(this.rh == null || !this.rh.hasOwnProperty(key)) {
+				return false;
+			}
+			delete(this.rh[key]);
+			return true;
+		} else {
+			if(!this.h.hasOwnProperty(key)) {
+				return false;
+			}
+			delete(this.h[key]);
+			return true;
+		}
+	}
+	,keys: function() {
+		return HxOverrides.iter(this.arrayKeys());
+	}
+	,arrayKeys: function() {
+		var out = [];
+		for( var key in this.h ) {
+		if(this.h.hasOwnProperty(key)) {
+			out.push(key);
+		}
+		}
+		if(this.rh != null) {
+			for( var key in this.rh ) {
+			if(key.charCodeAt(0) == 36) {
+				out.push(key.substr(1));
+			}
+			}
+		}
+		return out;
+	}
+	,iterator: function() {
+		return new haxe_ds__$StringMap_StringMapIterator(this,this.arrayKeys());
+	}
+	,__class__: haxe_ds_StringMap
+};
 var doom_html_Render = function(doc,namespaces) {
 	if(null == doc) {
 		this.doc = window.document;
@@ -661,6 +758,52 @@ doom_html__$Render_DomComponentMap.prototype = {
 	}
 	,__class__: doom_html__$Render_DomComponentMap
 };
+var haxe_ds_ObjectMap = function() {
+	this.h = { __keys__ : { }};
+};
+haxe_ds_ObjectMap.__name__ = ["haxe","ds","ObjectMap"];
+haxe_ds_ObjectMap.__interfaces__ = [haxe_IMap];
+haxe_ds_ObjectMap.prototype = {
+	h: null
+	,set: function(key,value) {
+		var id = key.__id__ || (key.__id__ = ++haxe_ds_ObjectMap.count);
+		this.h[id] = value;
+		this.h.__keys__[id] = key;
+	}
+	,get: function(key) {
+		return this.h[key.__id__];
+	}
+	,exists: function(key) {
+		return this.h.__keys__[key.__id__] != null;
+	}
+	,remove: function(key) {
+		var id = key.__id__;
+		if(this.h.__keys__[id] == null) {
+			return false;
+		}
+		delete(this.h[id]);
+		delete(this.h.__keys__[id]);
+		return true;
+	}
+	,keys: function() {
+		var a = [];
+		for( var key in this.h.__keys__ ) {
+		if(this.h.hasOwnProperty(key)) {
+			a.push(this.h.__keys__[key]);
+		}
+		}
+		return HxOverrides.iter(a);
+	}
+	,iterator: function() {
+		return { ref : this.h, it : this.keys(), hasNext : function() {
+			return this.it.hasNext();
+		}, next : function() {
+			var i = this.it.next();
+			return this.ref[i.__id__];
+		}};
+	}
+	,__class__: haxe_ds_ObjectMap
+};
 var Doom = function() { };
 Doom.__name__ = ["Doom"];
 var EReg = function(r,opt) {
@@ -927,7 +1070,7 @@ Main.__name__ = ["Main"];
 Main.main = function() {
 	var state = { expression : Expression.Unparsed(""), seed : 1234567890};
 	var mw = new Middleware();
-	var store = new thx_stream_Store(new thx_stream_Property(state),Reducer.reduce,$bind(mw,mw.api));
+	var store = new thx_stream_Store(new thx_stream_Property(state),Reducer.reduce,mw["use"]());
 	var app = new Main(store);
 	Doom.browser.mount(doom_core_VNodeImpl.Comp(app),dots_Query.find("#main"));
 	store.stream().next(function(_) {
@@ -1045,20 +1188,20 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g9.h["style"] = value7;
 			}
-			var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
+			var value11 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
 			if(__map_reserved["data-comment"] != null) {
-				_g9.setReserved("data-comment",value8);
+				_g9.setReserved("data-comment",value11);
 			} else {
-				_g9.h["data-comment"] = value8;
+				_g9.h["data-comment"] = value11;
 			}
 			children6 = doom_core__$VNode_VNode_$Impl_$.el("div",_g9);
 		}
 		var _g91 = new haxe_ds_StringMap();
-		var value9 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("description");
+		var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("description");
 		if(__map_reserved["class"] != null) {
-			_g91.setReserved("class",value9);
+			_g91.setReserved("class",value8);
 		} else {
-			_g91.h["class"] = value9;
+			_g91.h["class"] = value8;
 		}
 		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children5,doom_core__$VNode_VNode_$Impl_$.el("div",_g7,doom_core__$VNodes_VNodes_$Impl_$.children([children6,doom_core__$VNode_VNode_$Impl_$.el("div",_g91,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Raw(Markdown.markdownToHtml(Loc.description),null,null)]))]))]));
 	}
@@ -1179,7 +1322,18 @@ var Middleware = function() {
 };
 Middleware.__name__ = ["Middleware"];
 Middleware.prototype = {
-	api: function(state,action,dispatch) {
+	'use': function() {
+		return thx_stream__$Reducer_Middleware_$Impl_$.compose(thx_stream__$Reducer_Middleware_$Impl_$.empty(),thx_stream__$Reducer_Middleware_$Impl_$.sideEffectState($bind(this,this.updateUrl)));
+	}
+	,updateUrl: function(state) {
+		var _g = state.expression;
+		if(_g[1] == 1) {
+			var expr = _g[4];
+			var normalized = _g[3];
+			var source = _g[2];
+			var tmp = StringTools.replace(source," ","_");
+			window.location.hash = "/d/" + tmp;
+		}
 	}
 	,__class__: Middleware
 };
@@ -3618,7 +3772,7 @@ dr_DiceExpression.Literal = function(value) { var $x = ["Literal",1,value]; $x._
 dr_DiceExpression.DiceReduce = function(reduceable,reducer) { var $x = ["DiceReduce",2,reduceable,reducer]; $x.__enum__ = dr_DiceExpression; return $x; };
 dr_DiceExpression.BinaryOp = function(op,a,b) { var $x = ["BinaryOp",3,op,a,b]; $x.__enum__ = dr_DiceExpression; return $x; };
 dr_DiceExpression.UnaryOp = function(op,a) { var $x = ["UnaryOp",4,op,a]; $x.__enum__ = dr_DiceExpression; return $x; };
-var dr_DiceReducer = { __ename__ : ["dr","DiceReducer"], __constructs__ : ["Sum","Average","Min","Max"] };
+var dr_DiceReducer = { __ename__ : ["dr","DiceReducer"], __constructs__ : ["Sum","Average","Min","Max","Median"] };
 dr_DiceReducer.Sum = ["Sum",0];
 dr_DiceReducer.Sum.__enum__ = dr_DiceReducer;
 dr_DiceReducer.Average = ["Average",1];
@@ -3627,6 +3781,8 @@ dr_DiceReducer.Min = ["Min",2];
 dr_DiceReducer.Min.__enum__ = dr_DiceReducer;
 dr_DiceReducer.Max = ["Max",3];
 dr_DiceReducer.Max.__enum__ = dr_DiceReducer;
+dr_DiceReducer.Median = ["Median",4];
+dr_DiceReducer.Median.__enum__ = dr_DiceReducer;
 var dr_DiceReduceable = { __ename__ : ["dr","DiceReduceable"], __constructs__ : ["DiceExpressions","DiceListWithFilter","DiceListWithMap"] };
 dr_DiceReduceable.DiceExpressions = function(exprs) { var $x = ["DiceExpressions",0,exprs]; $x.__enum__ = dr_DiceReduceable; return $x; };
 dr_DiceReduceable.DiceListWithFilter = function(list,filter) { var $x = ["DiceListWithFilter",1,list,filter]; $x.__enum__ = dr_DiceReduceable; return $x; };
@@ -3767,7 +3923,7 @@ dr_DiceExpressionExtensions.sidesToString = function(dice) {
 		var s = dice.map(function(a2) {
 			return dr_DiceExpressionExtensions.diceToString(1,a2);
 		}).join(",");
-		return "{" + s + "}";
+		return "(" + s + ")";
 	}
 };
 dr_DiceExpressionExtensions.timesToString = function(times) {
@@ -3813,7 +3969,7 @@ dr_DiceExpressionExtensions.expressionsToString = function(exprs) {
 	} else if(exprs.length == 1 && !dr_DiceExpressionExtensions.needsBraces(exprs[0])) {
 		return exprs.map(dr_DiceExpressionExtensions.toString).join(",");
 	} else {
-		return "{" + exprs.map(dr_DiceExpressionExtensions.toString).join(",") + "}";
+		return "(" + exprs.map(dr_DiceExpressionExtensions.toString).join(",") + ")";
 	}
 };
 dr_DiceExpressionExtensions.allOneDieSameSides = function(exprs) {
@@ -3841,6 +3997,8 @@ dr_DiceExpressionExtensions.expressionExtractorToString = function(functor) {
 		return " min";
 	case 3:
 		return " max";
+	case 4:
+		return " median";
 	}
 };
 dr_DiceExpressionExtensions.diceFilterToString = function(filter) {
@@ -5817,7 +5975,7 @@ dr_DiceParser.diceFunctorConst = function(p,f) {
 dr_DiceParser.diceReduce = function(reduceable) {
 	var _e = reduceable;
 	return parsihax_Parser.or(parsihax_Parser.flatMap(reduceable,function(red) {
-		return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.map(parsihax_Parser.alt([parsihax_Parser.result(dr_DiceParser.SUM,dr_DiceReducer.Sum),parsihax_Parser.result(dr_DiceParser.AVERAGE,dr_DiceReducer.Average),parsihax_Parser.result(dr_DiceParser.MIN,dr_DiceReducer.Min),parsihax_Parser.result(dr_DiceParser.MAX,dr_DiceReducer.Max)]),function(reducer) {
+		return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.map(parsihax_Parser.alt([parsihax_Parser.result(dr_DiceParser.SUM,dr_DiceReducer.Sum),parsihax_Parser.result(dr_DiceParser.AVERAGE,dr_DiceReducer.Average),parsihax_Parser.result(dr_DiceParser.MEDIAN,dr_DiceReducer.Median),parsihax_Parser.result(dr_DiceParser.MIN,dr_DiceReducer.Min),parsihax_Parser.result(dr_DiceParser.MAX,dr_DiceReducer.Max)]),function(reducer) {
 			return dr_DiceExpression.DiceReduce(red,reducer);
 		}));
 	}),(function(fun) {
@@ -5973,26 +6131,6 @@ dr_Roller.filterf = function(filter) {
 		break;
 	}
 };
-dr_Roller.reducef = function(reducer) {
-	switch(reducer[1]) {
-	case 0:
-		return function(arr) {
-			return thx_ArrayInts.sum(arr);
-		};
-	case 1:
-		return function(arr1) {
-			return Math.round(thx_ArrayInts.average(arr1));
-		};
-	case 2:
-		return function(arr2) {
-			return thx_ArrayInts.min(arr2);
-		};
-	case 3:
-		return function(arr3) {
-			return thx_ArrayInts.max(arr3);
-		};
-	}
-};
 dr_Roller.prototype = {
 	dieRoll: null
 	,roll: function(expr) {
@@ -6144,7 +6282,7 @@ dr_Roller.prototype = {
 	}
 	,keepMappedRolls: function(rolls) {
 		var _gthis = this;
-		var array = rolls.map(function(r) {
+		var array1 = rolls.map(function(r) {
 			switch(r[1]) {
 			case 0:
 				var rerolls = r[2];
@@ -6157,7 +6295,7 @@ dr_Roller.prototype = {
 				return [roll];
 			}
 		});
-		return Array.prototype.concat.apply([],array);
+		return Array.prototype.concat.apply([],array1);
 	}
 	,filterRolls: function(rolls,filter) {
 		var ranked = thx_Arrays.rank(rolls,function(a,b) {
@@ -6200,6 +6338,17 @@ dr_Roller.prototype = {
 			return thx_ArrayInts.min(results);
 		case 3:
 			return thx_ArrayInts.max(results);
+		case 4:
+			var ordered = thx_Arrays.order(results,thx_Ints.compare);
+			var len = ordered.length;
+			if(len % 2 == 0) {
+				var a1 = ordered[Math.floor(len / 2)];
+				var b1 = ordered[Math.floor(len / 2)];
+				return Math.round((a1 + b1) / 2);
+			} else {
+				return ordered[Math.floor(len / 2)];
+			}
+			break;
 		}
 	}
 	,getRollResults: function(rolls) {
@@ -6340,17 +6489,6 @@ haxe_CallStack.makeStack = function(s) {
 	} else {
 		return s;
 	}
-};
-var haxe_IMap = function() { };
-haxe_IMap.__name__ = ["haxe","IMap"];
-haxe_IMap.prototype = {
-	get: null
-	,set: null
-	,exists: null
-	,remove: null
-	,keys: null
-	,iterator: null
-	,__class__: haxe_IMap
 };
 var haxe__$Int32_Int32_$Impl_$ = {};
 haxe__$Int32_Int32_$Impl_$.__name__ = ["haxe","_Int32","Int32_Impl_"];
@@ -6824,52 +6962,6 @@ haxe_ds_IntMap.prototype = {
 	}
 	,__class__: haxe_ds_IntMap
 };
-var haxe_ds_ObjectMap = function() {
-	this.h = { __keys__ : { }};
-};
-haxe_ds_ObjectMap.__name__ = ["haxe","ds","ObjectMap"];
-haxe_ds_ObjectMap.__interfaces__ = [haxe_IMap];
-haxe_ds_ObjectMap.prototype = {
-	h: null
-	,set: function(key,value) {
-		var id = key.__id__ || (key.__id__ = ++haxe_ds_ObjectMap.count);
-		this.h[id] = value;
-		this.h.__keys__[id] = key;
-	}
-	,get: function(key) {
-		return this.h[key.__id__];
-	}
-	,exists: function(key) {
-		return this.h.__keys__[key.__id__] != null;
-	}
-	,remove: function(key) {
-		var id = key.__id__;
-		if(this.h.__keys__[id] == null) {
-			return false;
-		}
-		delete(this.h[id]);
-		delete(this.h.__keys__[id]);
-		return true;
-	}
-	,keys: function() {
-		var a = [];
-		for( var key in this.h.__keys__ ) {
-		if(this.h.hasOwnProperty(key)) {
-			a.push(this.h.__keys__[key]);
-		}
-		}
-		return HxOverrides.iter(a);
-	}
-	,iterator: function() {
-		return { ref : this.h, it : this.keys(), hasNext : function() {
-			return this.it.hasNext();
-		}, next : function() {
-			var i = this.it.next();
-			return this.ref[i.__id__];
-		}};
-	}
-	,__class__: haxe_ds_ObjectMap
-};
 var haxe_ds_Option = { __ename__ : ["haxe","ds","Option"], __constructs__ : ["Some","None"] };
 haxe_ds_Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe_ds_Option; return $x; };
 haxe_ds_Option.None = ["None",1];
@@ -6899,92 +6991,6 @@ haxe_ds__$StringMap_StringMapIterator.prototype = {
 		}
 	}
 	,__class__: haxe_ds__$StringMap_StringMapIterator
-};
-var haxe_ds_StringMap = function() {
-	this.h = { };
-};
-haxe_ds_StringMap.__name__ = ["haxe","ds","StringMap"];
-haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
-haxe_ds_StringMap.prototype = {
-	h: null
-	,rh: null
-	,set: function(key,value) {
-		if(__map_reserved[key] != null) {
-			this.setReserved(key,value);
-		} else {
-			this.h[key] = value;
-		}
-	}
-	,get: function(key) {
-		if(__map_reserved[key] != null) {
-			return this.getReserved(key);
-		}
-		return this.h[key];
-	}
-	,exists: function(key) {
-		if(__map_reserved[key] != null) {
-			return this.existsReserved(key);
-		}
-		return this.h.hasOwnProperty(key);
-	}
-	,setReserved: function(key,value) {
-		if(this.rh == null) {
-			this.rh = { };
-		}
-		this.rh["$" + key] = value;
-	}
-	,getReserved: function(key) {
-		if(this.rh == null) {
-			return null;
-		} else {
-			return this.rh["$" + key];
-		}
-	}
-	,existsReserved: function(key) {
-		if(this.rh == null) {
-			return false;
-		}
-		return this.rh.hasOwnProperty("$" + key);
-	}
-	,remove: function(key) {
-		if(__map_reserved[key] != null) {
-			key = "$" + key;
-			if(this.rh == null || !this.rh.hasOwnProperty(key)) {
-				return false;
-			}
-			delete(this.rh[key]);
-			return true;
-		} else {
-			if(!this.h.hasOwnProperty(key)) {
-				return false;
-			}
-			delete(this.h[key]);
-			return true;
-		}
-	}
-	,keys: function() {
-		return HxOverrides.iter(this.arrayKeys());
-	}
-	,arrayKeys: function() {
-		var out = [];
-		for( var key in this.h ) {
-		if(this.h.hasOwnProperty(key)) {
-			out.push(key);
-		}
-		}
-		if(this.rh != null) {
-			for( var key in this.rh ) {
-			if(key.charCodeAt(0) == 36) {
-				out.push(key.substr(1));
-			}
-			}
-		}
-		return out;
-	}
-	,iterator: function() {
-		return new haxe_ds__$StringMap_StringMapIterator(this,this.arrayKeys());
-	}
-	,__class__: haxe_ds_StringMap
 };
 var js__$Boot_HaxeError = function(val) {
 	Error.call(this);
@@ -18363,13 +18369,17 @@ view_DiceWorker.init = function(data) {
 	while(_g < _g1.length) {
 		var f = _g1[_g];
 		++_g;
-		var dwd = view_DiceWorkerData.create(f);
-		var res = Reflect.field(data,f);
-		dwd.results = ProbabilitiesResult.fromObject(res);
-		if(__map_reserved[f] != null) {
-			map.setReserved(f,dwd);
-		} else {
-			map.h[f] = dwd;
+		try {
+			var dwd = view_DiceWorkerData.create(f);
+			var res = Reflect.field(data,f);
+			dwd.results = ProbabilitiesResult.fromObject(res);
+			if(__map_reserved[f] != null) {
+				map.setReserved(f,dwd);
+			} else {
+				map.h[f] = dwd;
+			}
+		} catch( e ) {
+			haxe_CallStack.lastException = e;
 		}
 	}
 	view_DiceWorker.cache = map;
@@ -18543,22 +18553,22 @@ view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g2.h["contentEditable"] = value3;
 		}
-		var f = $bind(this,this.onInput);
+		var f1 = $bind(this,this.onInput);
 		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
 			var typedEl = el;
-			f(typedEl);
+			f1(typedEl);
 		});
 		if(__map_reserved["input"] != null) {
 			_g2.setReserved("input",value4);
 		} else {
 			_g2.h["input"] = value4;
 		}
-		var f1 = $bind(this,this.selectionChange);
+		var f11 = $bind(this,this.selectionChange);
 		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
 			var typedEl1 = el1;
-			f1(typedEl1);
+			f11(typedEl1);
 		});
 		if(__map_reserved["keyup"] != null) {
 			_g2.setReserved("keyup",value5);
@@ -18640,20 +18650,19 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		}
 		var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("values between " + f(stats.minValue) + " and " + f(stats.maxValue) + ", samples: " + f(stats.count),null,null)]));
 		var _g2 = new haxe_ds_StringMap();
-		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("probabilities");
+		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("probabilities-container");
 		if(__map_reserved["class"] != null) {
 			_g2.setReserved("class",value2);
 		} else {
 			_g2.h["class"] = value2;
 		}
 		var _g3 = new haxe_ds_StringMap();
-		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
+		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("probabilities");
 		if(__map_reserved["class"] != null) {
 			_g3.setReserved("class",value3);
 		} else {
 			_g3.h["class"] = value3;
 		}
-		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtLeast))));
 		var _g4 = new haxe_ds_StringMap();
 		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
 		if(__map_reserved["class"] != null) {
@@ -18661,7 +18670,7 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g4.h["class"] = value4;
 		}
-		var children2 = doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderProb))));
+		var children1 = doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtLeast))));
 		var _g5 = new haxe_ds_StringMap();
 		var value5 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
 		if(__map_reserved["class"] != null) {
@@ -18669,22 +18678,22 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g5.h["class"] = value5;
 		}
-		var children3 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([children1,children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtMost))))]));
+		var children2 = doom_core__$VNode_VNode_$Impl_$.el("div",_g5,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderProb))));
 		var _g6 = new haxe_ds_StringMap();
-		var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("probabilities-labels");
+		var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("barchart");
 		if(__map_reserved["class"] != null) {
 			_g6.setReserved("class",value6);
 		} else {
 			_g6.h["class"] = value6;
 		}
+		var children3 = doom_core__$VNode_VNode_$Impl_$.el("div",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([children1,children2,doom_core__$VNode_VNode_$Impl_$.el("div",_g6,doom_core__$VNodes_VNodes_$Impl_$.children(stats.map($bind(this,this.renderAtMost))))]));
 		var _g7 = new haxe_ds_StringMap();
-		var value7 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
+		var value7 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("probabilities-labels");
 		if(__map_reserved["class"] != null) {
 			_g7.setReserved("class",value7);
 		} else {
 			_g7.h["class"] = value7;
 		}
-		var children4 = doom_core__$VNode_VNode_$Impl_$.el("div",_g7,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.atLeast,null,null)]));
 		var _g8 = new haxe_ds_StringMap();
 		var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
 		if(__map_reserved["class"] != null) {
@@ -18692,7 +18701,7 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g8.h["class"] = value8;
 		}
-		var children5 = doom_core__$VNode_VNode_$Impl_$.el("div",_g8,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.probabilities,null,null)]));
+		var children4 = doom_core__$VNode_VNode_$Impl_$.el("div",_g8,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.atLeast,null,null)]));
 		var _g9 = new haxe_ds_StringMap();
 		var value9 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
 		if(__map_reserved["class"] != null) {
@@ -18700,7 +18709,15 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g9.h["class"] = value9;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g6,doom_core__$VNodes_VNodes_$Impl_$.children([children4,children5,doom_core__$VNode_VNode_$Impl_$.el("div",_g9,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.atMost,null,null)]))]))]));
+		var children5 = doom_core__$VNode_VNode_$Impl_$.el("div",_g9,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.probabilities,null,null)]));
+		var _g10 = new haxe_ds_StringMap();
+		var value10 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("label");
+		if(__map_reserved["class"] != null) {
+			_g10.setReserved("class",value10);
+		} else {
+			_g10.h["class"] = value10;
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children,doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([children3,doom_core__$VNode_VNode_$Impl_$.el("div",_g7,doom_core__$VNodes_VNodes_$Impl_$.children([children4,children5,doom_core__$VNode_VNode_$Impl_$.el("div",_g10,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.atMost,null,null)]))]))]))]));
 	}
 	,willMount: function() {
 		view_ProbabilitiesView.view = this;
@@ -18711,7 +18728,7 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 	,mouseEnter: function(value) {
 		var _gthis = this;
 		return function() {
-			_gthis.update({ expression : _gthis.props.expression, parsed : _gthis.props.parsed, probabilities : _gthis.props.probabilities, selected : haxe_ds_Option.Some(value)},{ fileName : "ProbabilitiesView.hx", lineNumber : 88, className : "view.ProbabilitiesView", methodName : "mouseEnter"});
+			_gthis.update({ expression : _gthis.props.expression, parsed : _gthis.props.parsed, probabilities : _gthis.props.probabilities, selected : haxe_ds_Option.Some(value)},{ fileName : "ProbabilitiesView.hx", lineNumber : 90, className : "view.ProbabilitiesView", methodName : "mouseEnter"});
 		};
 	}
 	,renderProb: function(sample) {
@@ -18734,20 +18751,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f();
+			f1();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f11 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f1();
+			f11();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -18829,20 +18846,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f();
+			f1();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f11 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f1();
+			f11();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -18915,20 +18932,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f();
+			f1();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f11 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f1();
+			f11();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -19229,13 +19246,7 @@ view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
 	}
 	,displayReducer: function(reducer) {
 		switch(reducer[1]) {
-		case 1:
-			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("average",null,null)]));
-		case 2:
-			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("min",null,null)]));
-		case 3:
-			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("max",null,null)]));
-		default:
+		case 0:
 			var _g = new haxe_ds_StringMap();
 			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("display:none");
 			if(__map_reserved["style"] != null) {
@@ -19250,6 +19261,14 @@ view_RollDetailsView.prototype = $extend(doom_html_Component.prototype,{
 				_g.h["data-comment"] = value1;
 			}
 			return doom_core__$VNode_VNode_$Impl_$.el("div",_g);
+		case 1:
+			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("average",null,null)]));
+		case 2:
+			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("min",null,null)]));
+		case 3:
+			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("max",null,null)]));
+		case 4:
+			return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("median",null,null)]));
 		}
 	}
 	,renderDie: function(die) {
@@ -19449,11 +19468,11 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g5.h["class"] = value6;
 			}
-			var f2 = $bind(this,this.changeSeed);
+			var f11 = $bind(this,this.changeSeed);
 			var value7 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 				e1.preventDefault();
 				var value8 = dots_Dom.getValue(el1);
-				f2(value8);
+				f11(value8);
 			});
 			if(__map_reserved["input"] != null) {
 				_g5.setReserved("input",value7);
@@ -19531,6 +19550,7 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; }
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
+var __map_reserved = {}
 String.prototype.__class__ = String;
 String.__name__ = ["String"];
 Array.__name__ = ["Array"];
@@ -19544,7 +19564,6 @@ var Bool = Boolean;
 Bool.__ename__ = ["Bool"];
 var Class = { __name__ : ["Class"]};
 var Enum = { };
-var __map_reserved = {}
 var scope = ("undefined" !== typeof window && window) || ("undefined" !== typeof global && global) || Function("return this")();
 if(!scope.setImmediate) {
 	scope.setImmediate = function(callback) {
@@ -19622,6 +19641,7 @@ doom_html_Render.defaultNamespaces = (function($this) {
 	$r = _g;
 	return $r;
 }(this));
+haxe_ds_ObjectMap.count = 0;
 Doom.browser = new doom_html_Render();
 Loc.description = "# Basic Expressions\n\nType your dice expressions in the box.\n\nThe simplest expression is [`d`](#/d/d) which means roll one die with 6 faces. You can be more explicit and input [`1d6`](#/d/1d6) or  [`d6`](#/d/d6). Of course you can run multiple dice ([`3d6`](#/d/3d6)) and with different number of sides [`2d10`](#/d/2d10). The popular [`d100`](#/d/d100) (a percent die) can also be expressed as [`d%`](#/d/d%).\n\n# Math Operations\n\nYou can use basic mathematical operators [`3d6+4-1d4`](#/d/3d6+4-1d4). All math operations will return integer numbers: [`5d6/2`](#/d/5d6/2)\n\n# Expression Set and Reducing\n\nMany expressions can be provided in a set like [`{2d6,3d8,1d10+2}`](#/d/{2d6,3d8,1d10+2}). By default the result of each expression will be summed together. You can also be explicit [`{2d6,3d8,1d10+2} sum`](#/d/{2d6,3d8,1d10+2}sum) or you can use other reducing function like [`min`](#/d/{2d6,3d8,1d10+2}min), [`max`](#/d/{2d6,3d8,1d10+2}max) or [`average`](#/d/{2d6,3d8,1d10+2}average).\n\nYou can use expression set to force the order of arithmetic operations: [`{3d6+2}*2`](#/d/{3d6+2}*2) which is equivalent to [`{3d6,2}*2`](#/d/{3d6,2}*2). Reduced sets can be used as part of more complex mathematical expressions [`{3d6,9} keep 1 * 2`](#/d/{3d6,9}_keep_1_*_2).\n\n# Filtering\n\nIt is also possible to peform filtering operations on a set of expressions like *drop* and *keep*. Drop will only keep the values that do not match a condition: [`4d6 drop lowest 1`](#/d/4d6_drop_lowest_1). For *drop* the default matching condition is *lowest* so you can ommit it: [`4d6 drop 1`](#/d/4d6_drop_1). *Keep* will retain by default the top `N` values. [`4d6 keep 3`](#/d/4d6_keep_3) is basically equivalend to the `drop 1` above. You can be explicit and state [`4d6 keep highest 3`](#/d/4d6_keep_highest_3).\n\n# Dice Set\n\nSimpler sets of dice like [`5d6`](#/d/5d6) are expanded into [`{d6,d6,d6,d6,d6}`](#/d/{d6,d6,d6,d6,d6}). On these simple sets it is possible to apply two special functions: *explode* and *reroll*.\n\nA dice set can be composed of dice with different denominations [`{d2,d4,d6,d8,d10}`](#/d/{d2,d4,d6,d8,d10}). On the other hand a dice set can only be composed of nominal dice: [`{d6,2d8}`](#/d/{d6,2d8}) is NOT a dice set! It is still a valid expression set that can be reduced and filtered.\n\n# Explode / Reroll\n\nTODO\n\n  * dice set\n  * explode/reroll\n  * dice font\n  * dice roller\n  * dice link template: [``](#/d/)\n";
 Loc.msg = { atLeast : "at least", probabilities : "probabilities", atMost : "at most"};
@@ -20174,8 +20194,8 @@ dr_DiceParser.positive = parsihax_Parser.map(parsihax_Parser.regexp(new EReg("[+
 dr_DiceParser.negative = parsihax_Parser.map(parsihax_Parser.regexp(new EReg("[-]([0-9]*[1-9])","")),Std.parseInt);
 dr_DiceParser.whole = parsihax_Parser.or(dr_DiceParser.positive,dr_DiceParser.negative);
 dr_DiceParser.D = parsihax_Parser.or(parsihax_Parser.string("d"),parsihax_Parser.string("D"));
-dr_DiceParser.OPEN_SET_BRACKET = parsihax_Parser.string("{");
-dr_DiceParser.CLOSE_SET_BRACKET = parsihax_Parser.string("}");
+dr_DiceParser.OPEN_SET_BRACKET = parsihax_Parser.string("(");
+dr_DiceParser.CLOSE_SET_BRACKET = parsihax_Parser.string(")");
 dr_DiceParser.COMMA = parsihax_Parser.string(",");
 dr_DiceParser.PERCENT = parsihax_Parser.string("%");
 dr_DiceParser.WS = parsihax_Parser.regexp(new EReg("[\\s_]+","m"));
@@ -20201,14 +20221,28 @@ dr_DiceParser.range = parsihax_Parser.alt([parsihax_Parser.flatMap(dr_DiceParser
 	}));
 }),parsihax_Parser.map(dr_DiceParser.on,dr_Range.Exact)]);
 dr_DiceParser.diceFunctor = parsihax_Parser.lazy(function() {
-	return parsihax_Parser.alt([dr_DiceParser.diceFunctorConst("explode",dr_DiceFunctor.Explode),dr_DiceParser.diceFunctorConst("reroll",dr_DiceFunctor.Reroll)]);
+	var l = parsihax_Parser.then(parsihax_Parser.string("e"),dr_DiceParser.OWS);
+	var _e = dr_DiceParser.positive;
+	var tmp = parsihax_Parser.then(l,(function(fun) {
+		return parsihax_Parser.map(_e,fun);
+	})(function(_) {
+		return dr_DiceFunctor.Explode(dr_Times.Always,dr_Range.ValueOrMore(_));
+	}));
+	var l1 = parsihax_Parser.then(parsihax_Parser.string("r"),dr_DiceParser.OWS);
+	var _e1 = dr_DiceParser.positive;
+	return parsihax_Parser.alt([tmp,parsihax_Parser.then(l1,(function(fun1) {
+		return parsihax_Parser.map(_e1,fun1);
+	})(function(_1) {
+		return dr_DiceFunctor.Reroll(dr_Times.Always,dr_Range.ValueOrLess(_1));
+	})),dr_DiceParser.diceFunctorConst("explode",dr_DiceFunctor.Explode),dr_DiceParser.diceFunctorConst("reroll",dr_DiceFunctor.Reroll)]);
 });
 dr_DiceParser.SUM = parsihax_Parser.string("sum");
 dr_DiceParser.AVERAGE = parsihax_Parser.or(parsihax_Parser.string("average"),parsihax_Parser.string("avg"));
+dr_DiceParser.MEDIAN = parsihax_Parser.or(parsihax_Parser.string("median"),parsihax_Parser.string("mdn"));
 dr_DiceParser.MIN = parsihax_Parser.or(parsihax_Parser.string("minimum"),parsihax_Parser.string("min"));
 dr_DiceParser.MAX = parsihax_Parser.or(parsihax_Parser.string("maximum"),parsihax_Parser.string("max"));
 dr_DiceParser.times = parsihax_Parser.alt([parsihax_Parser.result(parsihax_Parser.string("once"),1),parsihax_Parser.result(parsihax_Parser.string("twice"),2),parsihax_Parser.result(parsihax_Parser.string("thrice"),3),parsihax_Parser.skip(dr_DiceParser.positive,parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.string("times")))]);
-dr_DiceParser.functorTimes = parsihax_Parser["as"](parsihax_Parser.alt([parsihax_Parser.map(dr_DiceParser.times,dr_Times.UpTo),parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.result(parsihax_Parser.string("always"),dr_Times.Always))]),"times");
+dr_DiceParser.functorTimes = parsihax_Parser.alt([parsihax_Parser.map(dr_DiceParser.times,dr_Times.UpTo),parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.result(parsihax_Parser.string("always"),dr_Times.Always)),parsihax_Parser.result(parsihax_Parser.string(""),dr_Times.Always)]);
 dr_DiceParser.DEFAULT_DIE_SIDES = 6;
 dr_DiceParser.die = parsihax_Parser["as"](parsihax_Parser.alt([parsihax_Parser.result(parsihax_Parser.then(dr_DiceParser.D,dr_DiceParser.PERCENT),100),parsihax_Parser.then(dr_DiceParser.D,dr_DiceParser.positive),parsihax_Parser.result(dr_DiceParser.D,dr_DiceParser.DEFAULT_DIE_SIDES)]),"one die");
 dr_DiceParser.negate = parsihax_Parser["as"](parsihax_Parser.lazy(function() {
@@ -20279,24 +20313,38 @@ dr_DiceParser.diceFilterable = parsihax_Parser.lazy(function() {
 		return dr_DiceFilterable.DiceArray(dice);
 	}),parsihax_Parser.map(dr_DiceParser.commaSeparated(dr_DiceParser.expression),dr_DiceFilterable.DiceExpressions)]),function(filterable) {
 		var l = dr_DiceParser.OWS;
-		var _e = dr_DiceParser.dirValue(parsihax_Parser.string("drop"),dr_LowHigh.Low);
-		var r = (function(fun) {
+		var l1 = parsihax_Parser.then(parsihax_Parser.string("d"),dr_DiceParser.OWS);
+		var _e = dr_DiceParser.positive;
+		var r = parsihax_Parser.then(l1,(function(fun) {
 			return parsihax_Parser.map(_e,fun);
 		})(function(_) {
-			return dr_DiceFilter.Drop(_.dir,_.value);
-		});
-		var _e1 = dr_DiceParser.dirValue(parsihax_Parser.string("keep"),dr_LowHigh.High);
-		return parsihax_Parser.then(l,parsihax_Parser.map(parsihax_Parser.alt([r,(function(fun1) {
+			return dr_DiceFilter.Drop(dr_LowHigh.Low,_);
+		}));
+		var _e1 = dr_DiceParser.dirValue(parsihax_Parser.string("drop"),dr_LowHigh.Low);
+		var r1 = (function(fun1) {
 			return parsihax_Parser.map(_e1,fun1);
 		})(function(_1) {
-			return dr_DiceFilter.Keep(_1.dir,_1.value);
+			return dr_DiceFilter.Drop(_1.dir,_1.value);
+		});
+		var l2 = parsihax_Parser.then(parsihax_Parser.string("k"),dr_DiceParser.OWS);
+		var _e2 = dr_DiceParser.positive;
+		var r2 = parsihax_Parser.then(l2,(function(fun2) {
+			return parsihax_Parser.map(_e2,fun2);
+		})(function(_2) {
+			return dr_DiceFilter.Keep(dr_LowHigh.High,_2);
+		}));
+		var _e3 = dr_DiceParser.dirValue(parsihax_Parser.string("keep"),dr_LowHigh.High);
+		return parsihax_Parser.then(l,parsihax_Parser.map(parsihax_Parser.alt([r,r1,r2,(function(fun3) {
+			return parsihax_Parser.map(_e3,fun3);
+		})(function(_3) {
+			return dr_DiceFilter.Keep(_3.dir,_3.value);
 		})]),function(dk) {
 			return dr_DiceReduceable.DiceListWithFilter(filterable,dk);
 		}));
 	});
 });
 dr_DiceParser.diceMapeable = parsihax_Parser.lazy(function() {
-	return parsihax_Parser.flatMap(parsihax_Parser.alt([parsihax_Parser.flatMap(dr_DiceParser.positive,function(rolls) {
+	var tmp = parsihax_Parser.flatMap(dr_DiceParser.positive,function(rolls) {
 		return parsihax_Parser.map(dr_DiceParser.die,function(sides) {
 			var _g = [];
 			var _g2 = 0;
@@ -20307,14 +20355,28 @@ dr_DiceParser.diceMapeable = parsihax_Parser.lazy(function() {
 			}
 			return _g;
 		});
-	}),dr_DiceParser.commaSeparated(dr_DiceParser.die)]),function(arr) {
+	});
+	var tmp1 = dr_DiceParser.commaSeparated(dr_DiceParser.die);
+	var l = parsihax_Parser.string("1");
+	var _e = dr_DiceParser.die;
+	var tmp2 = parsihax_Parser.then(l,(function(fun) {
+		return parsihax_Parser.map(_e,fun);
+	})(function(_) {
+		return [_];
+	}));
+	var _e1 = dr_DiceParser.die;
+	return parsihax_Parser.flatMap(parsihax_Parser.alt([tmp,tmp1,tmp2,(function(fun1) {
+		return parsihax_Parser.map(_e1,fun1);
+	})(function(_1) {
+		return [_1];
+	})]),function(arr) {
 		return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.map(dr_DiceParser.diceFunctor,function(functor) {
 			return dr_DiceReduceable.DiceListWithMap(arr,functor);
 		}));
 	});
 });
 dr_DiceParser.termExpression = parsihax_Parser.lazy(function() {
-	return parsihax_Parser.alt([dr_DiceParser.dieExpression,dr_DiceParser.diceReduce(dr_DiceParser.diceMapeable),dr_DiceParser.diceReduce(dr_DiceParser.diceFilterable),dr_DiceParser.diceReduce(dr_DiceParser.diceExpressions),dr_DiceParser.literalExpression,dr_DiceParser.unary]);
+	return parsihax_Parser.alt([dr_DiceParser.diceReduce(dr_DiceParser.diceMapeable),dr_DiceParser.diceReduce(dr_DiceParser.diceFilterable),dr_DiceParser.diceReduce(dr_DiceParser.diceExpressions),dr_DiceParser.dieExpression,dr_DiceParser.literalExpression,dr_DiceParser.unary]);
 });
 dr_DiceParser.expression = parsihax_Parser["as"](parsihax_Parser.lazy(function() {
 	return parsihax_Parser.alt([dr_DiceParser.binop,dr_DiceParser.termExpression]);
@@ -20324,7 +20386,6 @@ haxe__$Int32_Int32_$Impl_$._mul = Math.imul != null ? Math.imul : function(a,b) 
 	return a * (b & 65535) + (a * (b >>> 16) << 16 | 0) | 0;
 };
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-haxe_ds_ObjectMap.count = 0;
 markdown_BlockSyntax.RE_EMPTY = new EReg("^([ \\t]*)$","");
 markdown_BlockSyntax.RE_SETEXT = new EReg("^((=+)|(-+))$","");
 markdown_BlockSyntax.RE_HEADER = new EReg("^(#{1,6})(.*?)#*$","");

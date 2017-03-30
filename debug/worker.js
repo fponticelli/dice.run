@@ -636,7 +636,7 @@ dr_DiceExpression.Literal = function(value) { var $x = ["Literal",1,value]; $x._
 dr_DiceExpression.DiceReduce = function(reduceable,reducer) { var $x = ["DiceReduce",2,reduceable,reducer]; $x.__enum__ = dr_DiceExpression; return $x; };
 dr_DiceExpression.BinaryOp = function(op,a,b) { var $x = ["BinaryOp",3,op,a,b]; $x.__enum__ = dr_DiceExpression; return $x; };
 dr_DiceExpression.UnaryOp = function(op,a) { var $x = ["UnaryOp",4,op,a]; $x.__enum__ = dr_DiceExpression; return $x; };
-var dr_DiceReducer = { __ename__ : ["dr","DiceReducer"], __constructs__ : ["Sum","Average","Min","Max"] };
+var dr_DiceReducer = { __ename__ : ["dr","DiceReducer"], __constructs__ : ["Sum","Average","Min","Max","Median"] };
 dr_DiceReducer.Sum = ["Sum",0];
 dr_DiceReducer.Sum.__enum__ = dr_DiceReducer;
 dr_DiceReducer.Average = ["Average",1];
@@ -645,6 +645,8 @@ dr_DiceReducer.Min = ["Min",2];
 dr_DiceReducer.Min.__enum__ = dr_DiceReducer;
 dr_DiceReducer.Max = ["Max",3];
 dr_DiceReducer.Max.__enum__ = dr_DiceReducer;
+dr_DiceReducer.Median = ["Median",4];
+dr_DiceReducer.Median.__enum__ = dr_DiceReducer;
 var dr_DiceReduceable = { __ename__ : ["dr","DiceReduceable"], __constructs__ : ["DiceExpressions","DiceListWithFilter","DiceListWithMap"] };
 dr_DiceReduceable.DiceExpressions = function(exprs) { var $x = ["DiceExpressions",0,exprs]; $x.__enum__ = dr_DiceReduceable; return $x; };
 dr_DiceReduceable.DiceListWithFilter = function(list,filter) { var $x = ["DiceListWithFilter",1,list,filter]; $x.__enum__ = dr_DiceReduceable; return $x; };
@@ -785,7 +787,7 @@ dr_DiceExpressionExtensions.sidesToString = function(dice) {
 		var s = dice.map(function(a2) {
 			return dr_DiceExpressionExtensions.diceToString(1,a2);
 		}).join(",");
-		return "{" + s + "}";
+		return "(" + s + ")";
 	}
 };
 dr_DiceExpressionExtensions.timesToString = function(times) {
@@ -831,7 +833,7 @@ dr_DiceExpressionExtensions.expressionsToString = function(exprs) {
 	} else if(exprs.length == 1 && !dr_DiceExpressionExtensions.needsBraces(exprs[0])) {
 		return exprs.map(dr_DiceExpressionExtensions.toString).join(",");
 	} else {
-		return "{" + exprs.map(dr_DiceExpressionExtensions.toString).join(",") + "}";
+		return "(" + exprs.map(dr_DiceExpressionExtensions.toString).join(",") + ")";
 	}
 };
 dr_DiceExpressionExtensions.allOneDieSameSides = function(exprs) {
@@ -859,6 +861,8 @@ dr_DiceExpressionExtensions.expressionExtractorToString = function(functor) {
 		return " min";
 	case 3:
 		return " max";
+	case 4:
+		return " median";
 	}
 };
 dr_DiceExpressionExtensions.diceFilterToString = function(filter) {
@@ -2806,7 +2810,7 @@ dr_DiceParser.diceFunctorConst = function(p,f) {
 dr_DiceParser.diceReduce = function(reduceable) {
 	var _e = reduceable;
 	return parsihax_Parser.or(parsihax_Parser.flatMap(reduceable,function(red) {
-		return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.map(parsihax_Parser.alt([parsihax_Parser.result(dr_DiceParser.SUM,dr_DiceReducer.Sum),parsihax_Parser.result(dr_DiceParser.AVERAGE,dr_DiceReducer.Average),parsihax_Parser.result(dr_DiceParser.MIN,dr_DiceReducer.Min),parsihax_Parser.result(dr_DiceParser.MAX,dr_DiceReducer.Max)]),function(reducer) {
+		return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.map(parsihax_Parser.alt([parsihax_Parser.result(dr_DiceParser.SUM,dr_DiceReducer.Sum),parsihax_Parser.result(dr_DiceParser.AVERAGE,dr_DiceReducer.Average),parsihax_Parser.result(dr_DiceParser.MEDIAN,dr_DiceReducer.Median),parsihax_Parser.result(dr_DiceParser.MIN,dr_DiceReducer.Min),parsihax_Parser.result(dr_DiceParser.MAX,dr_DiceReducer.Max)]),function(reducer) {
 			return dr_DiceExpression.DiceReduce(red,reducer);
 		}));
 	}),(function(fun) {
@@ -2960,26 +2964,6 @@ dr_Roller.filterf = function(filter) {
 			};
 		}
 		break;
-	}
-};
-dr_Roller.reducef = function(reducer) {
-	switch(reducer[1]) {
-	case 0:
-		return function(arr) {
-			return thx_ArrayInts.sum(arr);
-		};
-	case 1:
-		return function(arr1) {
-			return Math.round(thx_ArrayInts.average(arr1));
-		};
-	case 2:
-		return function(arr2) {
-			return thx_ArrayInts.min(arr2);
-		};
-	case 3:
-		return function(arr3) {
-			return thx_ArrayInts.max(arr3);
-		};
 	}
 };
 dr_Roller.prototype = {
@@ -3189,6 +3173,17 @@ dr_Roller.prototype = {
 			return thx_ArrayInts.min(results);
 		case 3:
 			return thx_ArrayInts.max(results);
+		case 4:
+			var ordered = thx_Arrays.order(results,thx_Ints.compare);
+			var len = ordered.length;
+			if(len % 2 == 0) {
+				var a1 = ordered[Math.floor(len / 2)];
+				var b1 = ordered[Math.floor(len / 2)];
+				return Math.round((a1 + b1) / 2);
+			} else {
+				return ordered[Math.floor(len / 2)];
+			}
+			break;
 		}
 	}
 	,getRollResults: function(rolls) {
@@ -9858,13 +9853,17 @@ view_DiceWorker.init = function(data) {
 	while(_g < _g1.length) {
 		var f = _g1[_g];
 		++_g;
-		var dwd = view_DiceWorkerData.create(f);
-		var res = Reflect.field(data,f);
-		dwd.results = ProbabilitiesResult.fromObject(res);
-		if(__map_reserved[f] != null) {
-			map.setReserved(f,dwd);
-		} else {
-			map.h[f] = dwd;
+		try {
+			var dwd = view_DiceWorkerData.create(f);
+			var res = Reflect.field(data,f);
+			dwd.results = ProbabilitiesResult.fromObject(res);
+			if(__map_reserved[f] != null) {
+				map.setReserved(f,dwd);
+			} else {
+				map.h[f] = dwd;
+			}
+		} catch( e ) {
+			haxe_CallStack.lastException = e;
 		}
 	}
 	view_DiceWorker.cache = map;
@@ -10002,8 +10001,8 @@ dr_DiceParser.positive = parsihax_Parser.map(parsihax_Parser.regexp(new EReg("[+
 dr_DiceParser.negative = parsihax_Parser.map(parsihax_Parser.regexp(new EReg("[-]([0-9]*[1-9])","")),Std.parseInt);
 dr_DiceParser.whole = parsihax_Parser.or(dr_DiceParser.positive,dr_DiceParser.negative);
 dr_DiceParser.D = parsihax_Parser.or(parsihax_Parser.string("d"),parsihax_Parser.string("D"));
-dr_DiceParser.OPEN_SET_BRACKET = parsihax_Parser.string("{");
-dr_DiceParser.CLOSE_SET_BRACKET = parsihax_Parser.string("}");
+dr_DiceParser.OPEN_SET_BRACKET = parsihax_Parser.string("(");
+dr_DiceParser.CLOSE_SET_BRACKET = parsihax_Parser.string(")");
 dr_DiceParser.COMMA = parsihax_Parser.string(",");
 dr_DiceParser.PERCENT = parsihax_Parser.string("%");
 dr_DiceParser.WS = parsihax_Parser.regexp(new EReg("[\\s_]+","m"));
@@ -10029,14 +10028,28 @@ dr_DiceParser.range = parsihax_Parser.alt([parsihax_Parser.flatMap(dr_DiceParser
 	}));
 }),parsihax_Parser.map(dr_DiceParser.on,dr_Range.Exact)]);
 dr_DiceParser.diceFunctor = parsihax_Parser.lazy(function() {
-	return parsihax_Parser.alt([dr_DiceParser.diceFunctorConst("explode",dr_DiceFunctor.Explode),dr_DiceParser.diceFunctorConst("reroll",dr_DiceFunctor.Reroll)]);
+	var l = parsihax_Parser.then(parsihax_Parser.string("e"),dr_DiceParser.OWS);
+	var _e = dr_DiceParser.positive;
+	var tmp = parsihax_Parser.then(l,(function(fun) {
+		return parsihax_Parser.map(_e,fun);
+	})(function(_) {
+		return dr_DiceFunctor.Explode(dr_Times.Always,dr_Range.ValueOrMore(_));
+	}));
+	var l1 = parsihax_Parser.then(parsihax_Parser.string("r"),dr_DiceParser.OWS);
+	var _e1 = dr_DiceParser.positive;
+	return parsihax_Parser.alt([tmp,parsihax_Parser.then(l1,(function(fun1) {
+		return parsihax_Parser.map(_e1,fun1);
+	})(function(_1) {
+		return dr_DiceFunctor.Reroll(dr_Times.Always,dr_Range.ValueOrLess(_1));
+	})),dr_DiceParser.diceFunctorConst("explode",dr_DiceFunctor.Explode),dr_DiceParser.diceFunctorConst("reroll",dr_DiceFunctor.Reroll)]);
 });
 dr_DiceParser.SUM = parsihax_Parser.string("sum");
 dr_DiceParser.AVERAGE = parsihax_Parser.or(parsihax_Parser.string("average"),parsihax_Parser.string("avg"));
+dr_DiceParser.MEDIAN = parsihax_Parser.or(parsihax_Parser.string("median"),parsihax_Parser.string("mdn"));
 dr_DiceParser.MIN = parsihax_Parser.or(parsihax_Parser.string("minimum"),parsihax_Parser.string("min"));
 dr_DiceParser.MAX = parsihax_Parser.or(parsihax_Parser.string("maximum"),parsihax_Parser.string("max"));
 dr_DiceParser.times = parsihax_Parser.alt([parsihax_Parser.result(parsihax_Parser.string("once"),1),parsihax_Parser.result(parsihax_Parser.string("twice"),2),parsihax_Parser.result(parsihax_Parser.string("thrice"),3),parsihax_Parser.skip(dr_DiceParser.positive,parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.string("times")))]);
-dr_DiceParser.functorTimes = parsihax_Parser["as"](parsihax_Parser.alt([parsihax_Parser.map(dr_DiceParser.times,dr_Times.UpTo),parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.result(parsihax_Parser.string("always"),dr_Times.Always))]),"times");
+dr_DiceParser.functorTimes = parsihax_Parser.alt([parsihax_Parser.map(dr_DiceParser.times,dr_Times.UpTo),parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.result(parsihax_Parser.string("always"),dr_Times.Always)),parsihax_Parser.result(parsihax_Parser.string(""),dr_Times.Always)]);
 dr_DiceParser.DEFAULT_DIE_SIDES = 6;
 dr_DiceParser.die = parsihax_Parser["as"](parsihax_Parser.alt([parsihax_Parser.result(parsihax_Parser.then(dr_DiceParser.D,dr_DiceParser.PERCENT),100),parsihax_Parser.then(dr_DiceParser.D,dr_DiceParser.positive),parsihax_Parser.result(dr_DiceParser.D,dr_DiceParser.DEFAULT_DIE_SIDES)]),"one die");
 dr_DiceParser.negate = parsihax_Parser["as"](parsihax_Parser.lazy(function() {
@@ -10107,24 +10120,38 @@ dr_DiceParser.diceFilterable = parsihax_Parser.lazy(function() {
 		return dr_DiceFilterable.DiceArray(dice);
 	}),parsihax_Parser.map(dr_DiceParser.commaSeparated(dr_DiceParser.expression),dr_DiceFilterable.DiceExpressions)]),function(filterable) {
 		var l = dr_DiceParser.OWS;
-		var _e = dr_DiceParser.dirValue(parsihax_Parser.string("drop"),dr_LowHigh.Low);
-		var r = (function(fun) {
+		var l1 = parsihax_Parser.then(parsihax_Parser.string("d"),dr_DiceParser.OWS);
+		var _e = dr_DiceParser.positive;
+		var r = parsihax_Parser.then(l1,(function(fun) {
 			return parsihax_Parser.map(_e,fun);
 		})(function(_) {
-			return dr_DiceFilter.Drop(_.dir,_.value);
-		});
-		var _e1 = dr_DiceParser.dirValue(parsihax_Parser.string("keep"),dr_LowHigh.High);
-		return parsihax_Parser.then(l,parsihax_Parser.map(parsihax_Parser.alt([r,(function(fun1) {
+			return dr_DiceFilter.Drop(dr_LowHigh.Low,_);
+		}));
+		var _e1 = dr_DiceParser.dirValue(parsihax_Parser.string("drop"),dr_LowHigh.Low);
+		var r1 = (function(fun1) {
 			return parsihax_Parser.map(_e1,fun1);
 		})(function(_1) {
-			return dr_DiceFilter.Keep(_1.dir,_1.value);
+			return dr_DiceFilter.Drop(_1.dir,_1.value);
+		});
+		var l2 = parsihax_Parser.then(parsihax_Parser.string("k"),dr_DiceParser.OWS);
+		var _e2 = dr_DiceParser.positive;
+		var r2 = parsihax_Parser.then(l2,(function(fun2) {
+			return parsihax_Parser.map(_e2,fun2);
+		})(function(_2) {
+			return dr_DiceFilter.Keep(dr_LowHigh.High,_2);
+		}));
+		var _e3 = dr_DiceParser.dirValue(parsihax_Parser.string("keep"),dr_LowHigh.High);
+		return parsihax_Parser.then(l,parsihax_Parser.map(parsihax_Parser.alt([r,r1,r2,(function(fun3) {
+			return parsihax_Parser.map(_e3,fun3);
+		})(function(_3) {
+			return dr_DiceFilter.Keep(_3.dir,_3.value);
 		})]),function(dk) {
 			return dr_DiceReduceable.DiceListWithFilter(filterable,dk);
 		}));
 	});
 });
 dr_DiceParser.diceMapeable = parsihax_Parser.lazy(function() {
-	return parsihax_Parser.flatMap(parsihax_Parser.alt([parsihax_Parser.flatMap(dr_DiceParser.positive,function(rolls) {
+	var tmp = parsihax_Parser.flatMap(dr_DiceParser.positive,function(rolls) {
 		return parsihax_Parser.map(dr_DiceParser.die,function(sides) {
 			var _g = [];
 			var _g2 = 0;
@@ -10135,14 +10162,28 @@ dr_DiceParser.diceMapeable = parsihax_Parser.lazy(function() {
 			}
 			return _g;
 		});
-	}),dr_DiceParser.commaSeparated(dr_DiceParser.die)]),function(arr) {
+	});
+	var tmp1 = dr_DiceParser.commaSeparated(dr_DiceParser.die);
+	var l = parsihax_Parser.string("1");
+	var _e = dr_DiceParser.die;
+	var tmp2 = parsihax_Parser.then(l,(function(fun) {
+		return parsihax_Parser.map(_e,fun);
+	})(function(_) {
+		return [_];
+	}));
+	var _e1 = dr_DiceParser.die;
+	return parsihax_Parser.flatMap(parsihax_Parser.alt([tmp,tmp1,tmp2,(function(fun1) {
+		return parsihax_Parser.map(_e1,fun1);
+	})(function(_1) {
+		return [_1];
+	})]),function(arr) {
 		return parsihax_Parser.then(dr_DiceParser.OWS,parsihax_Parser.map(dr_DiceParser.diceFunctor,function(functor) {
 			return dr_DiceReduceable.DiceListWithMap(arr,functor);
 		}));
 	});
 });
 dr_DiceParser.termExpression = parsihax_Parser.lazy(function() {
-	return parsihax_Parser.alt([dr_DiceParser.dieExpression,dr_DiceParser.diceReduce(dr_DiceParser.diceMapeable),dr_DiceParser.diceReduce(dr_DiceParser.diceFilterable),dr_DiceParser.diceReduce(dr_DiceParser.diceExpressions),dr_DiceParser.literalExpression,dr_DiceParser.unary]);
+	return parsihax_Parser.alt([dr_DiceParser.diceReduce(dr_DiceParser.diceMapeable),dr_DiceParser.diceReduce(dr_DiceParser.diceFilterable),dr_DiceParser.diceReduce(dr_DiceParser.diceExpressions),dr_DiceParser.dieExpression,dr_DiceParser.literalExpression,dr_DiceParser.unary]);
 });
 dr_DiceParser.expression = parsihax_Parser["as"](parsihax_Parser.lazy(function() {
 	return parsihax_Parser.alt([dr_DiceParser.binop,dr_DiceParser.termExpression]);
