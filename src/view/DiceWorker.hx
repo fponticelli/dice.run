@@ -24,10 +24,14 @@ class DiceWorker {
   static function init(data) {
     var map = new Map();
     for(f in Reflect.fields(data)) {
-      var dwd = DiceWorkerData.create(f);
-      var res = Reflect.field(data, f);
-      dwd.results = ProbabilitiesResult.fromObject(res);
-      map.set(f, dwd);
+      try {
+        var dwd = DiceWorkerData.create(f);
+        var res = Reflect.field(data, f);
+        dwd.results = ProbabilitiesResult.fromObject(res);
+        map.set(f, dwd);
+      } catch(e: Dynamic) {
+        // just ignore things that stopped to parse correctly
+      }
     }
     cache = map;
   }
