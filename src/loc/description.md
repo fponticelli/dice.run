@@ -10,9 +10,9 @@ You can use basic mathematical operators [`3d6+4-1d4`](#/d/3d6+4-1d4). All math 
 
 # Expression Set and Reducing
 
-Many expressions can be provided in a set like [`{2d6,3d8,1d10+2}`](#/d/{2d6,3d8,1d10+2}). By default the result of each expression will be summed together. You can also be explicit [`{2d6,3d8,1d10+2} sum`](#/d/{2d6,3d8,1d10+2}sum) or you can use other reducing function like [`min`](#/d/{2d6,3d8,1d10+2}min), [`max`](#/d/{2d6,3d8,1d10+2}max) or [`average`](#/d/{2d6,3d8,1d10+2}average).
+Many expressions can be provided in a set like [`(2d6,3d8,1d10+2)`](#/d/(2d6,3d8,1d10+2). By default the result of each expression will be summed together. You can also be explicit [`(2d6,3d8,1d10+2) sum`](#/d/(2d6,3d8,1d10+2)sum) or you can use other reducing function like [`min`](#/d/(2d6,3d8,1d10+2)min), [`max`](#/d/(2d6,3d8,1d10+2)max) or [`average`](#/d/(2d6,3d8,1d10+2)average).
 
-You can use expression set to force the order of arithmetic operations: [`{3d6+2}*2`](#/d/{3d6+2}*2) which is equivalent to [`{3d6,2}*2`](#/d/{3d6,2}*2). Reduced sets can be used as part of more complex mathematical expressions [`{3d6,9} keep 1 * 2`](#/d/{3d6,9}_keep_1_*_2).
+You can use expression set to force the order of arithmetic operations: [`(3d6+2)*2`](#/d/(3d6+2)*2) which is equivalent to [`(3d6,2)*2`](#/d/(3d6,2)*2). Reduced sets can be used as part of more complex mathematical expressions [`(3d6,9) keep 1 * 2`](#/d/(3d6,9)_keep_1_*_2).
 
 # Filtering
 
@@ -20,9 +20,9 @@ It is also possible to peform filtering operations on a set of expressions like 
 
 # Dice Set
 
-Simpler sets of dice like [`5d6`](#/d/5d6) are expanded into [`{d6,d6,d6,d6,d6}`](#/d/{d6,d6,d6,d6,d6}). On these simple sets it is possible to apply two special functions: *explode* and *reroll*.
+Simpler sets of dice like [`5d6`](#/d/5d6) are expanded into [`(d6,d6,d6,d6,d6)`](#/d/(d6,d6,d6,d6,d6)). On these simple sets it is possible to apply two special functions: *explode* and *reroll*.
 
-A dice set can be composed of dice with different denominations [`{d2,d4,d6,d8,d10}`](#/d/{d2,d4,d6,d8,d10}). On the other hand a dice set can only be composed of nominal dice: [`{d6,2d8}`](#/d/{d6,2d8}) is NOT a dice set! It is still a valid expression set that can be reduced and filtered.
+A dice set can be composed of dice with different denominations [`(d2,d4,d6,d8,d10)`](#/d/(d2,d4,d6,d8,d10)). On the other hand a dice set can only be composed of nominal dice: [`(d6,2d8)`](#/d/(d6,2d8)) is NOT a dice set! It is still a valid expression set that can be reduced and filtered.
 
 # Explode / Reroll
 
