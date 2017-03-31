@@ -9,6 +9,7 @@ import State;
 import Markdown.*;
 using thx.Strings;
 import view.DiceWorker.DiceWorkerData;
+import Loc.msg;
 
 class Main extends Component<Store<State, Action>> {
   static public function main() {
@@ -45,10 +46,10 @@ class Main extends Component<Store<State, Action>> {
     return div(["class" => "content"], [
       div(["class" => "header"], [
         div(["class" => "ribbon"],
-          a(["href" => "https://jumpersideas.com/#!dice-roller"], [
-            span(["class" => "prefix"], "as confabulated on"),
+          a(["href" => msg.jumpersideasLink], [
+            span(["class" => "prefix"], msg.asConfabulatedOn),
             br(),
-            span(["class" => "domain"], "jumpersideas.com")
+            span(["class" => "domain"], msg.jumpersideas)
           ])),
         new ExpressionInput({
           dispatch: function(a) props.dispatch(a),

@@ -7,6 +7,7 @@ using thx.format.NumberFormat;
 import js.html.Worker;
 using thx.Strings;
 import haxe.ds.Option;
+import Loc.msg;
 
 class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
   static var ROUND = 1;
@@ -60,7 +61,10 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
     var f = NumberFormat.number.bind(_, 0);
     return div(["class" => "bars"],  [
       div(["class" => "stats"],
-        'values between ${f(stats.minValue)} and ${f(stats.maxValue)}, samples: ${f(stats.count)}'
+        msg.probabilitiesStats
+          .replace("$minValue", f(stats.minValue))
+          .replace("$maxValue", f(stats.maxValue))
+          .replace("$count", f(stats.count))
       ),
       div(["class" => "probabilities-container"], [
         div(["class" => "probabilities"], [

@@ -1,3 +1,22 @@
+asConfabulatedOn: as confabulated on
 atLeast: at least
 atMost: at most
+between: between $minInclusive and $maxInclusive
+dropOrKeepShouldBePositive: "a drop or keep value should always be more than zero"
+emptySet: "invalid empty set of dice"
+endOfFile: end of file
+exact: exactly $value
+expectedOneOf: expected one of
+found: found
+infiniteReroll: "this will roll forever! a d$sides always matches $range"
+insufficientSides: "a d$sides, are you for real?"
+jumpersideas: jumpersideas.com
+jumpersideasLink: https://jumpersideas.com/#!dice-roller
+or: or
 probabilities: probabilities
+probabilitiesStats: "values between $minValue and $maxValue, samples: $count"
+tooManyDrops: "the set has $available values and you are dropping $toDrop?"
+tooManyKeeps: "the set has $available values and you are keeping $toKeep?"
+validationPrefix: the expression is valid but the numbers are wrong!
+valueOrLess: $value or less
+valueOrMore: $value or more

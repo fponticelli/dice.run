@@ -9,7 +9,12 @@ class Reducer {
           case Left(e):
             { expression: Error(expr, e), seed: state.seed };
           case Right(parsed):
-            { expression: Parsed(expr, parsed.toString(), parsed), seed: state.seed };
+            switch DiceExpressionExtensions.validate(parsed) {
+              case None:
+                { expression: Parsed(expr, parsed.toString(), parsed), seed: state.seed };
+              case Some(errs):
+                { expression: ParsedInvalid(expr, errs, parsed), seed: state.seed };
+            }
         }
       case UpdateSeed(seed):
         { expression: state.expression, seed: seed };

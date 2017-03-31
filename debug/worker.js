@@ -903,6 +903,146 @@ dr_DiceExpressionExtensions.needsBraces = function(expr) {
 		return false;
 	}
 };
+dr_DiceExpressionExtensions.validateExpr = function(expr) {
+	switch(expr[1]) {
+	case 0:
+		var sides = expr[2];
+		if(sides <= 0) {
+			return [dr_ValidationMessage.InsufficientSides(sides)];
+		} else {
+			return [];
+		}
+		break;
+	case 1:
+		return [];
+	case 2:
+		var reducer = expr[3];
+		var reduceable = expr[2];
+		return dr_DiceExpressionExtensions.validateDiceReduceable(reduceable);
+	case 3:
+		var b = expr[4];
+		var a = expr[3];
+		var op = expr[2];
+		return dr_DiceExpressionExtensions.validateExpr(a).concat(dr_DiceExpressionExtensions.validateExpr(b));
+	case 4:
+		var a1 = expr[3];
+		var op1 = expr[2];
+		return dr_DiceExpressionExtensions.validateExpr(a1);
+	}
+};
+dr_DiceExpressionExtensions.validateDiceReduceable = function(dr1) {
+	switch(dr1[1]) {
+	case 0:
+		var exprs = dr1[2];
+		if(exprs.length == 0) {
+			return [dr_ValidationMessage.EmptySet];
+		} else {
+			var exprs1 = dr1[2];
+			var array = exprs1.map(dr_DiceExpressionExtensions.validateExpr);
+			return Array.prototype.concat.apply([],array);
+		}
+		break;
+	case 1:
+		var filter = dr1[3];
+		var list = dr1[2];
+		var acc = [];
+		var len;
+		switch(list[1]) {
+		case 0:
+			var dice = list[2];
+			len = dice.length;
+			break;
+		case 1:
+			var exprs2 = list[2];
+			len = exprs2.length;
+			break;
+		}
+		switch(filter[1]) {
+		case 0:
+			var value = filter[3];
+			if(value < 1) {
+				acc.push(dr_ValidationMessage.DropOrKeepShouldBePositive);
+			} else {
+				var value1 = filter[3];
+				if(value1 >= len) {
+					acc.push(dr_ValidationMessage.TooManyDrops(len,value1));
+				}
+			}
+			break;
+		case 1:
+			var value2 = filter[3];
+			if(value2 < 1) {
+				acc.push(dr_ValidationMessage.DropOrKeepShouldBePositive);
+			} else {
+				var value3 = filter[3];
+				if(value3 > len) {
+					acc.push(dr_ValidationMessage.TooManyKeeps(len,value3));
+				}
+			}
+			break;
+		default:
+		}
+		return acc;
+	case 2:
+		var functor = dr1[3];
+		var dice1 = dr1[2];
+		var acc1 = thx_Arrays.reduce(dice1,function(acc2,sides) {
+			if(sides > 0) {
+				return acc2;
+			}
+			return acc2.concat([dr_ValidationMessage.InsufficientSides(sides)]);
+		},[]);
+		var array1 = dice1.map(function(_) {
+			return dr_DiceExpressionExtensions.checkFunctor(_,functor);
+		});
+		return acc1.concat(Array.prototype.concat.apply([],array1));
+	}
+};
+dr_DiceExpressionExtensions.alwaysInRange = function(sides,range) {
+	var _g1 = 1;
+	var _g = sides + 1;
+	while(_g1 < _g) {
+		var i = _g1++;
+		if(!dr_Roller.matchRange(i,range)) {
+			return false;
+		}
+	}
+	return true;
+};
+dr_DiceExpressionExtensions.checkFunctor = function(sides,df) {
+	switch(df[1]) {
+	case 0:
+		var range = df[3];
+		if(dr_DiceExpressionExtensions.alwaysInRange(sides,range)) {
+			return [dr_ValidationMessage.InfiniteReroll(sides,range)];
+		} else {
+			return [];
+		}
+		break;
+	case 1:
+		var range1 = df[3];
+		if(dr_DiceExpressionExtensions.alwaysInRange(sides,range1)) {
+			return [dr_ValidationMessage.InfiniteReroll(sides,range1)];
+		} else {
+			return [];
+		}
+		break;
+	default:
+		return [];
+	}
+};
+dr_DiceExpressionExtensions.validate = function(expr) {
+	return thx__$Nel_Nel_$Impl_$.fromArray(dr_DiceExpressionExtensions.validateExpr(expr));
+};
+var dr_ValidationMessage = { __ename__ : ["dr","ValidationMessage"], __constructs__ : ["InsufficientSides","EmptySet","InfiniteReroll","TooManyDrops","TooManyKeeps","DropOrKeepShouldBePositive"] };
+dr_ValidationMessage.InsufficientSides = function(sides) { var $x = ["InsufficientSides",0,sides]; $x.__enum__ = dr_ValidationMessage; return $x; };
+dr_ValidationMessage.EmptySet = ["EmptySet",1];
+dr_ValidationMessage.EmptySet.__enum__ = dr_ValidationMessage;
+dr_ValidationMessage.InfiniteReroll = function(sides,range) { var $x = ["InfiniteReroll",2,sides,range]; $x.__enum__ = dr_ValidationMessage; return $x; };
+dr_ValidationMessage.TooManyDrops = function(available,toDrop) { var $x = ["TooManyDrops",3,available,toDrop]; $x.__enum__ = dr_ValidationMessage; return $x; };
+dr_ValidationMessage.TooManyKeeps = function(available,toKeep) { var $x = ["TooManyKeeps",4,available,toKeep]; $x.__enum__ = dr_ValidationMessage; return $x; };
+dr_ValidationMessage.DropOrKeepShouldBePositive = ["DropOrKeepShouldBePositive",5];
+dr_ValidationMessage.DropOrKeepShouldBePositive.__enum__ = dr_ValidationMessage;
 var parsihax_Parser = function() { };
 parsihax_Parser.__name__ = ["parsihax","Parser"];
 parsihax_Parser.index = function() {
