@@ -210,6 +210,8 @@ body
   color: #ccc
 
 .description
+  column-count: 3
+  column-rule: 1px dashed #ccc
   code
     padding: 0.1rem 0.25rem
     background-color: #f3f3f3
@@ -269,8 +271,8 @@ body
   font-style: italic
 
 @media screen and (max-width: 960px)
-  // .content
-  //   padding 20px 60px 0
+  .description
+    column-count: 2
   .roll-result
     a
       font-size: 2rem
@@ -301,8 +303,8 @@ body
     padding: 0.5rem 0
 
 @media screen and (max-width: 720px)
-  // .content
-  //   padding 20px 20px 0
+  .description
+    column-count: 1
   .roll-result
     a
       font-size: 1.6rem
