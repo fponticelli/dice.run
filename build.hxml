@@ -5,7 +5,6 @@
 -lib thx.stream
 -lib doom
 -lib dots
--lib markdown
 -lib parsihax
 -lib diceroller
 -lib tiki-tk
@@ -18,12 +17,6 @@
 
 --next
 -lib thx.core
--lib thx.format
--lib thx.promise
--lib thx.stream
--lib doom
--lib dots
--lib markdown
 -lib parsihax
 -lib diceroller
 -cp src
