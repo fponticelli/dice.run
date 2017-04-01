@@ -217,6 +217,14 @@ ProbabilitiesResult.prototype = {
 		}
 		this.count++;
 	}
+	,addQt: function(value,qt) {
+		if(this.map.h.hasOwnProperty(value)) {
+			this.map.h[value] = this.map.h[value] + qt;
+		} else {
+			this.map.h[value] = qt;
+		}
+		this.count += qt;
+	}
 	,toObject: function() {
 		var o = { };
 		var key = this.map.keys();
@@ -225,6 +233,16 @@ ProbabilitiesResult.prototype = {
 			o[key1] = this.map.h[key1];
 		}
 		return { count : this.count, values : o};
+	}
+	,bucket: function(bucketSize) {
+		var pr = new ProbabilitiesResult();
+		var k = this.map.keys();
+		while(k.hasNext()) {
+			var k1 = k.next();
+			var nk = Math.ceil(k1 / bucketSize);
+			pr.addQt(nk,this.map.h[k1]);
+		}
+		return pr;
 	}
 	,stats: function() {
 		return new ProbabilitiesStats(this.map,this.count);

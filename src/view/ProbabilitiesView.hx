@@ -58,19 +58,31 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
 
   override function render() {
     var stats = props.probabilities.stats();
+    var min = stats.minValue,
+        max = stats.maxValue;
+    var range = max - min;
+    var bucketSize = findBucketSize(range);
+    // trace(exponent, magnitude);
+    var ps = msg.probabilitiesStats;
+    if(bucketSize > 1) {
+      stats = props.probabilities.bucket(bucketSize).stats();
+      ps = msg.probabilitiesStatsWithBucket;
+    }
+
     var f = NumberFormat.number.bind(_, 0);
     return div(["class" => "bars"],  [
       div(["class" => "stats"],
-        msg.probabilitiesStats
-          .replace("$minValue", f(stats.minValue))
-          .replace("$maxValue", f(stats.maxValue))
+        ps
+          .replace("$minValue", f(min))
+          .replace("$maxValue", f(max))
           .replace("$count", f(stats.count))
+          .replace("$bucketSize", f(bucketSize))
       ),
       div(["class" => "probabilities-container"], [
         div(["class" => "probabilities"], [
-          div(["class" => "barchart"], stats.map(renderAtLeast)),
-          div(["class" => "barchart"], stats.map(renderProb)),
-          div(["class" => "barchart"], stats.map(renderAtMost)),
+          div(["class" => "barchart"], stats.map(renderAtLeast.bind(bucketSize))),
+          div(["class" => "barchart"], stats.map(renderProb.bind(bucketSize))),
+          div(["class" => "barchart"], stats.map(renderAtMost.bind(bucketSize))),
         ]),
         div(["class" => "probabilities-labels"], [
           div(["class" => "label"], Loc.msg.atLeast),
@@ -79,6 +91,21 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
         ])
       ])
     ]);
+  }
+
+  function findBucketSize(range) {
+    var threshold = 100;
+    if(range <= threshold) return 1;
+    var sizes = [2, 5, 10, 20, 25, 50, 100],
+        multiplier = 100,
+        curMultiplier = 1;
+    while(true) {
+      for(v in sizes) {
+        var vm = curMultiplier * v;
+        if(range / vm <= threshold) return vm;
+      }
+      curMultiplier *= multiplier;
+    }
   }
 
   override function willMount() {
@@ -100,7 +127,7 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
     }
   }
 
-  function renderProb(sample: Sample) {
+  function renderProb(bucketSize: Int, sample: Sample) {
     return div(["class" => [
       "bar-container" => true,
       "selected" => isSelected(sample.value)
@@ -108,7 +135,7 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
       "mouseenter" => mouseEnter(sample.value),
       "click" => mouseEnter(sample.value)
     ], [
-      div(["class" => "label"], div(["class" => "text"], '${sample.value}')),
+      div(["class" => "label"], div(["class" => "text"], formatValue(bucketSize, sample.value))),
       div(["class" => "bar", "style" => 'height: ${height(sample.maxPercent*barHeight)}'], ""),
       div(["class" => "percent"], div(["class" => "text"], percent(sample.percent))),
     ]);
@@ -119,7 +146,7 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
     case None: false;
   }
 
-  function renderAtMost(sample: Sample) {
+  function renderAtMost(bucketSize: Int, sample: Sample) {
     return div(["class" => [
       "bar-container" => true,
       "selected" => isSelected(sample.value)
@@ -127,13 +154,13 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
       "mouseenter" => mouseEnter(sample.value),
       "click" => mouseEnter(sample.value)
     ], [
-      div(["class" => "label"], div(["class" => "text"], '${sample.value}')),
+      div(["class" => "label"], div(["class" => "text"], formatValue(bucketSize, sample.value))),
       div(["class" => "bar", "style" => 'height: ${height(sample.accPercent*barHeight)}'], ""),
       div(["class" => "percent"], div(["class" => "text"], percent(sample.accPercent))),
     ]);
   }
 
-  function renderAtLeast(sample: Sample) {
+  function renderAtLeast(bucketSize: Int, sample: Sample) {
     var v = sample.revPercent;
     return div(["class" => [
       "bar-container" => true,
@@ -142,10 +169,19 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
       "mouseenter" => mouseEnter(sample.value),
       "click" => mouseEnter(sample.value)
     ], [
-      div(["class" => "label"], div(["class" => "text"], '${sample.value}')),
+      div(["class" => "label"], div(["class" => "text"], formatValue(bucketSize, sample.value))),
       div(["class" => "bar", "style" => 'height: ${height(v*barHeight)}'], ""),
       div(["class" => "percent"], div(["class" => "text"], percent(v))),
     ]);
+  }
+
+  function formatValue(bucketSize: Int, value: Int) {
+    return if(bucketSize == 1) {
+      '$value';
+    } else {
+      var m = (value - 1)*bucketSize;
+      '$m-${m+bucketSize-1}';
+    }
   }
 
   function height(v: Float) {

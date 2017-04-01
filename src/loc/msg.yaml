@@ -15,6 +15,7 @@ jumpersideasLink: https://jumpersideas.com/#!dice-roller
 or: or
 probabilities: probabilities
 probabilitiesStats: "values between $minValue and $maxValue, samples: $count"
+probabilitiesStatsWithBucket: "values between $minValue and $maxValue (bucket size: $bucketSize), samples: $count"
 tooManyDice: Too many dice to display
 tooManyDrops: "the set has $available value(s) and you are dropping $toDrop?"
 tooManyKeeps: "the set has $available value(s) and you are keeping $toKeep?"

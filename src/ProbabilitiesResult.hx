@@ -16,6 +16,14 @@ class ProbabilitiesResult {
     count++;
   }
 
+  public function addQt(value: Int, qt: Int) {
+    if(map.exists(value))
+      map.set(value, map.get(value) + qt);
+    else
+      map.set(value, qt);
+    count += qt;
+  }
+
   public function toObject() {
     var o = {};
     for(key in map.keys())
@@ -34,6 +42,15 @@ class ProbabilitiesResult {
     for(f in fields)
       p.map.set(Std.parseInt(f), Reflect.field(ob, f));
     return p;
+  }
+
+  public function bucket(bucketSize: Int) {
+    var pr = new ProbabilitiesResult();
+    for(k in map.keys()) {
+      var nk = Math.ceil(k / bucketSize);
+      pr.addQt(nk, map.get(k));
+    }
+    return pr;
   }
 
   public function stats() {
