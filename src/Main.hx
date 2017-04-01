@@ -93,6 +93,5 @@ class Main extends Component<Store<State, Action>> {
   public static function markdownToHtml(s: String) {
     var converter = untyped __js__("new showdown.Converter")();
     return converter.makeHtml(s);
-    // return Markdown.markdownToHtml(s);
   }
 }

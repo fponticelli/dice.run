@@ -9,7 +9,7 @@ exact: exactly $value
 expectedOneOf: expected one of
 found: found
 infiniteReroll: "this will roll forever! a d$sides always matches $range"
-insufficientSides: "a d$sides, are you for real?"
+insufficientSides: "a d$sides is not a valid die"
 jumpersideas: jumpersideas.com
 jumpersideasLink: https://jumpersideas.com/#!dice-roller
 or: or
@@ -19,6 +19,15 @@ tooManyDice: Too many dice to display
 tooManyDrops: "the set has $available value(s) and you are dropping $toDrop?"
 tooManyKeeps: "the set has $available value(s) and you are keeping $toKeep?"
 useSeed: use seed
-validationPrefix: the expression is valid but the numbers are wrong!
+validationPrefix:
+  - the expression is valid but the numbers are wrong!
+  - you need to be more serious ...
+  - are you being serious?
+  - let's not be silly, shall we?
+  - are you for real?
+  - enough is enough
+  - really?
+  - what a joker you are
+  - funny, really funny
 valueOrLess: $value or less
 valueOrMore: $value or more

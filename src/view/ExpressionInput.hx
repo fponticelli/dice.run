@@ -47,7 +47,7 @@ class ExpressionInput extends Component<SimulatorProps> {
 
   static function renderValidationsErrors(err: Nel<ValidationMessage>) {
     return div([
-      div(["class" => "validation-prefix"], msg.validationPrefix),
+      div(["class" => "validation-prefix"], msg.validationPrefix.sampleOne()),
       div(["class" => "validation-messages"],
         err.toArray().map(function(e) {
           return div(["class" => "validation-message"], validationMessage(e));
