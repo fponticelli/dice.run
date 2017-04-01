@@ -903,6 +903,47 @@ dr_DiceExpressionExtensions.needsBraces = function(expr) {
 		return false;
 	}
 };
+dr_DiceExpressionExtensions.calculateBasicRollsReduceable = function(dr1) {
+	switch(dr1[1]) {
+	case 0:
+		var exprs = dr1[2];
+		return thx_ArrayInts.sum(exprs.map(dr_DiceExpressionExtensions.calculateBasicRolls));
+	case 1:
+		switch(dr1[2][1]) {
+		case 0:
+			var filter = dr1[3];
+			var arr = dr1[2][2];
+			return arr.length;
+		case 1:
+			var filter1 = dr1[3];
+			var exprs1 = dr1[2][2];
+			return thx_ArrayInts.sum(exprs1.map(dr_DiceExpressionExtensions.calculateBasicRolls));
+		}
+		break;
+	case 2:
+		var functor = dr1[3];
+		var dice = dr1[2];
+		return dice.length;
+	}
+};
+dr_DiceExpressionExtensions.calculateBasicRolls = function(expr) {
+	switch(expr[1]) {
+	case 0:
+		return 1;
+	case 1:
+		return 1;
+	case 2:
+		var reduceable = expr[2];
+		return dr_DiceExpressionExtensions.calculateBasicRollsReduceable(reduceable);
+	case 3:
+		var b = expr[4];
+		var a = expr[3];
+		return dr_DiceExpressionExtensions.calculateBasicRolls(a) + dr_DiceExpressionExtensions.calculateBasicRolls(b);
+	case 4:
+		var a1 = expr[3];
+		return dr_DiceExpressionExtensions.calculateBasicRolls(a1);
+	}
+};
 dr_DiceExpressionExtensions.validateExpr = function(expr) {
 	switch(expr[1]) {
 	case 0:
@@ -916,7 +957,6 @@ dr_DiceExpressionExtensions.validateExpr = function(expr) {
 	case 1:
 		return [];
 	case 2:
-		var reducer = expr[3];
 		var reduceable = expr[2];
 		return dr_DiceExpressionExtensions.validateDiceReduceable(reduceable);
 	case 3:

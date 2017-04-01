@@ -5,7 +5,8 @@ import thx.Nel;
 
 typedef State = {
   expression: Expression,
-  seed: Int
+  seed: Int,
+  useSeed: Bool
 }
 
 enum Expression {

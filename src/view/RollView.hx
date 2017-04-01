@@ -4,41 +4,78 @@ import doom.html.Component;
 import doom.html.Html.*;
 import haxe.ds.Option;
 import dr.DiceExpression;
+import dr.DiceExpressionExtensions;
 using dr.RollResultExtensions;
 import dr.Roller;
 using thx.Arrays;
 import thx.math.random.LehmerSeed;
 using thx.Options;
+import Loc.msg;
 
-class RollView extends Component<Option<{ expression: DiceExpression, seed: Int, updateSeed: Int -> Void }>> {
+class RollView extends Component<Option<{ expression: DiceExpression, seed: Int, updateSeed: Int -> Void, changeUseSeed: Bool -> Void, useSeed: Bool }>> {
+  static var DISPLAY_ROLLS_THRESHOLD = 50;
   override function render()
     return switch props {
       case None:
         dummy();
-      case Some({ expression: expr, seed: seed, updateSeed: update }):
-        var seeded = LehmerSeed.std(seed);
-        var r = new Roller(function(sides) {
-          var v = Math.floor(seeded.normalized * sides) + 1;
-          seeded = seeded.next();
-          return v;
-        }).roll(expr);
+      case Some({ expression: expr, seed: seed, updateSeed: update, changeUseSeed: changeUseSeed, useSeed: useSeed }):
+        var r, rollDice;
+        if(useSeed) {
+          var seeded = LehmerSeed.std(seed);
+          r = new Roller(function(sides) {
+            var v = Math.floor(seeded.normalized * sides) + 1;
+            seeded = seeded.next();
+            return v;
+          }).roll(expr);
+          rollDice = roll.bind(seeded.int);
+        } else {
+          r = new Roller(function(sides) {
+            return Math.floor(Math.random() * sides) + 1;
+          }).roll(expr);
+          rollDice = function() {
+            this.update(props);
+          }
+        }
         div(["class" => "roll-box"], [
           div(["class" => "rolling"], [
             div(["class" => "roll-result"], [
-              a(["click" => roll.bind(seeded.int), "href" => "#"], '${r.getResult()}')
+              a(["click" => rollDice, "href" => "#"], '${r.getResult()}')
             ]),
-            div(["class" => "roll-seed"], [
-              span("seed: "),
-              span([
-                "class" => "text-editor",
-                "input" => changeSeed,
-                "contentEditable" => "true"
-              ], '$seed')
-            ])
+            renderSeed(seed, useSeed)
           ]),
-          div(["class" => "roll-details"], new RollDetailsView(r))
+          if(DiceExpressionExtensions.calculateBasicRolls(expr) > DISPLAY_ROLLS_THRESHOLD) {
+            div(["class" => "roll-details"], msg.tooManyDice);
+          } else {
+            div(["class" => "roll-details"], new RollDetailsView(r));
+          }
         ]);
     };
+
+  function renderSeed(seed: Int, useSeed: Bool) {
+    if(useSeed) {
+      return div(["class" => "roll-seed"], [
+          label([
+            input(["type" => "checkbox", "checked" => useSeed, "change" => changeUseSeed]),
+            span(' ${msg.useSeed}: '),
+          ]),
+          span([
+            "class" => "text-editor",
+            "input" => changeSeed,
+            "contentEditable" => "true"
+          ], '$seed')
+        ]);
+    } else {
+      return div(["class" => "roll-seed"], [
+          label([
+            input(["type" => "checkbox", "checked" => useSeed, "change" => changeUseSeed]),
+            span(' ${msg.useSeed}')
+          ])
+        ]);
+    }
+  }
+
+  function changeUseSeed(value: Bool)
+    props.map(function(v) return v.changeUseSeed(value));
 
   function changeSeed(value: String) {
     var v = Std.parseInt(value);

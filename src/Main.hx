@@ -6,14 +6,13 @@ import dots.Query;
 import thx.stream.Property;
 import thx.stream.Store;
 import State;
-import Markdown.*;
 using thx.Strings;
 import view.DiceWorker.DiceWorkerData;
 import Loc.msg;
 
 class Main extends Component<Store<State, Action>> {
   static public function main() {
-    var state: State = { expression: Unparsed(""), seed: 1234567890 };
+    var state: State = { expression: Unparsed(""), seed: 1234567890, useSeed: false };
     var mw = new Middleware();
     var store = new Store(new Property(state), Reducer.reduce, mw.use());
     var app = new Main(store);
@@ -59,7 +58,9 @@ class Main extends Component<Store<State, Action>> {
           case Parsed(_, _, e): Some({
             expression: e,
             seed: state.seed,
-            updateSeed: function(seed: Int) props.dispatch(UpdateSeed(seed))
+            updateSeed: function(seed: Int) props.dispatch(UpdateSeed(seed)),
+            changeUseSeed: function(value: Bool) props.dispatch(ToggleUseSeed(value)),
+            useSeed: state.useSeed
           });
           case _: None;
         }).asNode(),
@@ -87,5 +88,11 @@ class Main extends Component<Store<State, Action>> {
     for(i in 0...100)
       data.roll();
     return data.results;
+  }
+
+  public static function markdownToHtml(s: String) {
+    var converter = untyped __js__("new showdown.Converter")();
+    return converter.makeHtml(s);
+    // return Markdown.markdownToHtml(s);
   }
 }
