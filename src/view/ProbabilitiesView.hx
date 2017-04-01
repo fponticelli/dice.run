@@ -62,7 +62,6 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
         max = stats.maxValue;
     var range = max - min;
     var bucketSize = findBucketSize(range);
-    // trace(exponent, magnitude);
     var ps = msg.probabilitiesStats;
     if(bucketSize > 1) {
       stats = props.probabilities.bucket(bucketSize).stats();
@@ -108,13 +107,11 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
     }
   }
 
-  override function willMount() {
+  override function willMount()
     view = this;
-  }
 
-  override function willUnmount() {
+  override function willUnmount()
     view = null;
-  }
 
   function mouseEnter(value: Int) {
     return function() {

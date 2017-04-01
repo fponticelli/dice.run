@@ -17877,20 +17877,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f();
+			f1();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f11 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f1();
+			f11();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -17972,20 +17972,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f();
+			f1();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f11 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f1();
+			f11();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -18058,20 +18058,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f();
+			f1();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f11 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f1();
+			f11();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -18631,11 +18631,11 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g5.h["style"] = value7;
 			}
-			var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
+			var value11 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
 			if(__map_reserved["data-comment"] != null) {
-				_g5.setReserved("data-comment",value8);
+				_g5.setReserved("data-comment",value11);
 			} else {
-				_g5.h["data-comment"] = value8;
+				_g5.h["data-comment"] = value11;
 			}
 			return doom_core__$VNode_VNode_$Impl_$.el("div",_g5);
 		}
@@ -18662,11 +18662,11 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g2.h["checked"] = value2;
 			}
-			var f = $bind(this,this.changeUseSeed);
+			var f1 = $bind(this,this.changeUseSeed);
 			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 				e.preventDefault();
 				var value4 = el.checked;
-				f(value4);
+				f1(value4);
 			});
 			if(__map_reserved["change"] != null) {
 				_g2.setReserved("change",value3);
@@ -18681,11 +18681,11 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g3.h["class"] = value5;
 			}
-			var f1 = $bind(this,this.changeSeed);
+			var f11 = $bind(this,this.changeSeed);
 			var value6 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 				e1.preventDefault();
 				var value7 = dots_Dom.getValue(el1);
-				f1(value7);
+				f11(value7);
 			});
 			if(__map_reserved["input"] != null) {
 				_g3.setReserved("input",value6);
@@ -18720,11 +18720,11 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g21.h["checked"] = value11;
 			}
-			var f2 = $bind(this,this.changeUseSeed);
+			var f12 = $bind(this,this.changeUseSeed);
 			var value12 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el2,e2) {
 				e2.preventDefault();
 				var value13 = el2.checked;
-				f2(value13);
+				f12(value13);
 			});
 			if(__map_reserved["change"] != null) {
 				_g21.setReserved("change",value12);
