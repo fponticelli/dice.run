@@ -10,13 +10,18 @@ You can use basic mathematical operators [`3d6+4-1d4`](#/d/3d6+4-1d4). All math 
 
 # Expression Set and Reducing
 
-Many expressions can be provided in a set like [`(2d6,3d8,1d10+2)`](#/d/(2d6,3d8,1d10+2)). By default the result of each expression will be summed together. You can also be explicit [`(2d6,3d8,1d10+2) sum`](#/d/(2d6,3d8,1d10+2)sum) or you can use other reducing function like [`min`](#/d/(2d6,3d8,1d10+2)min), [`max`](#/d/(2d6,3d8,1d10+2)max) or [`average`](#/d/(2d6,3d8,1d10+2)average).
+Many expressions can be provided in a set like [`(2d6,3d8,1d10+2)`](#/d/(2d6,3d8,1d10+2)). By default the result of each expression will be summed together. You can also be explicit [`(2d6,3d8,1d10+2) sum`](#/d/(2d6,3d8,1d10+2)_sum) or you can use other reducing function like [`min`](#/d/(2d6,3d8,1d10+2)_min), [`max`](#/d/(2d6,3d8,1d10+2)_max), [`median`](#/d/(2d6,3d8,1d10+2)_median) or [`average`](#/d/(2d6,3d8,1d10+2)_average).
 
-You can use expression set to force the order of arithmetic operations: [`(3d6+2)*2`](#/d/(3d6+2)*2) which is equivalent to [`(3d6,2)*2`](#/d/(3d6,2)*2). Reduced sets can be used as part of more complex mathematical expressions [`(3d6,9) keep 1 * 2`](#/d/(3d6,9)_keep_1_*_2).
+You can use an expression set to force the order of arithmetic operations: [`(3d6+2)*2`](#/d/(3d6+2)*2) which is equivalent to [`(3d6,2)*2`](#/d/(3d6,2)*2). Reduced sets can be used as part of more complex mathematical expressions [`((3d6,9) keep 1 + 2) * 2`][1].
 
 # Filtering
 
 It is also possible to peform filtering operations on a set of expressions like *drop* and *keep*. Drop will only keep the values that do not match a condition: [`4d6 drop lowest 1`](#/d/4d6_drop_lowest_1). For *drop* the default matching condition is *lowest* so you can ommit it: [`4d6 drop 1`](#/d/4d6_drop_1). *Keep* will retain by default the top `N` values. [`4d6 keep 3`](#/d/4d6_keep_3) is basically equivalend to the `drop 1` above. You can be explicit and state [`4d6 keep highest 3`](#/d/4d6_keep_highest_3).
+
+Drop and keep can abbreviated:
+
+* [`4d6d1`](#/d/4d6d1) is equivalent to [`4d6 drop lowest 1`](#/d/4d6_drop_lowest_1)
+* [`4d6k3`](#/d/4d6k3) is equivalent to [`4d6 keep highest 3`](#/d/4d6_keep_highest_3)
 
 # Dice Set
 
@@ -26,10 +31,8 @@ A dice set can be composed of dice with different denominations [`(d2,d4,d6,d8,d
 
 # Explode / Reroll
 
-TODO
+Some games require exploding rolls or rerolls. An exploding dice is rolled again whenever its highest values is obtained. Results of all rolls are then summed together. dice.run supports the following syntax for exploding rolls: [3d6 explode always on 5 or more](#/d/3d6_explode_always_on_5_or_more). The short syntax for that is [3d6e5](#/d/3d6e5). If you want to limit the number of times the dice can explode, you can use [`once`](#/d/3d6 explode once on 5 or more), [`twice`](#/d/3d6 explode twice on 5 or more), [`thrice`](#/d/3d6 explode thrice on 5 or more) or the syntax `n times` where `n` is any positive integer number (eg: [`3d6 explode 10 times on 5 or more`](#/d/3d6 explode 10_times on 5 or more)). `or more` can be replaced with `or less` or omitted entirely to only explode on the exact value indicated in the expression.
 
-  * dice set
-  * explode/reroll
-  * dice font
-  * dice roller
-  * dice link template: [``](#/d/)
+Reroll works the same [3d6 reroll always on less more](#/d/3d6_reroll_always_on_2_or_less) and the short format is [3d6r2](#/d/3d6r2).
+
+  [1]: #/d/((3d6,9)_keep_1_+_2)_*_2
