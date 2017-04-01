@@ -384,3 +384,28 @@ body
   color: #999
 .validation-message
   font-style: italic
+
+
+.roll
+  animation-iteration-count: 1
+  transform-origin: 50% 50%
+  animation-fill-mode:forwards
+
+.roll1
+  animation: roll ease-out 0.6s
+
+.roll2
+  animation: roll ease-out 0.8s
+
+.roll3
+  animation: roll ease-out 1s
+
+.roll4
+  animation: roll ease-out 1.2s
+
+.roll5
+  animation: roll ease-out 1.6s
+
+@keyframes roll
+  0%   { transform: rotate(0deg) }
+  100% { transform: rotate(720deg) }
