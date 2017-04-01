@@ -13,8 +13,6 @@ import dr.DiceExpressionExtensions;
 import Loc.msg;
 
 class ExpressionInput extends Component<SimulatorProps> {
-  var start = 0;
-  var end = 0;
   override function render() {
     var value = switch props.expr {
       case Unparsed(src): src;
@@ -27,10 +25,8 @@ class ExpressionInput extends Component<SimulatorProps> {
       ],
       span([
         "class" => "text-editor",
-        // "value" => value,
         "contentEditable" => "true",
         "input" => onInput,
-        "keyup" => selectionChange
       ], value))];
     var bottom = switch props.expr {
           case Error(_, err):
@@ -40,9 +36,7 @@ class ExpressionInput extends Component<SimulatorProps> {
           case _:
             [];
         };
-    return div(
-      top.concat(bottom)
-    );
+    return div(top.concat(bottom));
   }
 
   static function renderValidationsErrors(err: Nel<ValidationMessage>) {
@@ -60,13 +54,13 @@ class ExpressionInput extends Component<SimulatorProps> {
     return switch range {
       case Exact(value):
         msg.exact.replace("$value", '$value');
-      case Between(minInclusive, maxInclusive): msg.between;
+      case Between(minInclusive, maxInclusive):
         msg.between
           .replace("$minInclusive", '$minInclusive')
           .replace("$maxInclusive", '$maxInclusive');
-      case ValueOrMore(value): msg.valueOrMore;
+      case ValueOrMore(value):
         msg.valueOrMore.replace("$value", '$value');
-      case ValueOrLess(value): msg.valueOrLess;
+      case ValueOrLess(value):
         msg.valueOrLess.replace("$value", '$value');
       case Composite(arr): arr.map(rangeToString).join(' ${msg.or} ');
     };
@@ -114,20 +108,8 @@ class ExpressionInput extends Component<SimulatorProps> {
     );
   }
 
-  override function didUpdate() {
-    var input: js.html.InputElement = cast this.element; // cast Query.find("input", this.element);
-    // input.setSelectionRange(start, end);
-  }
-
-  function selectionChange(input: js.html.InputElement) {
-    start = input.selectionStart;
-    end = input.selectionEnd;
-  }
-
-  function onInput(input: js.html.InputElement) {
-    selectionChange(input);
+  function onInput(input: js.html.InputElement)
     props.dispatch(EvaluateExpression(input.textContent));
-  }
 }
 
 typedef SimulatorProps = {
