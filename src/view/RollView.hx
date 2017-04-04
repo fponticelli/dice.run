@@ -58,11 +58,7 @@ class RollView extends Component<Option<{ expression: DiceExpression, seed: Int,
             input(["type" => "checkbox", "checked" => useSeed, "change" => changeUseSeed]),
             span(' ${msg.useSeed}: '),
           ]),
-          span([
-            "class" => "text-editor",
-            "input" => changeSeed,
-            "contentEditable" => "true"
-          ], '$seed')
+          new Editable({ value: '$seed', change: changeSeed, focus: false }).asNode()
         ]);
     } else {
       return div(["class" => "roll-seed"], [

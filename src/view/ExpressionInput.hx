@@ -23,11 +23,8 @@ class ExpressionInput extends Component<SimulatorProps> {
     var top = [div([
         "class" => "expression-input"
       ],
-      span([
-        "class" => "text-editor",
-        "contentEditable" => "true",
-        "input" => onInput,
-      ], value))];
+      new Editable({ value: value, change: onChange, focus: true }).asNode()
+    )];
     var bottom = switch props.expr {
           case Error(_, err):
             [div(["class" => "error"], renderParseError(err))];
@@ -108,8 +105,8 @@ class ExpressionInput extends Component<SimulatorProps> {
     );
   }
 
-  function onInput(input: js.html.InputElement)
-    props.dispatch(EvaluateExpression(input.textContent));
+  function onChange(text: String)
+    props.dispatch(EvaluateExpression(text));
 }
 
 typedef SimulatorProps = {
