@@ -1,6 +1,7 @@
 * {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 body {
   overflow: hidden;
@@ -16,14 +17,12 @@ body {
 }
 .body {
   overflow: auto;
-  padding: 1rem 4rem;
+  padding: 1rem 1rem;
 }
 .barchart {
   display: flex;
   width: 100%;
   margin: 0;
-}
-.barchart {
   border-left: 1px dashed #bbb;
   border-right: 1px dashed #bbb;
 }
@@ -210,32 +209,36 @@ body {
 .discard .die-icon {
   color: #ccc;
 }
-.description {
-  column-count: 3;
-  column-rule: 1px dashed #ccc;
+.text-content {
+  color: #222;
 }
-.description code {
+.text-content code {
   padding: 0.1rem 0.25rem;
   background-color: #f3f3f3;
   font-family: monospace;
   font-weight: bold;
 }
-.description a {
+.text-content a {
   text-decoration: none;
   color: #309;
 }
-.description h1 {
+.text-content h1 {
   margin: 0rem;
   font-size: 1rem;
+  color: #444;
 }
-.description p {
+.text-content p {
   margin: 0.5rem;
 }
-.description p:first-child {
+.text-content p:first-child {
   margin-top: 0;
 }
-.description p:last-child {
+.text-content p:last-child {
   margin-bottom: 0;
+}
+.description {
+  column-count: 3;
+  column-rule: 1px dotted #ccc;
 }
 .probabilities-container {
   overflow-x: auto;
@@ -310,9 +313,6 @@ body {
   .dice-set > .comma {
     padding-top: 8px;
   }
-  .body {
-    padding: 1rem 2rem;
-  }
   .roll-seed {
     margin-top: 0.5rem;
   }
@@ -351,9 +351,6 @@ body {
   }
   .dice-set > .comma {
     padding-top: 4px;
-  }
-  .body {
-    padding: 1rem 1rem;
   }
 }
 .ribbon {

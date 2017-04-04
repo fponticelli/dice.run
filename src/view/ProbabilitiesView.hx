@@ -24,7 +24,7 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
         view.update({
           expression: view.props.expression,
           parsed: view.props.parsed,
-          probabilities: p,
+          probabilities: Some(p),
           selected: view.props.selected
         });
       }
@@ -40,6 +40,15 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
     worker.postMessage({ init: collect });
     worker;
   };
+
+  public static function getFromLocalStorage(expr: String) {
+    var storage = js.Browser.window.localStorage;
+    var item = storage.getItem(STORAGE_PREFIX + expr);
+    if(null == item) return None;
+    var ob = haxe.Json.parse(item);
+    return Some(ProbabilitiesResult.fromObject(ob));
+  }
+
   public static var view: ProbabilitiesView;
 
   public static function post(expr: String) {
@@ -56,15 +65,15 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
     return super.migrationFields().concat(["worker"]);
   }
 
-  override function render() {
-    var stats = props.probabilities.stats();
+  function renderProbabilities(probabilities: ProbabilitiesResult) {
+    var stats = probabilities.stats();
     var min = stats.minValue,
         max = stats.maxValue;
     var range = max - min;
     var bucketSize = findBucketSize(range);
     var ps = msg.probabilitiesStats;
     if(bucketSize > 1) {
-      stats = props.probabilities.bucket(bucketSize).stats();
+      stats = probabilities.bucket(bucketSize).stats();
       ps = msg.probabilitiesStatsWithBucket;
     }
 
@@ -90,6 +99,21 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
         ])
       ])
     ]);
+  }
+
+  override function render() {
+    var maybe = switch props.probabilities {
+      case None:
+        getFromLocalStorage(props.expression);
+      case some:
+        some;
+    };
+    return switch maybe {
+      case None:
+        dummy("no probabilities");
+      case Some(probabilities):
+        renderProbabilities(probabilities);
+    }
   }
 
   function findBucketSize(range) {
@@ -196,6 +220,6 @@ class ProbabilitiesView extends doom.html.Component<ProbabilitiesViewProps> {
 typedef ProbabilitiesViewProps = {
   expression: String,
   parsed: DiceExpression,
-  probabilities: ProbabilitiesResult,
+  probabilities: Option<ProbabilitiesResult>,
   selected: Option<Int>
 }

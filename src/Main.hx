@@ -7,7 +7,6 @@ import thx.stream.Property;
 import thx.stream.Store;
 import State;
 using thx.Strings;
-import view.DiceWorker.DiceWorkerData;
 import Loc.msg;
 
 class Main extends Component<Store<State, Action>> {
@@ -19,7 +18,6 @@ class Main extends Component<Store<State, Action>> {
 
     Doom.browser.mount(app, Query.find("#main"));
     store.stream()
-      // .log()
       .next(function(_) app.update(store))
       .run();
 
@@ -71,23 +69,16 @@ class Main extends Component<Store<State, Action>> {
             new ProbabilitiesView({
               expression: n,
               parsed: e,
-              probabilities: sampleProbabilities(n, e),
+              probabilities: None,
               selected: None
             }).asNode();
           case _:
             dummy();
         },
-        div(["class" => "description"], raw(markdownToHtml(Loc.description)))
+        div(["class" => "description text-content"], raw(markdownToHtml(Loc.description))),
+        div(["class" => "footer text-content"], raw(markdownToHtml(Loc.footer)))
       ])
     ]);
-  }
-
-  // feed some numbers to start with and make some smooth animation
-  public static function sampleProbabilities(n, e) {
-    var data = new DiceWorkerData(n, e);
-    for(i in 0...100)
-      data.roll();
-    return data.results;
   }
 
   public static function markdownToHtml(s: String) {
