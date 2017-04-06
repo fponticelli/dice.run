@@ -17373,6 +17373,12 @@ var view_Editable = function(props,children) {
 	doom_html_Component.call(this,props,children);
 };
 view_Editable.__name__ = ["view","Editable"];
+view_Editable.selectRange = function(element) {
+	if(null == view_Editable.range || element != window.document.activeElement) {
+		return;
+	}
+	element.setSelectionRange(view_Editable.range.start,view_Editable.range.end);
+};
 view_Editable.__super__ = doom_html_Component;
 view_Editable.prototype = $extend(doom_html_Component.prototype,{
 	render: function() {
@@ -17383,27 +17389,38 @@ view_Editable.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g.h["class"] = value;
 		}
-		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("true");
-		if(__map_reserved["contentEditable"] != null) {
-			_g.setReserved("contentEditable",value1);
-		} else {
-			_g.h["contentEditable"] = value1;
-		}
-		var f1 = $bind(this,this.onInput);
-		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
+		var f1 = $bind(this,this.onKeyUp);
+		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			var typedEl = el;
-			f1(typedEl);
+			var value2 = dots_Dom.getValue(el);
+			f1(value2);
 		});
-		if(__map_reserved["input"] != null) {
-			_g.setReserved("input",value2);
+		if(__map_reserved["keyup"] != null) {
+			_g.setReserved("keyup",value1);
 		} else {
-			_g.h["input"] = value2;
+			_g.h["keyup"] = value1;
 		}
-		return doom_core__$VNode_VNode_$Impl_$.el("span",_g,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(this.props.value,null,null)]));
+		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString(this.props.value);
+		if(__map_reserved["value"] != null) {
+			_g.setReserved("value",value3);
+		} else {
+			_g.h["value"] = value3;
+		}
+		return doom_core__$VNode_VNode_$Impl_$.el("input",_g,null);
 	}
-	,onInput: function(input) {
-		this.props.change(input.textContent);
+	,didMount: function() {
+		view_Editable.selectRange(this.node);
+	}
+	,didUpdate: function() {
+		view_Editable.selectRange(this.node);
+	}
+	,onKeyUp: function(content) {
+		if(content == this.props.value) {
+			return;
+		}
+		var input = this.node;
+		view_Editable.range = { start : input.selectionStart, end : input.selectionEnd};
+		this.props.change(content);
 	}
 	,classes: function() {
 		return "view_editable";
@@ -17834,20 +17851,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f1();
+			f();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f11 = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f11();
+			f1();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -17929,20 +17946,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f1();
+			f();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f11 = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f11();
+			f1();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -18015,20 +18032,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f1();
+			f();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f11 = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f11();
+			f1();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);

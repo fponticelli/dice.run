@@ -1,7 +1,6 @@
 * {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   box-sizing: border-box;
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 body {
   overflow: hidden;
@@ -268,8 +267,19 @@ body {
   width: 100%;
   padding: 0 4px;
   background-color: #f6f6f6;
-  border-bottom: 1px dashed #bbb;
   display: inline-block;
+  font-size: 2.4rem;
+  text-align: center;
+  border: none;
+  border-bottom: 1px dashed #bbb;
+}
+.roll-seed label {
+  display: block;
+}
+.roll-seed .text-editor {
+  color: #999;
+  font-size: 0.8rem;
+  width: auto;
 }
 .text-editor:focus {
   outline: none;
