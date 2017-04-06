@@ -1218,10 +1218,19 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 });
 Math.__name__ = ["Math"];
 var Middleware = function() {
+	this.current = null;
 };
 Middleware.__name__ = ["Middleware"];
+Middleware.updateLocation = function(s) {
+	window.location.hash = s;
+};
+Middleware.updateGoogleAnalytics = function(s) {
+	ga("set","page",s);
+	ga("send","pageview");
+};
 Middleware.prototype = {
-	'use': function() {
+	current: null
+	,'use': function() {
 		return thx_stream__$Reducer_Middleware_$Impl_$.compose(thx_stream__$Reducer_Middleware_$Impl_$.empty(),thx_stream__$Reducer_Middleware_$Impl_$.sideEffectState($bind(this,this.updateUrl)));
 	}
 	,updateUrl: function(state) {
@@ -1230,8 +1239,13 @@ Middleware.prototype = {
 			var expr = _g[4];
 			var normalized = _g[3];
 			var source = _g[2];
-			var tmp = StringTools.replace(source," ","_");
-			window.location.hash = "/d/" + tmp;
+			var hash = "/d/" + StringTools.replace(source," ","_");
+			if(this.current == hash) {
+				return;
+			}
+			this.current = hash;
+			Middleware.updateLocation(this.current);
+			Middleware.updateGoogleAnalytics(this.current);
 		}
 	}
 	,__class__: Middleware
@@ -17389,11 +17403,11 @@ view_Editable.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g.h["class"] = value;
 		}
-		var f1 = $bind(this,this.onKeyUp);
+		var f = $bind(this,this.onKeyUp);
 		var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
 			var value2 = dots_Dom.getValue(el);
-			f1(value2);
+			f(value2);
 		});
 		if(__map_reserved["keyup"] != null) {
 			_g.setReserved("keyup",value1);
@@ -18605,11 +18619,11 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g5.h["style"] = value7;
 			}
-			var value11 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
+			var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
 			if(__map_reserved["data-comment"] != null) {
-				_g5.setReserved("data-comment",value11);
+				_g5.setReserved("data-comment",value8);
 			} else {
-				_g5.h["data-comment"] = value11;
+				_g5.h["data-comment"] = value8;
 			}
 			return doom_core__$VNode_VNode_$Impl_$.el("div",_g5);
 		}
@@ -18636,11 +18650,11 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g2.h["checked"] = value2;
 			}
-			var f1 = $bind(this,this.changeUseSeed);
+			var f = $bind(this,this.changeUseSeed);
 			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 				e.preventDefault();
 				var value4 = el.checked;
-				f1(value4);
+				f(value4);
 			});
 			if(__map_reserved["change"] != null) {
 				_g2.setReserved("change",value3);
@@ -18669,11 +18683,11 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g21.h["checked"] = value7;
 			}
-			var f11 = $bind(this,this.changeUseSeed);
+			var f1 = $bind(this,this.changeUseSeed);
 			var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 				e1.preventDefault();
 				var value9 = el1.checked;
-				f11(value9);
+				f1(value9);
 			});
 			if(__map_reserved["change"] != null) {
 				_g21.setReserved("change",value8);
