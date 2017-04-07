@@ -5,7 +5,7 @@ import doom.html.Html.*;
 import js.Browser.*;
 
 class Editable extends doom.html.Component<{ value: String, change: String -> Void, focus: Bool }> {
-  static var range = { start: 100, end: 100 };
+  static var range = { start: 1000, end: 1000 };
   static var firstFocus = true;
   override function render() {
     return input([
