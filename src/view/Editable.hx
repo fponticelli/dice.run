@@ -5,7 +5,8 @@ import doom.html.Html.*;
 import js.Browser.*;
 
 class Editable extends doom.html.Component<{ value: String, change: String -> Void, focus: Bool }> {
-  static var range;
+  static var range = { start: 100, end: 100 };
+  static var firstFocus = true;
   override function render() {
     return input([
       "class" => "text-editor",
@@ -28,6 +29,10 @@ class Editable extends doom.html.Component<{ value: String, change: String -> Vo
   }
 
   static function selectRange(element: js.html.InputElement) {
+    if(firstFocus) {
+      element.focus();
+      firstFocus = false;
+    }
     if(null == range || element != document.activeElement) return;
     element.setSelectionRange(range.start, range.end);
   }
