@@ -11,7 +11,9 @@ import Loc.msg;
 
 class Main extends Component<Store<State, Action>> {
   static public function main() {
-    var state: State = { expression: Unparsed(""), seed: 1234567890, useSeed: false };
+    var storage = js.Browser.window.localStorage;
+    var displayTooltip = storage.getItem("dice.run-hidetooltip") != "true";
+    var state: State = { expression: Unparsed(""), seed: 1234567890, useSeed: false, displayTooltip: displayTooltip };
     var mw = new Middleware();
     var store = new Store(new Property(state), Reducer.reduce, mw.use());
     var app = new Main(store);
@@ -50,7 +52,8 @@ class Main extends Component<Store<State, Action>> {
           ])),
         new ExpressionInput({
           dispatch: function(a) props.dispatch(a),
-          expr: state.expression
+          expr: state.expression,
+          displayTooltip: state.displayTooltip
         }).asNode(),
         new RollView(switch state.expression {
           case Parsed(_, _, e): Some({

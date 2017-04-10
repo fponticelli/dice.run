@@ -1,5 +1,6 @@
 package view;
 
+import doom.core.VNode;
 import doom.html.Component;
 import doom.html.Html.*;
 import State;
@@ -23,7 +24,13 @@ class ExpressionInput extends Component<SimulatorProps> {
     var top = [div([
         "class" => "expression-input"
       ],
-      new Editable({ value: value, change: onChange, focus: true }).asNode()
+      withMaybeTooltip(
+        props.displayTooltip,
+        new Editable({ value: value, change: onChange, focus: true }).asNode(),
+        msg.typeHere
+      )
+      // Tooltip.render(
+      // )
     )];
     var bottom = switch props.expr {
           case Error(_, err):
@@ -45,6 +52,14 @@ class ExpressionInput extends Component<SimulatorProps> {
         })
       )
     ]);
+  }
+
+  static function withMaybeTooltip(displayTooltip: Bool, input: VNode, tooltip: VNode) {
+    return if(displayTooltip) {
+      Tooltip.render(input, msg.typeHere);
+    } else {
+      div(input);
+    };
   }
 
   static function rangeToString(range: Range) {
@@ -105,11 +120,19 @@ class ExpressionInput extends Component<SimulatorProps> {
     );
   }
 
-  function onChange(text: String)
-    props.dispatch(EvaluateExpression(text));
+  static var didInput = false;
+  function onChange(text: String) {
+    if(didInput) {
+      props.dispatch(EvaluateExpression(text));
+    } else {
+      didInput = true;
+      props.dispatch(Composite(EvaluateExpression(text), HideTooltip));
+    }
+  }
 }
 
 typedef SimulatorProps = {
   dispatch: Api,
-  expr: Expression
+  expr: Expression,
+  displayTooltip: Bool
 }

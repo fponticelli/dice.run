@@ -6,10 +6,13 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
-var Action = { __ename__ : ["Action"], __constructs__ : ["EvaluateExpression","UpdateSeed","ToggleUseSeed"] };
+var Action = { __ename__ : ["Action"], __constructs__ : ["EvaluateExpression","UpdateSeed","ToggleUseSeed","HideTooltip","Composite"] };
 Action.EvaluateExpression = function(expr) { var $x = ["EvaluateExpression",0,expr]; $x.__enum__ = Action; return $x; };
 Action.UpdateSeed = function(value) { var $x = ["UpdateSeed",1,value]; $x.__enum__ = Action; return $x; };
 Action.ToggleUseSeed = function(value) { var $x = ["ToggleUseSeed",2,value]; $x.__enum__ = Action; return $x; };
+Action.HideTooltip = ["HideTooltip",3];
+Action.HideTooltip.__enum__ = Action;
+Action.Composite = function(a,b) { var $x = ["Composite",4,a,b]; $x.__enum__ = Action; return $x; };
 var DateTools = function() { };
 DateTools.__name__ = ["DateTools"];
 DateTools.getMonthDays = function(d) {
@@ -926,21 +929,23 @@ var Main = function(props,children) {
 };
 Main.__name__ = ["Main"];
 Main.main = function() {
-	var state = { expression : Expression.Unparsed(""), seed : 1234567890, useSeed : false};
+	var storage = window.localStorage;
+	var displayTooltip = storage.getItem("dice.run-hidetooltip") != "true";
+	var state = { expression : Expression.Unparsed(""), seed : 1234567890, useSeed : false, displayTooltip : displayTooltip};
 	var mw = new Middleware();
 	var store = new thx_stream_Store(new thx_stream_Property(state),Reducer.reduce,mw["use"]());
 	var app = new Main(store);
 	Doom.browser.mount(doom_core_VNodeImpl.Comp(app),dots_Query.find("#main"));
 	store.stream().next(function(_) {
-		app.update(store,{ fileName : "Main.hx", lineNumber : 21, className : "Main", methodName : "main"});
+		app.update(store,{ fileName : "Main.hx", lineNumber : 23, className : "Main", methodName : "main"});
 	}).run();
 	var dispatchHash = function() {
 		var h = thx_Strings.trimCharsLeft(window.location.hash,"#/");
 		if(StringTools.startsWith(h,"d/")) {
 			var dispatchHash1 = Action.EvaluateExpression(Main.prettify(h.substring(2)));
-			store.dispatch(dispatchHash1,{ fileName : "Main.hx", lineNumber : 27, className : "Main", methodName : "main"});
+			store.dispatch(dispatchHash1,{ fileName : "Main.hx", lineNumber : 29, className : "Main", methodName : "main"});
 		} else if(h == "") {
-			store.dispatch(Action.EvaluateExpression("3d6"),{ fileName : "Main.hx", lineNumber : 29, className : "Main", methodName : "main"});
+			store.dispatch(Action.EvaluateExpression("3d6"),{ fileName : "Main.hx", lineNumber : 31, className : "Main", methodName : "main"});
 		}
 	};
 	window.onhashchange = function(e) {
@@ -1006,16 +1011,16 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 		}
 		var children2 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("a",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("span",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.jumpersideas,null,null)]))]))]));
 		var children3 = new view_ExpressionInput({ dispatch : function(a) {
-			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 52, className : "Main", methodName : "render"});
-		}, expr : state.expression}).asNode();
+			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 54, className : "Main", methodName : "render"});
+		}, expr : state.expression, displayTooltip : state.displayTooltip}).asNode();
 		var _g6 = state.expression;
 		var children4;
 		if(_g6[1] == 1) {
 			var e = _g6[4];
 			children4 = haxe_ds_Option.Some({ expression : e, seed : state.seed, updateSeed : function(seed) {
-				_gthis.props.dispatch(Action.UpdateSeed(seed),{ fileName : "Main.hx", lineNumber : 59, className : "Main", methodName : "render"});
+				_gthis.props.dispatch(Action.UpdateSeed(seed),{ fileName : "Main.hx", lineNumber : 62, className : "Main", methodName : "render"});
 			}, changeUseSeed : function(value6) {
-				_gthis.props.dispatch(Action.ToggleUseSeed(value6),{ fileName : "Main.hx", lineNumber : 60, className : "Main", methodName : "render"});
+				_gthis.props.dispatch(Action.ToggleUseSeed(value6),{ fileName : "Main.hx", lineNumber : 63, className : "Main", methodName : "render"});
 			}, useSeed : state.useSeed});
 		} else {
 			children4 = haxe_ds_Option.None;
@@ -1085,10 +1090,27 @@ Middleware.updateGoogleAnalytics = function(s) {
 	ga("set","page",s);
 	ga("send","pageview");
 };
+Middleware.saveHideTooltip = function(a) {
+	if(a[1] == 3) {
+		var storage = window.localStorage;
+		storage.setItem("dice.run-hidetooltip","true");
+	}
+};
 Middleware.prototype = {
 	current: null
 	,'use': function() {
-		return thx_stream__$Reducer_Middleware_$Impl_$.compose(thx_stream__$Reducer_Middleware_$Impl_$.empty(),thx_stream__$Reducer_Middleware_$Impl_$.sideEffectState($bind(this,this.updateUrl)));
+		var f = thx_stream__$Reducer_Middleware_$Impl_$.compose(thx_stream__$Reducer_Middleware_$Impl_$.compose(thx_stream__$Reducer_Middleware_$Impl_$.empty(),thx_stream__$Reducer_Middleware_$Impl_$.sideEffectState($bind(this,this.updateUrl))),thx_stream__$Reducer_Middleware_$Impl_$.sideEffectAction(Middleware.saveHideTooltip));
+		return function(state,action,dispatch) {
+			if(action[1] == 4) {
+				var b = action[3];
+				var a = action[2];
+				f(state,a,dispatch);
+				f(state,b,dispatch);
+			} else {
+				var other = action;
+				f(state,other,dispatch);
+			}
+		};
 	}
 	,updateUrl: function(state) {
 		var _g = state.expression;
@@ -1281,26 +1303,32 @@ Reducer.reduce = function(state,action) {
 		switch(_g[1]) {
 		case 0:
 			var e = _g[2];
-			return { expression : Expression.Error(expr,e), seed : state.seed, useSeed : state.useSeed};
+			return { expression : Expression.Error(expr,e), seed : state.seed, useSeed : state.useSeed, displayTooltip : state.displayTooltip};
 		case 1:
 			var parsed = _g[2];
 			var _g1 = dr_DiceExpressionExtensions.validate(parsed);
 			switch(_g1[1]) {
 			case 0:
 				var errs = _g1[2];
-				return { expression : Expression.ParsedInvalid(expr,errs,parsed), seed : state.seed, useSeed : state.useSeed};
+				return { expression : Expression.ParsedInvalid(expr,errs,parsed), seed : state.seed, useSeed : state.useSeed, displayTooltip : state.displayTooltip};
 			case 1:
-				return { expression : Expression.Parsed(expr,dr_DiceExpressionExtensions.toString(parsed),parsed), seed : state.seed, useSeed : state.useSeed};
+				return { expression : Expression.Parsed(expr,dr_DiceExpressionExtensions.toString(parsed),parsed), seed : state.seed, useSeed : state.useSeed, displayTooltip : state.displayTooltip};
 			}
 			break;
 		}
 		break;
 	case 1:
 		var seed = action[2];
-		return { expression : state.expression, seed : seed, useSeed : state.useSeed};
+		return { expression : state.expression, seed : seed, useSeed : state.useSeed, displayTooltip : state.displayTooltip};
 	case 2:
 		var value = action[2];
-		return { expression : state.expression, seed : state.seed, useSeed : value};
+		return { expression : state.expression, seed : state.seed, useSeed : value, displayTooltip : state.displayTooltip};
+	case 3:
+		return { expression : state.expression, seed : state.seed, useSeed : state.useSeed, displayTooltip : false};
+	case 4:
+		var b = action[3];
+		var a = action[2];
+		return Reducer.reduce(Reducer.reduce(state,a),b);
 	}
 };
 var Reflect = function() { };
@@ -17387,15 +17415,15 @@ var view_Editable = function(props,children) {
 	doom_html_Component.call(this,props,children);
 };
 view_Editable.__name__ = ["view","Editable"];
-view_Editable.selectRange = function(element) {
+view_Editable.selectRange = function(input) {
 	if(view_Editable.firstFocus) {
-		element.focus();
+		input.focus();
 		view_Editable.firstFocus = false;
 	}
-	if(null == view_Editable.range || element != window.document.activeElement) {
+	if(null == view_Editable.range || input != window.document.activeElement) {
 		return;
 	}
-	element.setSelectionRange(view_Editable.range.start,view_Editable.range.end);
+	input.setSelectionRange(view_Editable.range.start,view_Editable.range.end);
 };
 view_Editable.__super__ = doom_html_Component;
 view_Editable.prototype = $extend(doom_html_Component.prototype,{
@@ -17424,6 +17452,17 @@ view_Editable.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g.h["value"] = value3;
 		}
+		var f1 = $bind(this,this.onFocus);
+		var value4 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
+			e1.preventDefault();
+			var typedEl = el1;
+			f1(typedEl);
+		});
+		if(__map_reserved["focus"] != null) {
+			_g.setReserved("focus",value4);
+		} else {
+			_g.h["focus"] = value4;
+		}
 		return doom_core__$VNode_VNode_$Impl_$.el("input",_g,null);
 	}
 	,didMount: function() {
@@ -17439,6 +17478,9 @@ view_Editable.prototype = $extend(doom_html_Component.prototype,{
 		var input = this.node;
 		view_Editable.range = { start : input.selectionStart, end : input.selectionEnd};
 		this.props.change(content);
+	}
+	,onFocus: function(input) {
+		input.setSelectionRange(0,input.value.length);
 	}
 	,classes: function() {
 		return "view_editable";
@@ -17476,6 +17518,13 @@ view_ExpressionInput.renderValidationsErrors = function(err) {
 		}
 		return doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(view_ExpressionInput.validationMessage(e),null,null)]));
 	})))]));
+};
+view_ExpressionInput.withMaybeTooltip = function(displayTooltip,input,tooltip) {
+	if(displayTooltip) {
+		return view_Tooltip.render(input,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.typeHere,null,null)]));
+	} else {
+		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([input]));
+	}
 };
 view_ExpressionInput.rangeToString = function(range) {
 	switch(range[1]) {
@@ -17607,7 +17656,7 @@ view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var top = [doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([new view_Editable({ value : value, change : $bind(this,this.onChange), focus : true}).asNode()]))];
+		var top = [doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([view_ExpressionInput.withMaybeTooltip(this.props.displayTooltip,new view_Editable({ value : value, change : $bind(this,this.onChange), focus : true}).asNode(),doom_core_VNodeImpl.Text(Loc.msg.typeHere,null,null))]))];
 		var bottom;
 		var _g2 = this.props.expr;
 		switch(_g2[1]) {
@@ -17639,7 +17688,12 @@ view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
 		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children(top.concat(bottom)));
 	}
 	,onChange: function(text) {
-		this.props.dispatch(Action.EvaluateExpression(text));
+		if(view_ExpressionInput.didInput) {
+			this.props.dispatch(Action.EvaluateExpression(text));
+		} else {
+			view_ExpressionInput.didInput = true;
+			this.props.dispatch(Action.Composite(Action.EvaluateExpression(text),Action.HideTooltip));
+		}
 	}
 	,classes: function() {
 		return "view_expression-input";
@@ -18743,6 +18797,18 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 	}
 	,__class__: view_RollView
 });
+var view_Tooltip = function() { };
+view_Tooltip.__name__ = ["view","Tooltip"];
+view_Tooltip.render = function(el,content) {
+	var _g = new haxe_ds_StringMap();
+	var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("tooltip");
+	if(__map_reserved["class"] != null) {
+		_g.setReserved("class",value);
+	} else {
+		_g.h["class"] = value;
+	}
+	return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([el,doom_core__$VNode_VNode_$Impl_$.el("span",null,content)]));
+};
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; }
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
@@ -18840,7 +18906,7 @@ doom_html_Render.defaultNamespaces = (function($this) {
 Doom.browser = new doom_html_Render();
 Loc.description = "# Basic Expressions\n\nType your dice expression in the gray box at the top of this page.\n\nThe simplest expression is [`d`](#/d/d) which means roll one die with 6 faces. You can be more explicit and input [`1d6`](#/d/1d6) or  [`d6`](#/d/d6). Of course you can run multiple dice ([`3d6`](#/d/3d6)) and with different number of sides [`2d10`](#/d/2d10). The popular [`d100`](#/d/d100) (a percent die) can also be expressed as [`d%`](#/d/d%).\n\n# Math Operations\n\nYou can use basic mathematical operators [`3d6+4-1d4`](#/d/3d6+4-1d4). All math operations will return integer numbers: [`5d6/2`](#/d/5d6/2)\n\nFor divisions you can use `/`, `÷` or `:`. For multiplications you can use `*`, `×`, `⋅`, or `x`.\n\n# Expression Set and Reducing\n\nMany expressions can be provided in a set like [`(2d6,3d8,1d10+2)`](#/d/(2d6,3d8,1d10+2)). By default the result of each expression will be summed together. You can also be explicit [`(2d6,3d8,1d10+2) sum`](#/d/(2d6,3d8,1d10+2)_sum) or you can use other reducing function like [`min`](#/d/(2d6,3d8,1d10+2)_min) (or `take least`), [`max`](#/d/(2d6,3d8,1d10+2)_max) (or `take best`), [`median`](#/d/(2d6,3d8,1d10+2)_median) or [`average`](#/d/(2d6,3d8,1d10+2)_average).\n\nYou can use an expression set to force the order of arithmetic operations: [`(3d6+2) x 2`](#/d/(3d6+2)_x_2) which is equivalent to [`(3d6,2) x 2`](#/d/(3d6,2)_x_2). Reduced sets can be used as part of more complex mathematical expressions [`((3d6,9) keep 1 + 2) * 2`][1].\n\n# Filtering\n\nIt is also possible to peform filtering operations on a set of expressions like *drop* and *keep*. Drop will only keep the values that do not match a condition: [`4d6 drop lowest 1`](#/d/4d6_drop_lowest_1). For *drop* the default matching condition is *lowest* so you can ommit it: [`4d6 drop 1`](#/d/4d6_drop_1). *Keep* will retain by default the top `N` values. [`4d6 keep 3`](#/d/4d6_keep_3) is basically equivalend to the `drop 1` above. You can be explicit and state [`4d6 keep highest 3`](#/d/4d6_keep_highest_3).\n\nDrop and keep can abbreviated:\n\n* [`4d6d1`](#/d/4d6d1) is equivalent to [`4d6 drop lowest 1`](#/d/4d6_drop_lowest_1)\n* [`4d6k3`](#/d/4d6k3) is equivalent to [`4d6 keep highest 3`](#/d/4d6_keep_highest_3)\n\n# Dice Set\n\nSimpler sets of dice like [`5d6`](#/d/5d6) are expanded into [`(d6,d6,d6,d6,d6)`](#/d/(d6,d6,d6,d6,d6)). On these simple sets it is possible to apply two special functions: *explode* and *reroll*.\n\nA dice set can be composed of dice with different denominations [`(d2,d4,d6,d8,d10)`](#/d/(d2,d4,d6,d8,d10)). On the other hand a dice set can only be composed of nominal dice: [`(d6,2d8)`](#/d/(d6,2d8)) is NOT a dice set! It is still a valid expression set that can be reduced and filtered.\n\n# Explode / Reroll\n\nSome games require exploding rolls or rerolls. An exploding dice is rolled again whenever its highest values is obtained. Results of all rolls are then summed together. dice.run supports the following syntax for exploding rolls: [`3d6 explode always on 5 or more`](#/d/3d6_explode_always_on_5_or_more). The short syntax for that is [`3d6e5`](#/d/3d6e5). If you want to limit the number of times the dice can explode, you can use [`once`](#/d/3d6 explode once on 5 or more), [`twice`](#/d/3d6 explode twice on 5 or more), [`thrice`](#/d/3d6 explode thrice on 5 or more) or the syntax `n times` where `n` is any positive integer number (eg: [`3d6 explode 10 times on 5 or more`](#/d/3d6 explode 10_times on 5 or more)). `or more` can be replaced with `or less` or omitted entirely to only explode on the exact value indicated in the expression.\n\nReroll works the same [`3d6 reroll always on less more`](#/d/3d6_reroll_always_on_2_or_less) and the short format is [`3d6r2`](#/d/3d6r2).\n\n  [1]: #/d/((3d6,9)_keep_1_+_2)_*_2\n";
 Loc.footer = "# Links and Credits\n\n[Franco Ponticelli](https://twitter.com/fponticelli) is the author of this website and all of its contents. The following technologies have been used:\n\n* Dice icons using [dicefont](https://dicefont.com).\n* Dice rolling, parsing and formatting using [diceroller](https://github.com/fponticelli/diceroller).\n* Front-end development using [doom](https://github.com/fponticelli/doom).\n* The code of this website is also available on [github](https://github.com/fponticelli/dice.run).\n\nIf you want to report a bug or a feature request please do it in one of the specific projects above.\n";
-Loc.msg = { expectedOneOf : "expected one of", valueOrMore : "$value or more", valueOrLess : "$value or less", validationPrefix : ["the expression is valid but the numbers are wrong!","you need to be more serious ...","are you being serious?","let's not be silly, shall we?","are you for real?","enough is enough","really?","what a joker you are","funny, really funny"], atLeast : "at least", emptySet : "invalid empty set of dice", jumpersideasLink : "https://jumpersideas.com/#!dice-roller", probabilities : "probabilities", infiniteReroll : "this will roll forever! a d$sides always matches $range", jumpersideas : "jumpersideas.com", endOfFile : "end of file", tooManyDice : "Too many dice to display", found : "found", or : "or", exact : "exactly $value", probabilitiesStats : "values between $minValue and $maxValue, samples: $count", probabilitiesStatsWithBucket : "values between $minValue and $maxValue (bucket size: $bucketSize), samples: $count", between : "between $minInclusive and $maxInclusive", dropOrKeepShouldBePositive : "a drop or keep value should always be more than zero", tooManyDrops : "the set has $available value(s) and you are dropping $toDrop?", tooManyKeeps : "the set has $available value(s) and you are keeping $toKeep?", useSeed : "use seed", asConfabulatedOn : "as confabulated on", insufficientSides : "a d$sides is not a valid die", atMost : "at most"};
+Loc.msg = { expectedOneOf : "expected one of", valueOrMore : "$value or more", valueOrLess : "$value or less", validationPrefix : ["the expression is valid but the numbers are wrong!","you need to be more serious ...","are you being serious?","let's not be silly, shall we?","are you for real?","enough is enough","really?","what a joker you are","funny, really funny"], typeHere : "type here ...", atLeast : "at least", emptySet : "invalid empty set of dice", jumpersideasLink : "https://jumpersideas.com/#!dice-roller", probabilities : "probabilities", infiniteReroll : "this will roll forever! a d$sides always matches $range", jumpersideas : "jumpersideas.com", endOfFile : "end of file", tooManyDice : "Too many dice to display", found : "found", or : "or", exact : "exactly $value", probabilitiesStats : "values between $minValue and $maxValue, samples: $count", probabilitiesStatsWithBucket : "values between $minValue and $maxValue (bucket size: $bucketSize), samples: $count", between : "between $minInclusive and $maxInclusive", dropOrKeepShouldBePositive : "a drop or keep value should always be more than zero", tooManyDrops : "the set has $available value(s) and you are dropping $toDrop?", tooManyKeeps : "the set has $available value(s) and you are keeping $toKeep?", useSeed : "use seed", asConfabulatedOn : "as confabulated on", insufficientSides : "a d$sides is not a valid die", atMost : "at most"};
 doom_html_Attributes.properties = (function($this) {
 	var $r;
 	var _g = new haxe_ds_StringMap();
@@ -19660,6 +19726,7 @@ thx_math_Const.INT32_MIN = -2147483648;
 thx_math_random_LehmerSeed.MINSTD_RAND = 48271;
 view_Editable.range = { start : 1000, end : 1000};
 view_Editable.firstFocus = true;
+view_ExpressionInput.didInput = false;
 view_ProbabilitiesView.ROUND = 1;
 view_ProbabilitiesView.barHeight = 100.0;
 view_ProbabilitiesView.STORAGE_PREFIX = "dice.run-expression:";

@@ -11,7 +11,8 @@ class Editable extends doom.html.Component<{ value: String, change: String -> Vo
     return input([
       "class" => "text-editor",
       "keyup" => onKeyUp,
-      "value" => props.value
+      "value" => props.value,
+      "focus" => onFocus
     ]);
   }
 
@@ -28,12 +29,16 @@ class Editable extends doom.html.Component<{ value: String, change: String -> Vo
     props.change(content);
   }
 
-  static function selectRange(element: js.html.InputElement) {
+  function onFocus(input: js.html.InputElement) {
+    input.setSelectionRange(0, input.value.length);
+  }
+
+  static function selectRange(input: js.html.InputElement) {
     if(firstFocus) {
-      element.focus();
+      input.focus();
       firstFocus = false;
     }
-    if(null == range || element != document.activeElement) return;
-    element.setSelectionRange(range.start, range.end);
+    if(null == range || input != document.activeElement) return;
+    input.setSelectionRange(range.start, range.end);
   }
 }

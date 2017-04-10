@@ -86,10 +86,13 @@ body {
   bottom: 0;
 }
 .expression-input {
-  font-size: 2.4rem;
   width: 100%;
   text-align: center;
   border: none;
+}
+.expression-input input {
+  font-size: 2.4rem;
+  padding: 0.5rem 0;
 }
 .details > .die {
   font-size: 0.6rem;
@@ -307,8 +310,8 @@ body {
     bottom: -8px;
     left: -8px;
   }
-  .expression-input {
-    font-size: 1.8rem;
+  .expression-input input {
+    font-size: 1.6rem;
   }
   .result {
     font-size: 0.8rem;
@@ -346,8 +349,8 @@ body {
     bottom: -6px;
     left: -6px;
   }
-  .expression-input {
-    font-size: 1.5rem;
+  .expression-input input {
+    font-size: 1.2rem;
   }
   .result {
     font-size: 0.6rem;
@@ -439,6 +442,42 @@ body {
 }
 .roll5 {
   animation: roll ease-out 1.6s;
+}
+.tooltip {
+  position: relative;
+  display: inline;
+}
+.tooltip span {
+  position: absolute;
+  width: 200px;
+  color: #000;
+  background: #eeb;
+  line-height: 36px;
+  text-align: center;
+  border-radius: 8px;
+  border: 2px solid #614;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  text-shadow: 1px 1px rgba(0,0,0,0.2);
+  top: 140%;
+  left: 0;
+  margin-left: calc(50% - 100px);
+  z-index: 999;
+  padding: 0 1rem;
+  font-size: 1.2rem;
+  font-weight: normal;
+  text-transform: uppercase;
+}
+.tooltip span:after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -8px;
+  width: 0;
+  height: 0;
+  border-bottom: 8px solid #614;
+  border-right: 8px solid transparent;
+  border-left: 8px solid transparent;
 }
 @-moz-keyframes roll {
   0% {

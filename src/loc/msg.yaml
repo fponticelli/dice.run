@@ -32,3 +32,4 @@ validationPrefix:
   - funny, really funny
 valueOrLess: $value or less
 valueOrMore: $value or more
+typeHere: type here ...
