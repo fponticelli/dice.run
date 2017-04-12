@@ -2,6 +2,7 @@ enum Action {
   EvaluateExpression(expr: String);
   UpdateSeed(value: Int);
   ToggleUseSeed(value: Bool);
-  HideTooltip;
+  HideExpressionTooltip;
+  HideRollTooltip;
   Composite(a: Action, b: Action);
 }

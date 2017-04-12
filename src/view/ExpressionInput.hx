@@ -24,13 +24,11 @@ class ExpressionInput extends Component<SimulatorProps> {
     var top = [div([
         "class" => "expression-input"
       ],
-      withMaybeTooltip(
+      Tooltip.render(
         props.displayTooltip,
         new Editable({ value: value, change: onChange, focus: true }).asNode(),
         msg.typeHere
       )
-      // Tooltip.render(
-      // )
     )];
     var bottom = switch props.expr {
           case Error(_, err):
@@ -52,14 +50,6 @@ class ExpressionInput extends Component<SimulatorProps> {
         })
       )
     ]);
-  }
-
-  static function withMaybeTooltip(displayTooltip: Bool, input: VNode, tooltip: VNode) {
-    return if(displayTooltip) {
-      Tooltip.render(input, msg.typeHere);
-    } else {
-      div(input);
-    };
   }
 
   static function rangeToString(range: Range) {
@@ -126,7 +116,7 @@ class ExpressionInput extends Component<SimulatorProps> {
       props.dispatch(EvaluateExpression(text));
     } else {
       didInput = true;
-      props.dispatch(Composite(EvaluateExpression(text), HideTooltip));
+      props.dispatch(Composite(EvaluateExpression(text), HideExpressionTooltip));
     }
   }
 }

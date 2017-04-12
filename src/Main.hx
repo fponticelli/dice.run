@@ -12,8 +12,15 @@ import Loc.msg;
 class Main extends Component<Store<State, Action>> {
   static public function main() {
     var storage = js.Browser.window.localStorage;
-    var displayTooltip = storage.getItem("dice.run-hidetooltip") != "true";
-    var state: State = { expression: Unparsed(""), seed: 1234567890, useSeed: false, displayTooltip: displayTooltip };
+    var displayExpressionTooltip = storage.getItem("dice.run-hide-expression-tooltip") != "true";
+    var displayRollTooltip = storage.getItem("dice.run-hide-roll-tooltip") != "true";
+    var state: State = {
+      expression: Unparsed(""),
+      seed: 1234567890,
+      useSeed: false,
+      displayExpressionTooltip: displayExpressionTooltip,
+      displayRollTooltip: displayRollTooltip
+    };
     var mw = new Middleware();
     var store = new Store(new Property(state), Reducer.reduce, mw.use());
     var app = new Main(store);
@@ -53,7 +60,7 @@ class Main extends Component<Store<State, Action>> {
         new ExpressionInput({
           dispatch: function(a) props.dispatch(a),
           expr: state.expression,
-          displayTooltip: state.displayTooltip
+          displayTooltip: state.displayExpressionTooltip
         }).asNode(),
         new RollView(switch state.expression {
           case Parsed(_, _, e): Some({
@@ -61,7 +68,9 @@ class Main extends Component<Store<State, Action>> {
             seed: state.seed,
             updateSeed: function(seed: Int) props.dispatch(UpdateSeed(seed)),
             changeUseSeed: function(value: Bool) props.dispatch(ToggleUseSeed(value)),
-            useSeed: state.useSeed
+            removeTooltip: function() props.dispatch(HideRollTooltip),
+            useSeed: state.useSeed,
+            displayTooltip: state.displayRollTooltip
           });
           case _: None;
         }).asNode(),

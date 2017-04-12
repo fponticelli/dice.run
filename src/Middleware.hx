@@ -42,9 +42,12 @@ class Middleware {
 
   public static function saveHideTooltip(a: Action) {
     switch a {
-      case HideTooltip:
+      case HideExpressionTooltip:
         var storage = js.Browser.window.localStorage;
-        storage.setItem("dice.run-hidetooltip", "true");
+        storage.setItem("dice.run-hide-expression-tooltip", "true");
+      case HideRollTooltip:
+        var storage = js.Browser.window.localStorage;
+        storage.setItem("dice.run-hide-roll-tooltip", "true");
       case _:
     }
   }

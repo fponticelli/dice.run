@@ -6,13 +6,15 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
-var Action = { __ename__ : ["Action"], __constructs__ : ["EvaluateExpression","UpdateSeed","ToggleUseSeed","HideTooltip","Composite"] };
+var Action = { __ename__ : ["Action"], __constructs__ : ["EvaluateExpression","UpdateSeed","ToggleUseSeed","HideExpressionTooltip","HideRollTooltip","Composite"] };
 Action.EvaluateExpression = function(expr) { var $x = ["EvaluateExpression",0,expr]; $x.__enum__ = Action; return $x; };
 Action.UpdateSeed = function(value) { var $x = ["UpdateSeed",1,value]; $x.__enum__ = Action; return $x; };
 Action.ToggleUseSeed = function(value) { var $x = ["ToggleUseSeed",2,value]; $x.__enum__ = Action; return $x; };
-Action.HideTooltip = ["HideTooltip",3];
-Action.HideTooltip.__enum__ = Action;
-Action.Composite = function(a,b) { var $x = ["Composite",4,a,b]; $x.__enum__ = Action; return $x; };
+Action.HideExpressionTooltip = ["HideExpressionTooltip",3];
+Action.HideExpressionTooltip.__enum__ = Action;
+Action.HideRollTooltip = ["HideRollTooltip",4];
+Action.HideRollTooltip.__enum__ = Action;
+Action.Composite = function(a,b) { var $x = ["Composite",5,a,b]; $x.__enum__ = Action; return $x; };
 var DateTools = function() { };
 DateTools.__name__ = ["DateTools"];
 DateTools.getMonthDays = function(d) {
@@ -33,6 +35,103 @@ doom_core_IRender.__name__ = ["doom","core","IRender"];
 doom_core_IRender.prototype = {
 	apply: null
 	,__class__: doom_core_IRender
+};
+var haxe_IMap = function() { };
+haxe_IMap.__name__ = ["haxe","IMap"];
+haxe_IMap.prototype = {
+	get: null
+	,set: null
+	,exists: null
+	,remove: null
+	,keys: null
+	,iterator: null
+	,__class__: haxe_IMap
+};
+var haxe_ds_StringMap = function() {
+	this.h = { };
+};
+haxe_ds_StringMap.__name__ = ["haxe","ds","StringMap"];
+haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
+haxe_ds_StringMap.prototype = {
+	h: null
+	,rh: null
+	,set: function(key,value) {
+		if(__map_reserved[key] != null) {
+			this.setReserved(key,value);
+		} else {
+			this.h[key] = value;
+		}
+	}
+	,get: function(key) {
+		if(__map_reserved[key] != null) {
+			return this.getReserved(key);
+		}
+		return this.h[key];
+	}
+	,exists: function(key) {
+		if(__map_reserved[key] != null) {
+			return this.existsReserved(key);
+		}
+		return this.h.hasOwnProperty(key);
+	}
+	,setReserved: function(key,value) {
+		if(this.rh == null) {
+			this.rh = { };
+		}
+		this.rh["$" + key] = value;
+	}
+	,getReserved: function(key) {
+		if(this.rh == null) {
+			return null;
+		} else {
+			return this.rh["$" + key];
+		}
+	}
+	,existsReserved: function(key) {
+		if(this.rh == null) {
+			return false;
+		}
+		return this.rh.hasOwnProperty("$" + key);
+	}
+	,remove: function(key) {
+		if(__map_reserved[key] != null) {
+			key = "$" + key;
+			if(this.rh == null || !this.rh.hasOwnProperty(key)) {
+				return false;
+			}
+			delete(this.rh[key]);
+			return true;
+		} else {
+			if(!this.h.hasOwnProperty(key)) {
+				return false;
+			}
+			delete(this.h[key]);
+			return true;
+		}
+	}
+	,keys: function() {
+		return HxOverrides.iter(this.arrayKeys());
+	}
+	,arrayKeys: function() {
+		var out = [];
+		for( var key in this.h ) {
+		if(this.h.hasOwnProperty(key)) {
+			out.push(key);
+		}
+		}
+		if(this.rh != null) {
+			for( var key in this.rh ) {
+			if(key.charCodeAt(0) == 36) {
+				out.push(key.substr(1));
+			}
+			}
+		}
+		return out;
+	}
+	,iterator: function() {
+		return new haxe_ds__$StringMap_StringMapIterator(this,this.arrayKeys());
+	}
+	,__class__: haxe_ds_StringMap
 };
 var doom_html_Render = function(doc,namespaces) {
 	if(null == doc) {
@@ -665,6 +764,52 @@ doom_html__$Render_DomComponentMap.prototype = {
 	}
 	,__class__: doom_html__$Render_DomComponentMap
 };
+var haxe_ds_ObjectMap = function() {
+	this.h = { __keys__ : { }};
+};
+haxe_ds_ObjectMap.__name__ = ["haxe","ds","ObjectMap"];
+haxe_ds_ObjectMap.__interfaces__ = [haxe_IMap];
+haxe_ds_ObjectMap.prototype = {
+	h: null
+	,set: function(key,value) {
+		var id = key.__id__ || (key.__id__ = ++haxe_ds_ObjectMap.count);
+		this.h[id] = value;
+		this.h.__keys__[id] = key;
+	}
+	,get: function(key) {
+		return this.h[key.__id__];
+	}
+	,exists: function(key) {
+		return this.h.__keys__[key.__id__] != null;
+	}
+	,remove: function(key) {
+		var id = key.__id__;
+		if(this.h.__keys__[id] == null) {
+			return false;
+		}
+		delete(this.h[id]);
+		delete(this.h.__keys__[id]);
+		return true;
+	}
+	,keys: function() {
+		var a = [];
+		for( var key in this.h.__keys__ ) {
+		if(this.h.hasOwnProperty(key)) {
+			a.push(this.h.__keys__[key]);
+		}
+		}
+		return HxOverrides.iter(a);
+	}
+	,iterator: function() {
+		return { ref : this.h, it : this.keys(), hasNext : function() {
+			return this.it.hasNext();
+		}, next : function() {
+			var i = this.it.next();
+			return this.ref[i.__id__];
+		}};
+	}
+	,__class__: haxe_ds_ObjectMap
+};
 var Doom = function() { };
 Doom.__name__ = ["Doom"];
 var EReg = function(r,opt) {
@@ -930,22 +1075,23 @@ var Main = function(props,children) {
 Main.__name__ = ["Main"];
 Main.main = function() {
 	var storage = window.localStorage;
-	var displayTooltip = storage.getItem("dice.run-hidetooltip") != "true";
-	var state = { expression : Expression.Unparsed(""), seed : 1234567890, useSeed : false, displayTooltip : displayTooltip};
+	var displayExpressionTooltip = storage.getItem("dice.run-hide-expression-tooltip") != "true";
+	var displayRollTooltip = storage.getItem("dice.run-hide-roll-tooltip") != "true";
+	var state = { expression : Expression.Unparsed(""), seed : 1234567890, useSeed : false, displayExpressionTooltip : displayExpressionTooltip, displayRollTooltip : displayRollTooltip};
 	var mw = new Middleware();
 	var store = new thx_stream_Store(new thx_stream_Property(state),Reducer.reduce,mw["use"]());
 	var app = new Main(store);
 	Doom.browser.mount(doom_core_VNodeImpl.Comp(app),dots_Query.find("#main"));
 	store.stream().next(function(_) {
-		app.update(store,{ fileName : "Main.hx", lineNumber : 23, className : "Main", methodName : "main"});
+		app.update(store,{ fileName : "Main.hx", lineNumber : 30, className : "Main", methodName : "main"});
 	}).run();
 	var dispatchHash = function() {
 		var h = thx_Strings.trimCharsLeft(window.location.hash,"#/");
 		if(StringTools.startsWith(h,"d/")) {
 			var dispatchHash1 = Action.EvaluateExpression(Main.prettify(h.substring(2)));
-			store.dispatch(dispatchHash1,{ fileName : "Main.hx", lineNumber : 29, className : "Main", methodName : "main"});
+			store.dispatch(dispatchHash1,{ fileName : "Main.hx", lineNumber : 36, className : "Main", methodName : "main"});
 		} else if(h == "") {
-			store.dispatch(Action.EvaluateExpression("3d6"),{ fileName : "Main.hx", lineNumber : 31, className : "Main", methodName : "main"});
+			store.dispatch(Action.EvaluateExpression("3d6"),{ fileName : "Main.hx", lineNumber : 38, className : "Main", methodName : "main"});
 		}
 	};
 	window.onhashchange = function(e) {
@@ -1011,17 +1157,19 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 		}
 		var children2 = doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("a",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([children,children1,doom_core__$VNode_VNode_$Impl_$.el("span",_g5,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.jumpersideas,null,null)]))]))]));
 		var children3 = new view_ExpressionInput({ dispatch : function(a) {
-			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 54, className : "Main", methodName : "render"});
-		}, expr : state.expression, displayTooltip : state.displayTooltip}).asNode();
+			_gthis.props.dispatch(a,{ fileName : "Main.hx", lineNumber : 61, className : "Main", methodName : "render"});
+		}, expr : state.expression, displayTooltip : state.displayExpressionTooltip}).asNode();
 		var _g6 = state.expression;
 		var children4;
 		if(_g6[1] == 1) {
 			var e = _g6[4];
 			children4 = haxe_ds_Option.Some({ expression : e, seed : state.seed, updateSeed : function(seed) {
-				_gthis.props.dispatch(Action.UpdateSeed(seed),{ fileName : "Main.hx", lineNumber : 62, className : "Main", methodName : "render"});
+				_gthis.props.dispatch(Action.UpdateSeed(seed),{ fileName : "Main.hx", lineNumber : 69, className : "Main", methodName : "render"});
 			}, changeUseSeed : function(value6) {
-				_gthis.props.dispatch(Action.ToggleUseSeed(value6),{ fileName : "Main.hx", lineNumber : 63, className : "Main", methodName : "render"});
-			}, useSeed : state.useSeed});
+				_gthis.props.dispatch(Action.ToggleUseSeed(value6),{ fileName : "Main.hx", lineNumber : 70, className : "Main", methodName : "render"});
+			}, removeTooltip : function() {
+				_gthis.props.dispatch(Action.HideRollTooltip,{ fileName : "Main.hx", lineNumber : 71, className : "Main", methodName : "render"});
+			}, useSeed : state.useSeed, displayTooltip : state.displayRollTooltip});
 		} else {
 			children4 = haxe_ds_Option.None;
 		}
@@ -1048,28 +1196,28 @@ Main.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g9.h["style"] = value8;
 			}
-			var value9 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
+			var value11 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
 			if(__map_reserved["data-comment"] != null) {
-				_g9.setReserved("data-comment",value9);
+				_g9.setReserved("data-comment",value11);
 			} else {
-				_g9.h["data-comment"] = value9;
+				_g9.h["data-comment"] = value11;
 			}
 			children6 = doom_core__$VNode_VNode_$Impl_$.el("div",_g9);
 		}
 		var _g91 = new haxe_ds_StringMap();
-		var value10 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("description text-content");
+		var value9 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("description text-content");
 		if(__map_reserved["class"] != null) {
-			_g91.setReserved("class",value10);
+			_g91.setReserved("class",value9);
 		} else {
-			_g91.h["class"] = value10;
+			_g91.h["class"] = value9;
 		}
 		var children7 = doom_core__$VNode_VNode_$Impl_$.el("div",_g91,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Raw(Main.markdownToHtml(Loc.description),null,null)]));
 		var _g10 = new haxe_ds_StringMap();
-		var value11 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("footer text-content");
+		var value10 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("footer text-content");
 		if(__map_reserved["class"] != null) {
-			_g10.setReserved("class",value11);
+			_g10.setReserved("class",value10);
 		} else {
-			_g10.h["class"] = value11;
+			_g10.h["class"] = value10;
 		}
 		return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([children5,doom_core__$VNode_VNode_$Impl_$.el("div",_g7,doom_core__$VNodes_VNodes_$Impl_$.children([children6,children7,doom_core__$VNode_VNode_$Impl_$.el("div",_g10,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Raw(Main.markdownToHtml(Loc.footer),null,null)]))]))]));
 	}
@@ -1091,9 +1239,16 @@ Middleware.updateGoogleAnalytics = function(s) {
 	ga("send","pageview");
 };
 Middleware.saveHideTooltip = function(a) {
-	if(a[1] == 3) {
+	switch(a[1]) {
+	case 3:
 		var storage = window.localStorage;
-		storage.setItem("dice.run-hidetooltip","true");
+		storage.setItem("dice.run-hide-expression-tooltip","true");
+		break;
+	case 4:
+		var storage1 = window.localStorage;
+		storage1.setItem("dice.run-hide-roll-tooltip","true");
+		break;
+	default:
 	}
 };
 Middleware.prototype = {
@@ -1101,7 +1256,7 @@ Middleware.prototype = {
 	,'use': function() {
 		var f = thx_stream__$Reducer_Middleware_$Impl_$.compose(thx_stream__$Reducer_Middleware_$Impl_$.compose(thx_stream__$Reducer_Middleware_$Impl_$.empty(),thx_stream__$Reducer_Middleware_$Impl_$.sideEffectState($bind(this,this.updateUrl))),thx_stream__$Reducer_Middleware_$Impl_$.sideEffectAction(Middleware.saveHideTooltip));
 		return function(state,action,dispatch) {
-			if(action[1] == 4) {
+			if(action[1] == 5) {
 				var b = action[3];
 				var a = action[2];
 				f(state,a,dispatch);
@@ -1303,29 +1458,38 @@ Reducer.reduce = function(state,action) {
 		switch(_g[1]) {
 		case 0:
 			var e = _g[2];
-			return { expression : Expression.Error(expr,e), seed : state.seed, useSeed : state.useSeed, displayTooltip : state.displayTooltip};
+			var o = state;
+			return { displayExpressionTooltip : o.displayExpressionTooltip, displayRollTooltip : o.displayRollTooltip, expression : Expression.Error(expr,e), seed : o.seed, useSeed : o.useSeed};
 		case 1:
 			var parsed = _g[2];
 			var _g1 = dr_DiceExpressionExtensions.validate(parsed);
 			switch(_g1[1]) {
 			case 0:
 				var errs = _g1[2];
-				return { expression : Expression.ParsedInvalid(expr,errs,parsed), seed : state.seed, useSeed : state.useSeed, displayTooltip : state.displayTooltip};
+				var o1 = state;
+				return { displayExpressionTooltip : o1.displayExpressionTooltip, displayRollTooltip : o1.displayRollTooltip, expression : Expression.ParsedInvalid(expr,errs,parsed), seed : o1.seed, useSeed : o1.useSeed};
 			case 1:
-				return { expression : Expression.Parsed(expr,dr_DiceExpressionExtensions.toString(parsed),parsed), seed : state.seed, useSeed : state.useSeed, displayTooltip : state.displayTooltip};
+				var o2 = state;
+				return { displayExpressionTooltip : o2.displayExpressionTooltip, displayRollTooltip : o2.displayRollTooltip, expression : Expression.Parsed(expr,dr_DiceExpressionExtensions.toString(parsed),parsed), seed : o2.seed, useSeed : o2.useSeed};
 			}
 			break;
 		}
 		break;
 	case 1:
 		var seed = action[2];
-		return { expression : state.expression, seed : seed, useSeed : state.useSeed, displayTooltip : state.displayTooltip};
+		var o3 = state;
+		return { displayExpressionTooltip : o3.displayExpressionTooltip, displayRollTooltip : o3.displayRollTooltip, expression : o3.expression, seed : seed, useSeed : o3.useSeed};
 	case 2:
 		var value = action[2];
-		return { expression : state.expression, seed : state.seed, useSeed : value, displayTooltip : state.displayTooltip};
+		var o4 = state;
+		return { displayExpressionTooltip : o4.displayExpressionTooltip, displayRollTooltip : o4.displayRollTooltip, expression : o4.expression, seed : o4.seed, useSeed : value};
 	case 3:
-		return { expression : state.expression, seed : state.seed, useSeed : state.useSeed, displayTooltip : false};
+		var o5 = state;
+		return { displayExpressionTooltip : false, displayRollTooltip : o5.displayRollTooltip, expression : o5.expression, seed : o5.seed, useSeed : o5.useSeed};
 	case 4:
+		var o6 = state;
+		return { displayExpressionTooltip : o6.displayExpressionTooltip, displayRollTooltip : false, expression : o6.expression, seed : o6.seed, useSeed : o6.useSeed};
+	case 5:
 		var b = action[3];
 		var a = action[2];
 		return Reducer.reduce(Reducer.reduce(state,a),b);
@@ -6490,17 +6654,6 @@ haxe_CallStack.makeStack = function(s) {
 		return s;
 	}
 };
-var haxe_IMap = function() { };
-haxe_IMap.__name__ = ["haxe","IMap"];
-haxe_IMap.prototype = {
-	get: null
-	,set: null
-	,exists: null
-	,remove: null
-	,keys: null
-	,iterator: null
-	,__class__: haxe_IMap
-};
 var haxe__$Int32_Int32_$Impl_$ = {};
 haxe__$Int32_Int32_$Impl_$.__name__ = ["haxe","_Int32","Int32_Impl_"];
 haxe__$Int32_Int32_$Impl_$.ucompare = function(a,b) {
@@ -6973,52 +7126,6 @@ haxe_ds_IntMap.prototype = {
 	}
 	,__class__: haxe_ds_IntMap
 };
-var haxe_ds_ObjectMap = function() {
-	this.h = { __keys__ : { }};
-};
-haxe_ds_ObjectMap.__name__ = ["haxe","ds","ObjectMap"];
-haxe_ds_ObjectMap.__interfaces__ = [haxe_IMap];
-haxe_ds_ObjectMap.prototype = {
-	h: null
-	,set: function(key,value) {
-		var id = key.__id__ || (key.__id__ = ++haxe_ds_ObjectMap.count);
-		this.h[id] = value;
-		this.h.__keys__[id] = key;
-	}
-	,get: function(key) {
-		return this.h[key.__id__];
-	}
-	,exists: function(key) {
-		return this.h.__keys__[key.__id__] != null;
-	}
-	,remove: function(key) {
-		var id = key.__id__;
-		if(this.h.__keys__[id] == null) {
-			return false;
-		}
-		delete(this.h[id]);
-		delete(this.h.__keys__[id]);
-		return true;
-	}
-	,keys: function() {
-		var a = [];
-		for( var key in this.h.__keys__ ) {
-		if(this.h.hasOwnProperty(key)) {
-			a.push(this.h.__keys__[key]);
-		}
-		}
-		return HxOverrides.iter(a);
-	}
-	,iterator: function() {
-		return { ref : this.h, it : this.keys(), hasNext : function() {
-			return this.it.hasNext();
-		}, next : function() {
-			var i = this.it.next();
-			return this.ref[i.__id__];
-		}};
-	}
-	,__class__: haxe_ds_ObjectMap
-};
 var haxe_ds_Option = { __ename__ : ["haxe","ds","Option"], __constructs__ : ["Some","None"] };
 haxe_ds_Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe_ds_Option; return $x; };
 haxe_ds_Option.None = ["None",1];
@@ -7048,92 +7155,6 @@ haxe_ds__$StringMap_StringMapIterator.prototype = {
 		}
 	}
 	,__class__: haxe_ds__$StringMap_StringMapIterator
-};
-var haxe_ds_StringMap = function() {
-	this.h = { };
-};
-haxe_ds_StringMap.__name__ = ["haxe","ds","StringMap"];
-haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
-haxe_ds_StringMap.prototype = {
-	h: null
-	,rh: null
-	,set: function(key,value) {
-		if(__map_reserved[key] != null) {
-			this.setReserved(key,value);
-		} else {
-			this.h[key] = value;
-		}
-	}
-	,get: function(key) {
-		if(__map_reserved[key] != null) {
-			return this.getReserved(key);
-		}
-		return this.h[key];
-	}
-	,exists: function(key) {
-		if(__map_reserved[key] != null) {
-			return this.existsReserved(key);
-		}
-		return this.h.hasOwnProperty(key);
-	}
-	,setReserved: function(key,value) {
-		if(this.rh == null) {
-			this.rh = { };
-		}
-		this.rh["$" + key] = value;
-	}
-	,getReserved: function(key) {
-		if(this.rh == null) {
-			return null;
-		} else {
-			return this.rh["$" + key];
-		}
-	}
-	,existsReserved: function(key) {
-		if(this.rh == null) {
-			return false;
-		}
-		return this.rh.hasOwnProperty("$" + key);
-	}
-	,remove: function(key) {
-		if(__map_reserved[key] != null) {
-			key = "$" + key;
-			if(this.rh == null || !this.rh.hasOwnProperty(key)) {
-				return false;
-			}
-			delete(this.rh[key]);
-			return true;
-		} else {
-			if(!this.h.hasOwnProperty(key)) {
-				return false;
-			}
-			delete(this.h[key]);
-			return true;
-		}
-	}
-	,keys: function() {
-		return HxOverrides.iter(this.arrayKeys());
-	}
-	,arrayKeys: function() {
-		var out = [];
-		for( var key in this.h ) {
-		if(this.h.hasOwnProperty(key)) {
-			out.push(key);
-		}
-		}
-		if(this.rh != null) {
-			for( var key in this.rh ) {
-			if(key.charCodeAt(0) == 36) {
-				out.push(key.substr(1));
-			}
-			}
-		}
-		return out;
-	}
-	,iterator: function() {
-		return new haxe_ds__$StringMap_StringMapIterator(this,this.arrayKeys());
-	}
-	,__class__: haxe_ds_StringMap
 };
 var js__$Boot_HaxeError = function(val) {
 	Error.call(this);
@@ -17519,13 +17540,6 @@ view_ExpressionInput.renderValidationsErrors = function(err) {
 		return doom_core__$VNode_VNode_$Impl_$.el("div",_g4,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(view_ExpressionInput.validationMessage(e),null,null)]));
 	})))]));
 };
-view_ExpressionInput.withMaybeTooltip = function(displayTooltip,input,tooltip) {
-	if(displayTooltip) {
-		return view_Tooltip.render(input,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.typeHere,null,null)]));
-	} else {
-		return doom_core__$VNode_VNode_$Impl_$.el("div",null,doom_core__$VNodes_VNodes_$Impl_$.children([input]));
-	}
-};
 view_ExpressionInput.rangeToString = function(range) {
 	switch(range[1]) {
 	case 0:
@@ -17656,7 +17670,7 @@ view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var top = [doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([view_ExpressionInput.withMaybeTooltip(this.props.displayTooltip,new view_Editable({ value : value, change : $bind(this,this.onChange), focus : true}).asNode(),doom_core_VNodeImpl.Text(Loc.msg.typeHere,null,null))]))];
+		var top = [doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children([view_Tooltip.render(this.props.displayTooltip,new view_Editable({ value : value, change : $bind(this,this.onChange), focus : true}).asNode(),doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.typeHere,null,null)]))]))];
 		var bottom;
 		var _g2 = this.props.expr;
 		switch(_g2[1]) {
@@ -17692,7 +17706,7 @@ view_ExpressionInput.prototype = $extend(doom_html_Component.prototype,{
 			this.props.dispatch(Action.EvaluateExpression(text));
 		} else {
 			view_ExpressionInput.didInput = true;
-			this.props.dispatch(Action.Composite(Action.EvaluateExpression(text),Action.HideTooltip));
+			this.props.dispatch(Action.Composite(Action.EvaluateExpression(text),Action.HideExpressionTooltip));
 		}
 	}
 	,classes: function() {
@@ -17923,20 +17937,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f();
+			f1();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f11 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f1();
+			f11();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -18018,20 +18032,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f();
+			f1();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f11 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f1();
+			f11();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -18104,20 +18118,20 @@ view_ProbabilitiesView.prototype = $extend(doom_html_Component.prototype,{
 		} else {
 			_g1.h["class"] = value1;
 		}
-		var f = this.mouseEnter(sample.value);
+		var f1 = this.mouseEnter(sample.value);
 		var value2 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 			e.preventDefault();
-			f();
+			f1();
 		});
 		if(__map_reserved["mouseenter"] != null) {
 			_g1.setReserved("mouseenter",value2);
 		} else {
 			_g1.h["mouseenter"] = value2;
 		}
-		var f1 = this.mouseEnter(sample.value);
+		var f11 = this.mouseEnter(sample.value);
 		var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 			e1.preventDefault();
-			f1();
+			f11();
 		});
 		if(__map_reserved["click"] != null) {
 			_g1.setReserved("click",value3);
@@ -18578,7 +18592,6 @@ view_RollView.__name__ = ["view","RollView"];
 view_RollView.__super__ = doom_html_Component;
 view_RollView.prototype = $extend(doom_html_Component.prototype,{
 	render: function() {
-		var _gthis = this;
 		var _g = this.props;
 		switch(_g[1]) {
 		case 0:
@@ -18586,6 +18599,7 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			var update = _g[2].updateSeed;
 			var seed = _g[2].seed;
 			var expr = _g[2].expression;
+			var displayTooltip = _g[2].displayTooltip;
 			var changeUseSeed = _g[2].changeUseSeed;
 			var r;
 			var rollDice;
@@ -18596,7 +18610,7 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 					seeded = seeded.next();
 					return v;
 				}).roll(expr);
-				var f = $bind(this,this.roll);
+				var f = $bind(this,this.rollSeed);
 				var a1 = seeded.get_int();
 				rollDice = function() {
 					f(a1);
@@ -18605,9 +18619,7 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 				r = new dr_Roller(function(sides1) {
 					return Math.floor(Math.random() * sides1) + 1;
 				}).roll(expr);
-				rollDice = function() {
-					_gthis.update(_gthis.props,{ fileName : "RollView.hx", lineNumber : 36, className : "view.RollView", methodName : "render"});
-				};
+				rollDice = $bind(this,this.rollRandom);
 			}
 			var _g1 = new haxe_ds_StringMap();
 			var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("roll-box");
@@ -18647,7 +18659,7 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g3.h["href"] = value4;
 			}
-			var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g11,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("a",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + dr_RollResultExtensions.getResult(r),null,null)]))])),this.renderSeed(seed,useSeed)]));
+			var children = doom_core__$VNode_VNode_$Impl_$.el("div",_g11,doom_core__$VNodes_VNodes_$Impl_$.children([view_Tooltip.render(displayTooltip,doom_core__$VNode_VNode_$Impl_$.el("div",_g2,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core__$VNode_VNode_$Impl_$.el("a",_g3,doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text("" + dr_RollResultExtensions.getResult(r),null,null)]))])),doom_core__$VNodes_VNodes_$Impl_$.children([doom_core_VNodeImpl.Text(Loc.msg.clickHere,null,null)])),this.renderSeed(seed,useSeed)]));
 			var children1;
 			if(dr_DiceExpressionExtensions.calculateBasicRolls(expr) > view_RollView.DISPLAY_ROLLS_THRESHOLD) {
 				var _g4 = new haxe_ds_StringMap();
@@ -18677,11 +18689,11 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g5.h["style"] = value7;
 			}
-			var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
+			var value11 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("empty node");
 			if(__map_reserved["data-comment"] != null) {
-				_g5.setReserved("data-comment",value8);
+				_g5.setReserved("data-comment",value11);
 			} else {
-				_g5.h["data-comment"] = value8;
+				_g5.h["data-comment"] = value11;
 			}
 			return doom_core__$VNode_VNode_$Impl_$.el("div",_g5);
 		}
@@ -18708,11 +18720,11 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g2.h["checked"] = value2;
 			}
-			var f = $bind(this,this.changeUseSeed);
+			var f1 = $bind(this,this.changeUseSeed);
 			var value3 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el,e) {
 				e.preventDefault();
 				var value4 = el.checked;
-				f(value4);
+				f1(value4);
 			});
 			if(__map_reserved["change"] != null) {
 				_g2.setReserved("change",value3);
@@ -18741,11 +18753,11 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 			} else {
 				_g21.h["checked"] = value7;
 			}
-			var f1 = $bind(this,this.changeUseSeed);
+			var f11 = $bind(this,this.changeUseSeed);
 			var value8 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromEventHandler(function(el1,e1) {
 				e1.preventDefault();
 				var value9 = el1.checked;
-				f1(value9);
+				f11(value9);
 			});
 			if(__map_reserved["change"] != null) {
 				_g21.setReserved("change",value8);
@@ -18763,13 +18775,31 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 	}
 	,changeSeed: function(value) {
 		var v = Std.parseInt(value);
-		this.roll(v < 1 ? 1 : v >= 2147483647 ? 2147483646 : v);
+		this.rollSeed(v < 1 ? 1 : v >= 2147483647 ? 2147483646 : v);
 	}
-	,roll: function(next) {
+	,removeTooltip: function() {
+		if(!view_RollView.firstRoll) {
+			return;
+		}
+		view_RollView.firstRoll = true;
+		var _e = this.props;
+		(function(callback) {
+			return thx_Options.map(_e,callback);
+		})(function(_) {
+			_.removeTooltip();
+			return;
+		});
+	}
+	,rollRandom: function() {
+		this.update(this.props,{ fileName : "RollView.hx", lineNumber : 101, className : "view.RollView", methodName : "rollRandom"});
+		this.removeTooltip();
+	}
+	,rollSeed: function(next) {
 		thx_Options.map(this.props,function(v) {
 			v.updateSeed(next);
 			return;
 		});
+		this.removeTooltip();
 	}
 	,didMount: function() {
 		this.rollEffect();
@@ -18799,19 +18829,31 @@ view_RollView.prototype = $extend(doom_html_Component.prototype,{
 });
 var view_Tooltip = function() { };
 view_Tooltip.__name__ = ["view","Tooltip"];
-view_Tooltip.render = function(el,content) {
-	var _g = new haxe_ds_StringMap();
-	var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("tooltip");
-	if(__map_reserved["class"] != null) {
-		_g.setReserved("class",value);
-	} else {
-		_g.h["class"] = value;
+view_Tooltip.render = function(displayTooltip,el,content) {
+	var children = [el];
+	if(displayTooltip) {
+		var _g = new haxe_ds_StringMap();
+		var value = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("tooltip");
+		if(__map_reserved["class"] != null) {
+			_g.setReserved("class",value);
+		} else {
+			_g.h["class"] = value;
+		}
+		children.push(doom_core__$VNode_VNode_$Impl_$.el("div",_g,content));
 	}
-	return doom_core__$VNode_VNode_$Impl_$.el("div",_g,doom_core__$VNodes_VNodes_$Impl_$.children([el,doom_core__$VNode_VNode_$Impl_$.el("span",null,content)]));
+	var _g1 = new haxe_ds_StringMap();
+	var value1 = doom_core__$AttributeValue_AttributeValue_$Impl_$.fromString("tooltip-container");
+	if(__map_reserved["class"] != null) {
+		_g1.setReserved("class",value1);
+	} else {
+		_g1.h["class"] = value1;
+	}
+	return doom_core__$VNode_VNode_$Impl_$.el("div",_g1,doom_core__$VNodes_VNodes_$Impl_$.children(children));
 };
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; }
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
+var __map_reserved = {}
 String.prototype.__class__ = String;
 String.__name__ = ["String"];
 Array.__name__ = ["Array"];
@@ -18825,7 +18867,6 @@ var Bool = Boolean;
 Bool.__ename__ = ["Bool"];
 var Class = { __name__ : ["Class"]};
 var Enum = { };
-var __map_reserved = {}
 var scope = ("undefined" !== typeof window && window) || ("undefined" !== typeof global && global) || Function("return this")();
 if(!scope.setImmediate) {
 	scope.setImmediate = function(callback) {
@@ -18903,10 +18944,11 @@ doom_html_Render.defaultNamespaces = (function($this) {
 	$r = _g;
 	return $r;
 }(this));
+haxe_ds_ObjectMap.count = 0;
 Doom.browser = new doom_html_Render();
 Loc.description = "# Basic Expressions\n\nType your dice expression in the gray box at the top of this page.\n\nThe simplest expression is [`d`](#/d/d) which means roll one die with 6 faces. You can be more explicit and input [`1d6`](#/d/1d6) or  [`d6`](#/d/d6). Of course you can run multiple dice ([`3d6`](#/d/3d6)) and with different number of sides [`2d10`](#/d/2d10). The popular [`d100`](#/d/d100) (a percent die) can also be expressed as [`d%`](#/d/d%).\n\n# Math Operations\n\nYou can use basic mathematical operators [`3d6+4-1d4`](#/d/3d6+4-1d4). All math operations will return integer numbers: [`5d6/2`](#/d/5d6/2)\n\nFor divisions you can use `/`, `÷` or `:`. For multiplications you can use `*`, `×`, `⋅`, or `x`.\n\n# Expression Set and Reducing\n\nMany expressions can be provided in a set like [`(2d6,3d8,1d10+2)`](#/d/(2d6,3d8,1d10+2)). By default the result of each expression will be summed together. You can also be explicit [`(2d6,3d8,1d10+2) sum`](#/d/(2d6,3d8,1d10+2)_sum) or you can use other reducing function like [`min`](#/d/(2d6,3d8,1d10+2)_min) (or `take least`), [`max`](#/d/(2d6,3d8,1d10+2)_max) (or `take best`), [`median`](#/d/(2d6,3d8,1d10+2)_median) or [`average`](#/d/(2d6,3d8,1d10+2)_average).\n\nYou can use an expression set to force the order of arithmetic operations: [`(3d6+2) x 2`](#/d/(3d6+2)_x_2) which is equivalent to [`(3d6,2) x 2`](#/d/(3d6,2)_x_2). Reduced sets can be used as part of more complex mathematical expressions [`((3d6,9) keep 1 + 2) * 2`][1].\n\n# Filtering\n\nIt is also possible to peform filtering operations on a set of expressions like *drop* and *keep*. Drop will only keep the values that do not match a condition: [`4d6 drop lowest 1`](#/d/4d6_drop_lowest_1). For *drop* the default matching condition is *lowest* so you can ommit it: [`4d6 drop 1`](#/d/4d6_drop_1). *Keep* will retain by default the top `N` values. [`4d6 keep 3`](#/d/4d6_keep_3) is basically equivalend to the `drop 1` above. You can be explicit and state [`4d6 keep highest 3`](#/d/4d6_keep_highest_3).\n\nDrop and keep can abbreviated:\n\n* [`4d6d1`](#/d/4d6d1) is equivalent to [`4d6 drop lowest 1`](#/d/4d6_drop_lowest_1)\n* [`4d6k3`](#/d/4d6k3) is equivalent to [`4d6 keep highest 3`](#/d/4d6_keep_highest_3)\n\n# Dice Set\n\nSimpler sets of dice like [`5d6`](#/d/5d6) are expanded into [`(d6,d6,d6,d6,d6)`](#/d/(d6,d6,d6,d6,d6)). On these simple sets it is possible to apply two special functions: *explode* and *reroll*.\n\nA dice set can be composed of dice with different denominations [`(d2,d4,d6,d8,d10)`](#/d/(d2,d4,d6,d8,d10)). On the other hand a dice set can only be composed of nominal dice: [`(d6,2d8)`](#/d/(d6,2d8)) is NOT a dice set! It is still a valid expression set that can be reduced and filtered.\n\n# Explode / Reroll\n\nSome games require exploding rolls or rerolls. An exploding dice is rolled again whenever its highest values is obtained. Results of all rolls are then summed together. dice.run supports the following syntax for exploding rolls: [`3d6 explode always on 5 or more`](#/d/3d6_explode_always_on_5_or_more). The short syntax for that is [`3d6e5`](#/d/3d6e5). If you want to limit the number of times the dice can explode, you can use [`once`](#/d/3d6 explode once on 5 or more), [`twice`](#/d/3d6 explode twice on 5 or more), [`thrice`](#/d/3d6 explode thrice on 5 or more) or the syntax `n times` where `n` is any positive integer number (eg: [`3d6 explode 10 times on 5 or more`](#/d/3d6 explode 10_times on 5 or more)). `or more` can be replaced with `or less` or omitted entirely to only explode on the exact value indicated in the expression.\n\nReroll works the same [`3d6 reroll always on less more`](#/d/3d6_reroll_always_on_2_or_less) and the short format is [`3d6r2`](#/d/3d6r2).\n\n  [1]: #/d/((3d6,9)_keep_1_+_2)_*_2\n";
 Loc.footer = "# Links and Credits\n\n[Franco Ponticelli](https://twitter.com/fponticelli) is the author of this website and all of its contents. The following technologies have been used:\n\n* Dice icons using [dicefont](https://dicefont.com).\n* Dice rolling, parsing and formatting using [diceroller](https://github.com/fponticelli/diceroller).\n* Front-end development using [doom](https://github.com/fponticelli/doom).\n* The code of this website is also available on [github](https://github.com/fponticelli/dice.run).\n\nIf you want to report a bug or a feature request please do it in one of the specific projects above.\n";
-Loc.msg = { expectedOneOf : "expected one of", valueOrMore : "$value or more", valueOrLess : "$value or less", validationPrefix : ["the expression is valid but the numbers are wrong!","you need to be more serious ...","are you being serious?","let's not be silly, shall we?","are you for real?","enough is enough","really?","what a joker you are","funny, really funny"], typeHere : "type here ...", atLeast : "at least", emptySet : "invalid empty set of dice", jumpersideasLink : "https://jumpersideas.com/#!dice-roller", probabilities : "probabilities", infiniteReroll : "this will roll forever! a d$sides always matches $range", jumpersideas : "jumpersideas.com", endOfFile : "end of file", tooManyDice : "Too many dice to display", found : "found", or : "or", exact : "exactly $value", probabilitiesStats : "values between $minValue and $maxValue, samples: $count", probabilitiesStatsWithBucket : "values between $minValue and $maxValue (bucket size: $bucketSize), samples: $count", between : "between $minInclusive and $maxInclusive", dropOrKeepShouldBePositive : "a drop or keep value should always be more than zero", tooManyDrops : "the set has $available value(s) and you are dropping $toDrop?", tooManyKeeps : "the set has $available value(s) and you are keeping $toKeep?", useSeed : "use seed", asConfabulatedOn : "as confabulated on", insufficientSides : "a d$sides is not a valid die", atMost : "at most"};
+Loc.msg = { expectedOneOf : "expected one of", valueOrMore : "$value or more", valueOrLess : "$value or less", validationPrefix : ["are you being serious?","are you for real?","enough is enough","funny, really funny","let's not be silly, shall we?","really?","the expression is valid but the numbers are wrong!","what a joker you are","you need to be more serious ..."], typeHere : "type a dice expression here", atLeast : "at least", emptySet : "invalid empty set of dice", jumpersideasLink : "https://jumpersideas.com/#!dice-roller", clickHere : "click here to roll again", probabilities : "probabilities", infiniteReroll : "this will roll forever! a d$sides always matches $range", jumpersideas : "jumpersideas.com", endOfFile : "end of file", tooManyDice : "Too many dice to display", found : "found", or : "or", exact : "exactly $value", probabilitiesStats : "values between $minValue and $maxValue, samples: $count", probabilitiesStatsWithBucket : "values between $minValue and $maxValue (bucket size: $bucketSize), samples: $count", between : "between $minInclusive and $maxInclusive", dropOrKeepShouldBePositive : "a drop or keep value should always be more than zero", tooManyDrops : "the set has $available value(s) and you are dropping $toDrop?", tooManyKeeps : "the set has $available value(s) and you are keeping $toKeep?", useSeed : "use seed", asConfabulatedOn : "as confabulated on", insufficientSides : "a d$sides is not a valid die", atMost : "at most"};
 doom_html_Attributes.properties = (function($this) {
 	var $r;
 	var _g = new haxe_ds_StringMap();
@@ -19648,7 +19690,6 @@ haxe__$Int32_Int32_$Impl_$._mul = Math.imul != null ? Math.imul : function(a,b) 
 	return a * (b & 65535) + (a * (b >>> 16) << 16 | 0) | 0;
 };
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-haxe_ds_ObjectMap.count = 0;
 thx_Dates.order = thx__$Ord_Ord_$Impl_$.fromIntComparison(thx_Dates.compare);
 thx_Floats.TOLERANCE = 10e-5;
 thx_Floats.EPSILON = 1e-9;
@@ -19764,5 +19805,6 @@ view_ProbabilitiesView.worker = (function($this) {
 	return $r;
 }(this));
 view_RollView.DISPLAY_ROLLS_THRESHOLD = 50;
+view_RollView.firstRoll = true;
 Main.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);

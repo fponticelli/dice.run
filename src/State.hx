@@ -7,7 +7,8 @@ typedef State = {
   expression: Expression,
   seed: Int,
   useSeed: Bool,
-  displayTooltip: Bool
+  displayExpressionTooltip: Bool,
+  displayRollTooltip: Bool
 }
 
 enum Expression {

@@ -9,16 +9,25 @@ using dr.RollResultExtensions;
 import dr.Roller;
 using thx.Arrays;
 import thx.math.random.LehmerSeed;
+using thx.Functions;
 using thx.Options;
 import Loc.msg;
 
-class RollView extends Component<Option<{ expression: DiceExpression, seed: Int, updateSeed: Int -> Void, changeUseSeed: Bool -> Void, useSeed: Bool }>> {
+class RollView extends Component<Option<{
+  expression: DiceExpression,
+  seed: Int,
+  updateSeed: Int -> Void,
+  changeUseSeed: Bool -> Void,
+  removeTooltip: Void -> Void,
+  useSeed: Bool,
+  displayTooltip: Bool
+}>> {
   static var DISPLAY_ROLLS_THRESHOLD = 50;
   override function render()
     return switch props {
       case None:
         dummy();
-      case Some({ expression: expr, seed: seed, updateSeed: update, changeUseSeed: changeUseSeed, useSeed: useSeed }):
+      case Some({ expression: expr, seed: seed, updateSeed: update, changeUseSeed: changeUseSeed, useSeed: useSeed, displayTooltip: displayTooltip }):
         var r, rollDice;
         if(useSeed) {
           var seeded = LehmerSeed.std(seed);
@@ -27,20 +36,22 @@ class RollView extends Component<Option<{ expression: DiceExpression, seed: Int,
             seeded = seeded.next();
             return v;
           }).roll(expr);
-          rollDice = roll.bind(seeded.int);
+          rollDice = rollSeed.bind(seeded.int);
         } else {
           r = new Roller(function(sides) {
             return Math.floor(Math.random() * sides) + 1;
           }).roll(expr);
-          rollDice = function() {
-            this.update(props);
-          }
+          rollDice = rollRandom;
         }
         div(["class" => "roll-box"], [
           div(["class" => "rolling"], [
-            div(["class" => "roll-result"], [
-              a(["click" => rollDice, "href" => "#"], '${r.getResult()}')
-            ]),
+            Tooltip.render(
+              displayTooltip,
+              div(["class" => "roll-result"], [
+                a(["click" => rollDice, "href" => "#"], '${r.getResult()}')
+              ]),
+              msg.clickHere
+            ),
             renderSeed(seed, useSeed)
           ]),
           if(DiceExpressionExtensions.calculateBasicRolls(expr) > DISPLAY_ROLLS_THRESHOLD) {
@@ -75,11 +86,26 @@ class RollView extends Component<Option<{ expression: DiceExpression, seed: Int,
 
   function changeSeed(value: String) {
     var v = Std.parseInt(value);
-    roll(v < 1 ? 1 : (v >= thx.math.Const.INT32_MAX) ? thx.math.Const.INT32_MAX-1 : v);
+    rollSeed(v < 1 ? 1 : (v >= thx.math.Const.INT32_MAX) ? thx.math.Const.INT32_MAX-1 : v);
   }
 
-  function roll(next: Int)
+
+  static var firstRoll = true;
+  function removeTooltip() {
+    if(!firstRoll) return;
+    firstRoll = true;
+    props.map.fn(_.removeTooltip());
+  }
+
+  function rollRandom() {
+    update(props);
+    removeTooltip();
+  }
+
+  function rollSeed(next: Int) {
     props.map(function(v) return v.updateSeed(next));
+    removeTooltip();
+  }
 
   override function didMount()
     rollEffect();
