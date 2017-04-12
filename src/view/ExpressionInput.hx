@@ -1,6 +1,5 @@
 package view;
 
-import doom.core.VNode;
 import doom.html.Component;
 import doom.html.Html.*;
 import State;
