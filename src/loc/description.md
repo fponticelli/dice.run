@@ -12,7 +12,7 @@ For divisions you can use `/`, `÷` or `:`. For multiplications you can use `*`,
 
 # Expression Set and Reducing
 
-Many expressions can be provided in a set like [`(2d6,3d8,1d10+2)`](#/d/(2d6,3d8,1d10+2)). By default the result of each expression will be summed together. You can also be explicit [`(2d6,3d8,1d10+2) sum`](#/d/(2d6,3d8,1d10+2)_sum) or you can use other reducing function like [`min`](#/d/(2d6,3d8,1d10+2)_min) (or `take least`), [`max`](#/d/(2d6,3d8,1d10+2)_max) (or `take best`), [`median`](#/d/(2d6,3d8,1d10+2)_median) or [`average`](#/d/(2d6,3d8,1d10+2)_average).
+Many expressions can be provided in a set like [`(2d6,3d8,1d10+2)`](#/d/(2d6,3d8,1d10+2)). By default the result of each expression will be summed together. You can also be explicit [`(2d6,3d8,1d10+2) sum`](#/d/(2d6,3d8,1d10+2)_sum) or you can use other reducing functions like [`min`](#/d/(2d6,3d8,1d10+2)_min) (or `take least`), [`max`](#/d/(2d6,3d8,1d10+2)_max) (or `take best`), [`median`](#/d/(2d6,3d8,1d10+2)_median) or [`average`](#/d/(2d6,3d8,1d10+2)_average).
 
 You can use an expression set to force the order of arithmetic operations: [`(3d6+2) x 2`](#/d/(3d6+2)_x_2) which is equivalent to [`(3d6,2) x 2`](#/d/(3d6,2)_x_2). Expression sets can be used as part of more complex mathematical expressions [`((3d6,9) keep 1 + 2) * 2`][1].
 
